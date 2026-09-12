@@ -383,19 +383,29 @@ th{
 
 
 <div class="chart-container">
-
-  <div
-    class="tradingview-widget-container"
-    style="height:100%;width:100%">
-
-    <div
-      class="tradingview-widget-container__widget"
-      style="height:100%;width:100%">
-    </div>
-
-  </div>
-
+  <div id="tradingview_chart" style="height:100%;width:100%;"></div>
 </div>
+
+<script
+  type="text/javascript"
+  src="https://s3.tradingview.com/tv.js">
+</script>
+
+<script>
+  new TradingView.widget({
+    autosize: true,
+    symbol: "BINANCE:BTCUSDT",
+    interval: "1",
+    timezone: "Etc/UTC",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    toolbar_bg: "#171a21",
+    enable_publishing: false,
+    allow_symbol_change: false,
+    container_id: "tradingview_chart"
+  });
+</script>
 
 
 <div class="trade-panel">

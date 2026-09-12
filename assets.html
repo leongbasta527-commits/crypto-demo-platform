@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Assets - Demo</title>
 
 <style>
@@ -20,11 +19,10 @@ body {
 }
 
 .header {
-    height: 70px;
-    padding: 0 22px;
+    height: 64px;
+    padding: 0 18px;
     background: #171a21;
     border-bottom: 1px solid #252a34;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -50,7 +48,7 @@ body {
 }
 
 .container {
-    padding: 16px;
+    padding: 14px;
 }
 
 .card {
@@ -60,8 +58,8 @@ body {
 }
 
 .balance-card {
-    padding: 24px;
-    margin-bottom: 16px;
+    padding: 22px;
+    margin-bottom: 14px;
 }
 
 .label {
@@ -71,7 +69,7 @@ body {
 
 .balance {
     margin-top: 10px;
-    font-size: 32px;
+    font-size: 30px;
     font-weight: bold;
 }
 
@@ -84,27 +82,27 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .action-card {
     background: #171a21;
     border: 1px solid #292f3a;
     border-radius: 12px;
-    padding: 18px 8px;
-
+    padding: 18px 5px;
     text-align: center;
     cursor: pointer;
 }
 
-.action-card:hover {
-    background: #1d222b;
+.action-card:active {
+    background: #222832;
 }
 
 .action-icon {
     font-size: 27px;
     color: #f0b90b;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
+    font-weight: bold;
 }
 
 .action-title {
@@ -112,9 +110,8 @@ body {
 }
 
 .asset-row {
-    padding: 18px;
+    padding: 17px;
     margin-bottom: 22px;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -127,17 +124,15 @@ body {
 }
 
 .coin-logo {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     background: #19a69a;
-    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 19px;
+    font-weight: bold;
 }
 
 .asset-name {
@@ -161,7 +156,7 @@ body {
 
 .asset-usd {
     color: #8a94a6;
-    margin-top: 5px;
+    margin-top: 4px;
     font-size: 13px;
 }
 
@@ -183,7 +178,7 @@ body {
 
 .stat-value {
     margin-top: 7px;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: bold;
 }
 
@@ -209,10 +204,8 @@ body {
     border: 0;
     border-radius: 8px;
     padding: 13px;
-
     background: #303640;
     color: #ffffff;
-
     cursor: pointer;
 }
 
@@ -221,26 +214,20 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-
-    height: 65px;
-
+    height: 64px;
     background: #171a21;
     border-top: 1px solid #292f3a;
-
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-
     z-index: 100;
 }
 
 .nav-item {
     display: flex;
-    justify-content: center;
     align-items: center;
-
-    text-decoration: none;
+    justify-content: center;
     color: #8a94a6;
-
+    text-decoration: none;
     font-size: 13px;
 }
 
@@ -248,20 +235,16 @@ body {
     color: #f0b90b;
 }
 
-/* MODAL */
+/* POPUP */
 
 .modal {
     position: fixed;
     inset: 0;
-
-    background: rgba(0,0,0,0.75);
-
+    background: rgba(0,0,0,.78);
     display: none;
-    justify-content: center;
     align-items: center;
-
-    padding: 18px;
-
+    justify-content: center;
+    padding: 16px;
     z-index: 9999;
 }
 
@@ -271,14 +254,11 @@ body {
 
 .modal-box {
     width: 100%;
-    max-width: 520px;
-
+    max-width: 560px;
     max-height: 85vh;
     overflow-y: auto;
-
     background: #171a21;
     border: 1px solid #303640;
-
     border-radius: 14px;
     padding: 20px;
 }
@@ -287,8 +267,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .modal-title {
@@ -297,11 +276,10 @@ body {
 }
 
 .close-btn {
-    border: 0;
     background: transparent;
-    color: #ffffff;
-
-    font-size: 26px;
+    border: 0;
+    color: white;
+    font-size: 27px;
     cursor: pointer;
 }
 
@@ -314,44 +292,41 @@ body {
 .demo-box {
     margin-top: 14px;
     padding: 12px;
-
     border-radius: 8px;
-
     background: #251f0d;
     color: #f0b90b;
-
     font-size: 13px;
+    line-height: 1.5;
 }
 
 .telegram-btn {
-    margin-top: 18px;
-
     display: block;
-
     width: 100%;
+    margin-top: 18px;
     padding: 14px;
-
-    border-radius: 8px;
-
     background: #229ed9;
-    color: #ffffff;
-
-    text-decoration: none;
+    color: white;
+    border-radius: 8px;
     text-align: center;
-
+    text-decoration: none;
     font-weight: bold;
+}
+
+.history-wrap {
+    overflow-x: auto;
 }
 
 .history-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    min-width: 560px;
 }
 
 .history-table th,
 .history-table td {
     border-bottom: 1px solid #292f3a;
-    padding: 10px 5px;
+    padding: 10px 6px;
     text-align: left;
 }
 
@@ -360,8 +335,8 @@ body {
 }
 
 .empty-history {
-    color: #8a94a6;
     text-align: center;
+    color: #8a94a6;
     padding: 30px 0;
 }
 
@@ -377,139 +352,75 @@ body {
 
 <div class="header">
     <div class="header-title">Assets</div>
-
-    <div class="welcome">
-        Welcome, trader!
-    </div>
+    <div class="welcome">Welcome, trader!</div>
 </div>
 
 <div class="demo-warning">
     DEMO ONLY — No real funds or real deposits/withdrawals
 </div>
 
-
 <div class="container">
 
-    <!-- BALANCE -->
-
     <div class="card balance-card">
-
-        <div class="label">
-            Total Balance
-        </div>
+        <div class="label">Total Balance</div>
 
         <div class="balance">
-            <span id="totalBalance">10000.00</span>
-            USDT
+            <span id="totalBalance">10000.00</span> USDT
         </div>
 
         <div class="usd-value">
-            ≈ $
-            <span id="usdBalance">
-                10000.00
-            </span>
+            ≈ $<span id="usdBalance">10000.00</span>
         </div>
-
     </div>
 
-
-    <!-- ACTION BUTTONS -->
 
     <div class="actions">
 
-        <div class="action-card"
-             onclick="openSupport('deposit')">
-
-            <div class="action-icon">
-                ↓
-            </div>
-
-            <div class="action-title">
-                Deposit
-            </div>
-
+        <div class="action-card" onclick="openSupport('deposit')">
+            <div class="action-icon">↓</div>
+            <div class="action-title">Deposit</div>
         </div>
 
-
-        <div class="action-card"
-             onclick="openSupport('withdraw')">
-
-            <div class="action-icon">
-                ↑
-            </div>
-
-            <div class="action-title">
-                Withdraw
-            </div>
-
+        <div class="action-card" onclick="openSupport('withdraw')">
+            <div class="action-icon">↑</div>
+            <div class="action-title">Withdraw</div>
         </div>
 
-
-        <div class="action-card"
-             onclick="openHistory()">
-
-            <div class="action-icon">
-                ↶
-            </div>
-
-            <div class="action-title">
-                History
-            </div>
-
+        <div class="action-card" onclick="openHistory()">
+            <div class="action-icon">↶</div>
+            <div class="action-title">History</div>
         </div>
 
     </div>
 
-
-    <!-- USDT -->
 
     <div class="card asset-row">
 
         <div class="asset-left">
 
-            <div class="coin-logo">
-                ₮
-            </div>
+            <div class="coin-logo">₮</div>
 
             <div>
-
-                <div class="asset-name">
-                    USDT
-                </div>
-
-                <div class="asset-sub">
-                    Tether
-                </div>
-
+                <div class="asset-name">USDT</div>
+                <div class="asset-sub">Tether</div>
             </div>
 
         </div>
 
-
         <div class="asset-right">
 
-            <div class="asset-amount"
-                 id="usdtAmount">
-
+            <div class="asset-amount" id="usdtAmount">
                 10000.00
-
             </div>
 
             <div class="asset-usd">
-
-                ≈ $
-                <span id="usdtUsd">
-                    10000.00
-                </span>
-
+                ≈ $<span id="usdtUsd">10000.00</span>
             </div>
 
         </div>
 
     </div>
 
-
-    <!-- STATISTICS -->
 
     <div class="section-title">
         Account Statistics
@@ -519,198 +430,94 @@ body {
     <div class="stats">
 
         <div class="card stat-card">
-
-            <div class="label">
-                Total Demo P&L
-            </div>
-
-            <div id="pnl"
-                 class="stat-value">
-
-                0.00 USDT
-
-            </div>
-
+            <div class="label">Total Demo P&amp;L</div>
+            <div id="pnl" class="stat-value">0.00 USDT</div>
         </div>
 
-
         <div class="card stat-card">
-
-            <div class="label">
-                Total Orders
-            </div>
-
-            <div id="totalOrders"
-                 class="stat-value">
-
-                0
-
-            </div>
-
+            <div class="label">Total Orders</div>
+            <div id="totalOrders" class="stat-value">0</div>
         </div>
 
-
         <div class="card stat-card">
-
-            <div class="label">
-                Win Rate
-            </div>
-
-            <div id="winRate"
-                 class="stat-value">
-
-                0%
-
-            </div>
-
+            <div class="label">Win Rate</div>
+            <div id="winRate" class="stat-value">0%</div>
         </div>
 
-
         <div class="card stat-card">
-
-            <div class="label">
-                Wins
-            </div>
-
-            <div id="wins"
-                 class="stat-value positive">
-
-                0
-
-            </div>
-
+            <div class="label">Wins</div>
+            <div id="wins" class="stat-value positive">0</div>
         </div>
 
-
         <div class="card stat-card">
-
-            <div class="label">
-                Losses
-            </div>
-
-            <div id="losses"
-                 class="stat-value negative">
-
-                0
-
-            </div>
-
+            <div class="label">Losses</div>
+            <div id="losses" class="stat-value negative">0</div>
         </div>
 
-
         <div class="card stat-card">
-
-            <div class="label">
-                Draws
-            </div>
-
-            <div id="draws"
-                 class="stat-value draw">
-
-                0
-
-            </div>
-
+            <div class="label">Draws</div>
+            <div id="draws" class="stat-value draw">0</div>
         </div>
 
+        <div class="card stat-card">
+            <div class="label">Starting Balance</div>
+            <div class="stat-value">10000.00 USDT</div>
+        </div>
 
         <div class="card stat-card">
-
-            <div class="label">
-                Starting Balance
-            </div>
-
-            <div class="stat-value">
+            <div class="label">Current Balance</div>
+            <div id="currentBalance" class="stat-value">
                 10000.00 USDT
             </div>
-
-        </div>
-
-
-        <div class="card stat-card">
-
-            <div class="label">
-                Current Balance
-            </div>
-
-            <div id="currentBalance"
-                 class="stat-value">
-
-                10000.00 USDT
-
-            </div>
-
         </div>
 
     </div>
 
 
     <div class="card reset-card">
-
-        <button class="reset-button"
-                onclick="resetDemo()">
-
+        <button class="reset-button" onclick="resetDemo()">
             Reset Demo Data
-
         </button>
-
     </div>
 
 </div>
 
 
-<!-- SUPPORT MODAL -->
+<!-- DEPOSIT / WITHDRAW POPUP -->
 
-<div class="modal"
-     id="supportModal">
+<div class="modal" id="supportModal">
 
     <div class="modal-box">
 
         <div class="modal-header">
 
-            <div id="supportTitle"
-                 class="modal-title">
-
+            <div class="modal-title" id="supportTitle">
                 Demo Support
-
             </div>
 
-            <button class="close-btn"
-                    onclick="closeSupport()">
-
+            <button class="close-btn" onclick="closeSupport()">
                 ×
-
             </button>
 
         </div>
 
-
-        <div id="supportText"
-             class="support-info">
-
+        <div class="support-info" id="supportText">
             Contact support for assistance.
-
         </div>
-
 
         <div class="demo-box">
-
-            This website is a demonstration platform.
-            No real cryptocurrency or real-money
-            deposit/withdrawal is processed here.
-
+            This is a demo platform. No real cryptocurrency
+            or real-money deposits/withdrawals are processed
+            through this website.
         </div>
-
 
         <a
             class="telegram-btn"
-            id="telegramButton"
             href="https://t.me/Kath02210"
             target="_blank"
-            rel="noopener noreferrer">
-
+            rel="noopener noreferrer"
+        >
             Contact Support on Telegram
-
         </a>
 
     </div>
@@ -718,10 +525,9 @@ body {
 </div>
 
 
-<!-- HISTORY MODAL -->
+<!-- HISTORY POPUP -->
 
-<div class="modal"
-     id="historyModal">
+<div class="modal" id="historyModal">
 
     <div class="modal-box">
 
@@ -731,57 +537,35 @@ body {
                 Demo Order History
             </div>
 
-            <button class="close-btn"
-                    onclick="closeHistory()">
-
+            <button class="close-btn" onclick="closeHistory()">
                 ×
-
             </button>
 
         </div>
 
-
-        <div id="historyContent">
-        </div>
+        <div id="historyContent"></div>
 
     </div>
 
 </div>
 
 
-<!-- NAV -->
-
 <div class="bottom-nav">
 
-    <a class="nav-item"
-       href="index.html">
-
+    <a class="nav-item" href="index.html">
         Markets
-
     </a>
 
-
-    <a class="nav-item"
-       href="trading.html">
-
+    <a class="nav-item" href="trading.html">
         Trading
-
     </a>
 
-
-    <a class="nav-item active"
-       href="assets.html">
-
+    <a class="nav-item active" href="assets.html">
         Assets
-
     </a>
 
-
-    <a class="nav-item"
-       href="#">
-
+    <a class="nav-item" href="#">
         Profile
-
     </a>
 
 </div>
@@ -792,41 +576,21 @@ body {
 const STARTING_BALANCE = 10000;
 
 
-/*
-IMPORTANT
-
-Replace:
-
-YOUR_TELEGRAM_USERNAME
-
-with your actual Telegram username.
-
-Example:
-
-https://t.me/demo_support
-*/
-
-
 function getBalance() {
 
     const saved =
         Number(
-            localStorage.getItem(
-                "demoBalance"
-            )
+            localStorage.getItem("demoBalance")
         );
 
     if (
         Number.isFinite(saved) &&
         saved >= 0
     ) {
-
         return saved;
-
     }
 
     return STARTING_BALANCE;
-
 }
 
 
@@ -836,201 +600,108 @@ function getHistory() {
 
         return (
             JSON.parse(
-                localStorage.getItem(
-                    "demoHistory"
-                )
+                localStorage.getItem("demoHistory")
             ) || []
         );
 
     } catch (error) {
 
         return [];
-
     }
-
 }
 
 
 function loadAssets() {
 
-    const balance =
-        getBalance();
-
-    const history =
-        getHistory();
-
+    const balance = getBalance();
+    const history = getHistory();
 
     const wins =
         history.filter(
-            order =>
-                order.result === "WIN"
+            order => order.result === "WIN"
         ).length;
-
 
     const losses =
         history.filter(
-            order =>
-                order.result === "LOSS"
+            order => order.result === "LOSS"
         ).length;
-
 
     const draws =
         history.filter(
-            order =>
-                order.result === "DRAW"
+            order => order.result === "DRAW"
         ).length;
-
 
     const totalOrders =
         history.length;
 
-
-    const decidedOrders =
-        wins + losses;
-
-
     const winRate =
-        decidedOrders > 0
-
-            ? (
-                wins /
-                decidedOrders *
-                100
-            ).toFixed(1)
-
+        totalOrders > 0
+            ? ((wins / totalOrders) * 100).toFixed(1)
             : "0.0";
 
-
     const pnl =
-        balance -
-        STARTING_BALANCE;
+        balance - STARTING_BALANCE;
 
 
-    document
-        .getElementById(
-            "totalBalance"
-        )
-        .innerText =
+    document.getElementById("totalBalance").innerText =
         balance.toFixed(2);
 
-
-    document
-        .getElementById(
-            "usdBalance"
-        )
-        .innerText =
+    document.getElementById("usdBalance").innerText =
         balance.toFixed(2);
 
-
-    document
-        .getElementById(
-            "usdtAmount"
-        )
-        .innerText =
+    document.getElementById("usdtAmount").innerText =
         balance.toFixed(2);
 
-
-    document
-        .getElementById(
-            "usdtUsd"
-        )
-        .innerText =
+    document.getElementById("usdtUsd").innerText =
         balance.toFixed(2);
 
-
-    document
-        .getElementById(
-            "currentBalance"
-        )
-        .innerText =
-        balance.toFixed(2) +
-        " USDT";
+    document.getElementById("currentBalance").innerText =
+        balance.toFixed(2) + " USDT";
 
 
     const pnlElement =
-        document.getElementById(
-            "pnl"
-        );
-
+        document.getElementById("pnl");
 
     pnlElement.innerText =
         (pnl >= 0 ? "+" : "") +
         pnl.toFixed(2) +
         " USDT";
 
-
     pnlElement.className =
         "stat-value " +
         (
             pnl > 0
                 ? "positive"
-
                 : pnl < 0
                 ? "negative"
-
                 : "draw"
         );
 
 
-    document
-        .getElementById(
-            "totalOrders"
-        )
-        .innerText =
+    document.getElementById("totalOrders").innerText =
         totalOrders;
 
-
-    document
-        .getElementById(
-            "winRate"
-        )
-        .innerText =
+    document.getElementById("winRate").innerText =
         winRate + "%";
 
-
-    document
-        .getElementById(
-            "wins"
-        )
-        .innerText =
+    document.getElementById("wins").innerText =
         wins;
 
-
-    document
-        .getElementById(
-            "losses"
-        )
-        .innerText =
+    document.getElementById("losses").innerText =
         losses;
 
-
-    document
-        .getElementById(
-            "draws"
-        )
-        .innerText =
+    document.getElementById("draws").innerText =
         draws;
-
 }
-
 
 
 function openSupport(type) {
 
-    const modal =
-        document.getElementById(
-            "supportModal"
-        );
-
     const title =
-        document.getElementById(
-            "supportTitle"
-        );
+        document.getElementById("supportTitle");
 
     const text =
-        document.getElementById(
-            "supportText"
-        );
+        document.getElementById("supportText");
 
 
     if (type === "deposit") {
@@ -1039,7 +710,7 @@ function openSupport(type) {
             "Demo Deposit Support";
 
         text.innerText =
-            "Need help with the demo deposit feature? Contact support through Telegram.";
+            "For questions about the demo deposit feature, contact support on Telegram.";
 
     } else {
 
@@ -1047,31 +718,22 @@ function openSupport(type) {
             "Demo Withdrawal Support";
 
         text.innerText =
-            "Need help with the demo withdrawal feature? Contact support through Telegram.";
-
+            "For questions about the demo withdrawal feature, contact support on Telegram.";
     }
 
 
-    modal.classList.add(
-        "show"
-    );
-
+    document
+        .getElementById("supportModal")
+        .classList.add("show");
 }
-
 
 
 function closeSupport() {
 
     document
-        .getElementById(
-            "supportModal"
-        )
-        .classList.remove(
-            "show"
-        );
-
+        .getElementById("supportModal")
+        .classList.remove("show");
 }
-
 
 
 function openHistory() {
@@ -1080,15 +742,10 @@ function openHistory() {
         getHistory();
 
     const content =
-        document.getElementById(
-            "historyContent"
-        );
+        document.getElementById("historyContent");
 
 
-    if (
-        !history ||
-        history.length === 0
-    ) {
+    if (history.length === 0) {
 
         content.innerHTML =
             '<div class="empty-history">No demo transactions yet.</div>';
@@ -1097,150 +754,103 @@ function openHistory() {
 
         let html = `
 
+        <div class="history-wrap">
+
         <table class="history-table">
 
-            <thead>
+        <thead>
 
-                <tr>
+        <tr>
+            <th>Time</th>
+            <th>Side</th>
+            <th>Amount</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>Result</th>
+        </tr>
 
-                    <th>Time</th>
+        </thead>
 
-                    <th>Side</th>
-
-                    <th>Amount</th>
-
-                    <th>Entry</th>
-
-                    <th>Exit</th>
-
-                    <th>Result</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
+        <tbody>
 
         `;
 
 
-        history.forEach(
-            order => {
+        history.forEach(order => {
 
-                let resultColor =
-                    "#f0b90b";
+            let resultColor =
+                "#f0b90b";
 
-
-                if (
-                    order.result === "WIN"
-                ) {
-
-                    resultColor =
-                        "#16c784";
-
-                }
-
-
-                if (
-                    order.result === "LOSS"
-                ) {
-
-                    resultColor =
-                        "#f6465d";
-
-                }
-
-
-                html += `
-
-                <tr>
-
-                    <td>
-                        ${order.time || "-"}
-                    </td>
-
-                    <td>
-                        ${order.direction || "-"}
-                    </td>
-
-                    <td>
-                        ${
-                            Number(
-                                order.amount || 0
-                            ).toFixed(2)
-                        }
-                    </td>
-
-                    <td>
-                        ${
-                            Number(
-                                order.entry || 0
-                            ).toFixed(2)
-                        }
-                    </td>
-
-                    <td>
-                        ${
-                            Number(
-                                order.exit || 0
-                            ).toFixed(2)
-                        }
-                    </td>
-
-                    <td style="
-                        color:${resultColor};
-                        font-weight:bold;
-                    ">
-                        ${order.result || "-"}
-                    </td>
-
-                </tr>
-
-                `;
-
+            if (order.result === "WIN") {
+                resultColor = "#16c784";
             }
-        );
+
+            if (order.result === "LOSS") {
+                resultColor = "#f6465d";
+            }
+
+
+            html += `
+
+            <tr>
+
+                <td>
+                    ${order.time || "-"}
+                </td>
+
+                <td>
+                    ${order.direction || "-"}
+                </td>
+
+                <td>
+                    ${Number(order.amount || 0).toFixed(2)}
+                </td>
+
+                <td>
+                    $${Number(order.entry || 0).toFixed(2)}
+                </td>
+
+                <td>
+                    $${Number(order.exit || 0).toFixed(2)}
+                </td>
+
+                <td style="
+                    color:${resultColor};
+                    font-weight:bold;
+                ">
+                    ${order.result || "-"}
+                </td>
+
+            </tr>
+
+            `;
+        });
 
 
         html += `
 
-            </tbody>
-
+        </tbody>
         </table>
+        </div>
 
         `;
 
-
-        content.innerHTML =
-            html;
-
+        content.innerHTML = html;
     }
 
 
     document
-        .getElementById(
-            "historyModal"
-        )
-        .classList.add(
-            "show"
-        );
-
+        .getElementById("historyModal")
+        .classList.add("show");
 }
-
 
 
 function closeHistory() {
 
     document
-        .getElementById(
-            "historyModal"
-        )
-        .classList.remove(
-            "show"
-        );
-
+        .getElementById("historyModal")
+        .classList.remove("show");
 }
-
 
 
 function resetDemo() {
@@ -1250,30 +860,22 @@ function resetDemo() {
             "Reset demo balance and order history?"
         );
 
-
     if (!confirmed) {
-
         return;
-
     }
-
 
     localStorage.setItem(
         "demoBalance",
         STARTING_BALANCE
     );
 
-
     localStorage.setItem(
         "demoHistory",
         JSON.stringify([])
     );
 
-
     loadAssets();
-
 }
-
 
 
 window.addEventListener(
@@ -1281,35 +883,19 @@ window.addEventListener(
     function(event) {
 
         const supportModal =
-            document.getElementById(
-                "supportModal"
-            );
+            document.getElementById("supportModal");
 
         const historyModal =
-            document.getElementById(
-                "historyModal"
-            );
+            document.getElementById("historyModal");
 
 
-        if (
-            event.target ===
-            supportModal
-        ) {
-
+        if (event.target === supportModal) {
             closeSupport();
-
         }
 
-
-        if (
-            event.target ===
-            historyModal
-        ) {
-
+        if (event.target === historyModal) {
             closeHistory();
-
         }
-
     }
 );
 
@@ -1320,4 +906,3 @@ loadAssets();
 
 </body>
 </html>
-

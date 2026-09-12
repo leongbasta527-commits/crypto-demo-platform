@@ -944,208 +944,92 @@ function startFallbackPrice(){
 }
 
 
-function placeOrder(
-  direction
-){
+function placeOrder(direction){
 
-  if(
-    activeOrder
-  ){
-
-    alert(
-      "Please wait for the current demo order to finish."
-    );
-
+  if(activeOrder){
+    alert("Please wait for the current demo order to finish.");
     return;
-
   }
 
-
-  if(
-    !currentPrice
-  ){
-
-    alert(
-      "Market price is still loading."
-    );
-
+  if(!currentPrice){
+    alert("Market price is still loading.");
     return;
-
   }
 
+  const amount = Number(
+    document.getElementById("amount").value
+  );
 
-  const amount =
-    Number(
-      document
-        .getElementById(
-          "amount"
-        )
-        .value
-    );
+  const duration = Number(
+    document.getElementById("duration").value
+  );
 
-
-  const duration =
-    Number(
-      document
-        .getElementById(
-          "duration"
-        )
-        .value
-    );
-
-
-  if(
-    !amount ||
-    amount <= 0
-  ){
-
-    alert(
-      "Enter a valid amount."
-    );
-
+  if(!amount || amount <= 0){
+    alert("Enter a valid amount.");
     return;
-
   }
 
-
-  if(
-    amount >
-    balance
-  ){
-
-    alert(
-      "Not enough demo balance."
-    );
-
+  if(amount > balance){
+    alert("Not enough demo balance.");
     return;
-
   }
 
+  // 锁定订单
+  activeOrder = true;
 
-  activeOrder =
-    true;
+  document.getElementById("upButton").disabled = true;
+  document.getElementById("downButton").disabled = true;
 
+  // 记录下单时的真实价格
+  const entry = currentPrice;
 
-  document
-    .getElementById(
-      "upButton"
-    )
-    .disabled =
-    true;
-
-  document
-    .getElementById(
-      "downButton"
-    )
-    .disabled =
-    true;
-
-
-  const entry =
-    currentPrice;
-
-
-  balance -=
-    amount;
-
-
+  // 扣除下单金额
+  balance -= amount;
   updateBalance();
 
+  // 显示当前订单
+  const activeBox = document.getElementById("activeOrder");
 
-  const activeBox =
-    document
-      .getElementById(
-        "activeOrder"
+  activeBox.style.display = "block";
+
+  document.getElementById("orderDirection").innerText =
+    direction.toUpperCase();
+
+  document.getElementById("orderAmount").innerText =
+    amount.toFixed(2) + " USDT";
+
+  document.getElementById("entryPrice").innerText =
+    "$" + formatPrice(entry);
+
+  document.getElementById("result").innerText = "--";
+
+  // 开始倒计时
+  let remaining = duration;
+
+  document.getElementById("timer").innerText = remaining;
+
+  activeTimer = setInterval(function(){
+
+    remaining--;
+
+    document.getElementById("timer").innerText = remaining;
+
+    if(remaining <= 0){
+
+      clearInterval(activeTimer);
+
+      // 到期时直接读取最新市场价格
+      const exit = currentPrice;
+
+      settleOrder(
+        direction,
+        amount,
+        entry,
+        exit
       );
+    }
 
-
-  activeBox.style.display =
-    "block";
-
-
-  document
-    .getElementById(
-      "orderDirection"
-    )
-    .innerText =
-    direction;
-
-
-  document
-    .getElementById(
-      "orderAmount"
-    )
-    .innerText =
-    amount.toFixed(2) +
-    " USDT";
-
-
-  document
-    .getElementById(
-      "entryPrice"
-    )
-    .innerText =
-    "$" +
-    formatPrice(
-      entry
-    );
-
-
-  document
-    .getElementById(
-      "result"
-    )
-    .innerText =
-    "";
-
-
-  let remaining =
-    duration;
-
-
-  document
-    .getElementById(
-      "timer"
-    )
-    .innerText =
-    remaining;
-
-
-  activeTimer =
-    setInterval(
-      function(){
-
-        remaining--;
-
-        document
-          .getElementById(
-            "timer"
-          )
-          .innerText =
-          remaining;
-
-
-        if(
-          remaining <= 0
-        ){
-
-          clearInterval(
-            activeTimer
-          );
-
-
-          settleOrder(
-            direction,
-            amount,
-            entry
-          );
-
-        }
-
-      },
-      1000
-    );
-
+  },1000);
 }
 
 

@@ -878,61 +878,92 @@ function startFallbackPrice() {
 
     fallbackStarted = true;
 
-    async function loadFallback() {
-        try {
-            const response = await fetch(
-                "https://api.coinbase.com/v2/prices/BTC-USD/spot",
-                {
-                    cache: "no-store"
-                }
+    try {
+        const ws =
+            new WebSocket(
+                "wss://ws.kraken.com/v2"
             );
 
-            if (!response.ok) {
-                throw new Error("Coinbase price failed");
-            }
-
-            const data = await response.json();
-
-            const price =
-                Number(data.data.amount);
-
-            if (
-                !Number.isFinite(price) ||
-                price <= 0
-            ) {
-                throw new Error("Invalid Coinbase price");
-            }
-
-            updatePrice(price);
+        ws.onopen = function () {
+            ws.send(
+                JSON.stringify({
+                    method: "subscribe",
+                    params: {
+                        channel: "ticker",
+                        symbol: [
+                            "BTC/USD"
+                        ]
+                    }
+                })
+            );
 
             document
                 .getElementById("connectionDot")
-                .className = "status online";
+                .className =
+                "status online";
 
             document
                 .getElementById("connectionText")
-                .innerText = "Live";
+                .innerText =
+                "Fallback Live";
+        };
 
-        } catch (error) {
-            console.log(
-                "Coinbase fallback error",
-                error
-            );
+        ws.onmessage =
+            function (event) {
 
-            document
-                .getElementById("connectionText")
-                .innerText = "Price unavailable";
-        }
+                const message =
+                    JSON.parse(
+                        event.data
+                    );
+
+                if (
+                    message.channel === "ticker" &&
+                    message.data &&
+                    message.data.length > 0
+                ) {
+                    const price =
+                        Number(
+                            message.data[0].last
+                        );
+
+                    if (
+                        Number.isFinite(price) &&
+                        price > 0
+                    ) {
+                        updatePrice(price);
+                    }
+                }
+            };
+
+        ws.onerror =
+            function () {
+                document
+                    .getElementById("connectionText")
+                    .innerText =
+                    "Price unavailable";
+            };
+
+        ws.onclose =
+            function () {
+                fallbackStarted =
+                    false;
+
+                setTimeout(
+                    startFallbackPrice,
+                    3000
+                );
+            };
+
+    } catch (error) {
+        fallbackStarted =
+            false;
+
+        document
+            .getElementById("connectionText")
+            .innerText =
+            "Price unavailable";
     }
-
-    loadFallback();
-
-    setInterval(
-        loadFallback,
-        1000
-    );
 }
-
 function placeOrder(direction){
 
   if(activeOrder){

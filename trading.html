@@ -1032,180 +1032,162 @@ function placeOrder(direction){
   },1000);
 }
 
+async function getFreshPrice() {
+    // 第一选择：Binance BTC/USDT
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
 
-function settleOrder(
-  direction,
-  amount,
-  entry
-){
+        const response = await fetch(
+            "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+            {
+                cache: "no-store",
+                signal: controller.signal
+            }
+        );
 
-  const exit =
-    currentPrice;
+        clearTimeout(timeout);
 
+        if (!response.ok) {
+            throw new Error("Binance price failed");
+        }
 
-  let resultType =
-    "";
+        const data = await response.json();
+        const price = Number(data.price);
 
-  let resultText =
-    "";
+        if (!Number.isFinite(price) || price <= 0) {
+            throw new Error("Invalid Binance price");
+        }
 
+        return price;
 
-  const resultElement =
-    document
-      .getElementById(
-        "result"
-      );
+    } catch (error) {
+        // Binance 获取不到时，用当前页面最后一次价格
+        console.log("Fresh price failed, using currentPrice");
+        return currentPrice;
+    }
+}
+async function settleOrder(direction, amount, entry) {
+    let exit = await getFreshPrice();
 
-
-  if(
-    exit === entry
-  ){
-
-    balance +=
-      amount;
-
-    resultType =
-      "DRAW";
-
-    resultText =
-      "DRAW";
-
-    resultElement.className =
-      "result draw";
-
-  }
-
-
-  else{
-
-    const won =
-      (
-        direction === "UP" &&
-        exit > entry
-      )
-      ||
-      (
-        direction === "DOWN" &&
-        exit < entry
-      );
-
-
-    if(
-      won
-    ){
-
-      const profit =
-        amount * 0.80;
-
-
-      balance +=
-        amount +
-        profit;
-
-
-      resultType =
-        "WIN";
-
-
-      resultText =
-        "WIN +" +
-        profit.toFixed(2) +
-        " USDT";
-
-
-      resultElement.className =
-        "result win";
-
+    if (!Number.isFinite(exit) || exit <= 0) {
+        exit = currentPrice;
     }
 
-    else{
+    currentPrice = exit;
 
-      resultType =
-        "LOSS";
+    let resultType = "";
+    let resultText = "";
 
+    const resultElement =
+        document.getElementById("result");
 
-      resultText =
-        "LOSS -" +
-        amount.toFixed(2) +
-        " USDT";
+    if (exit === entry) {
+        // 平局：退回本金
+        balance += amount;
 
+        resultType = "DRAW";
+        resultText = "DRAW";
 
-      resultElement.className =
-        "result loss";
+        resultElement.className =
+            "result draw";
 
+    } else {
+        const won =
+            (direction === "UP" && exit > entry) ||
+            (direction === "DOWN" && exit < entry);
+
+        if (won) {
+            // 赢：退回本金 + 80% 盈利
+            const profit = amount * 0.8;
+
+            balance += amount + profit;
+
+            resultType = "WIN";
+
+            resultText =
+                "WIN +" +
+                profit.toFixed(2) +
+                " USDT";
+
+            resultElement.className =
+                "result win";
+
+        } else {
+            // 输：本金已经在下单时扣除
+            resultType = "LOSS";
+
+            resultText =
+                "LOSS -" +
+                amount.toFixed(2) +
+                " USDT";
+
+            resultElement.className =
+                "result loss";
+        }
     }
 
-  }
+    resultElement.innerText =
+        resultText;
 
+    const currentPriceElement =
+        document.getElementById("activeCurrentPrice");
 
-  resultElement.innerText =
-    resultText;
+    if (currentPriceElement) {
+        currentPriceElement.innerText =
+            "$" + exit.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+    }
 
+    updateBalance();
 
-  updateBalance();
+    history.unshift({
+        time:
+            new Date()
+                .toLocaleTimeString(),
 
+        direction:
+            direction,
 
-  history.unshift({
+        amount:
+            amount,
 
-    time:
-      new Date()
-        .toLocaleTimeString(),
+        entry:
+            entry,
 
-    direction:
-      direction,
+        exit:
+            exit,
 
-    amount:
-      amount,
+        result:
+            resultType
+    });
 
-    entry:
-      entry,
+    history =
+        history.slice(
+            0,
+            30
+        );
 
-    exit:
-      exit,
-
-    result:
-      resultType
-
-  });
-
-
-  history =
-    history.slice(
-      0,
-      30
+    localStorage.setItem(
+        "demoHistory",
+        JSON.stringify(
+            history
+        )
     );
 
+    renderHistory();
 
-  localStorage.setItem(
-    "demoHistory",
-    JSON.stringify(
-      history
-    )
-  );
+    activeOrder = false;
 
+    document
+        .getElementById("upButton")
+        .disabled = false;
 
-  renderHistory();
-
-
-  activeOrder =
-    false;
-
-
-  document
-    .getElementById(
-      "upButton"
-    )
-    .disabled =
-    false;
-
-
-  document
-    .getElementById(
-      "downButton"
-    )
-    .disabled =
-    false;
-
+    document
+        .getElementById("downButton")
+        .disabled = false;
 }
 
 

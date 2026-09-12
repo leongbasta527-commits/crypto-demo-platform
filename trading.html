@@ -328,10 +328,9 @@ th{
 
   <div class="pair">
 
-    <div class="pair-name">
-      BTC / USDT
-    </div>
-
+   <div class="pair-name" id="pairName">
+    BTC / USDT
+</div>
     <div class="demo-tag">
       DEMO
     </div>
@@ -386,7 +385,27 @@ th{
   <div id="tradingview_chart" style="height:100%;width:100%;"></div>
 </div>
 
-<script
+<script>
+const allowedSymbols = [
+    "BTC", "ETH", "BNB", "SOL", "XRP",
+    "DOGE", "ADA", "TRX", "AVAX", "LINK",
+    "DOT", "BCH", "LTC", "UNI", "XLM",
+    "TON", "SHIB", "HBAR", "SUI", "APT",
+    "NEAR", "ICP", "ETC", "FIL", "ATOM",
+    "ARB", "OP", "AAVE", "PEPE", "POL"
+];
+
+const urlParams =
+    new URLSearchParams(window.location.search);
+
+let selectedSymbol =
+    (urlParams.get("symbol") || "BTC").toUpperCase();
+
+if (!allowedSymbols.includes(selectedSymbol)) {
+    selectedSymbol = "BTC";
+}
+</script>
+  <script
   type="text/javascript"
   src="https://s3.tradingview.com/tv.js">
 </script>
@@ -394,7 +413,7 @@ th{
 <script>
   new TradingView.widget({
     autosize: true,
-    symbol: "BINANCE:BTCUSDT",
+    symbol: "BINANCE:" + selectedSymbol + "USDT",
     interval: "1",
     timezone: "Etc/UTC",
     theme: "dark",
@@ -652,30 +671,14 @@ th{
 </div>
 
 
-<script
-  type="text/javascript"
-  src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"
-  async>
-
-{
-  "autosize": true,
-  "symbol": "BINANCE:BTCUSDT",
-  "interval": "1",
-  "timezone": "Etc/UTC",
-  "theme": "dark",
-  "style": "1",
-  "locale": "en",
-  "allow_symbol_change": false,
-  "calendar": false,
-  "support_host": "https://www.tradingview.com"
-}
-
-</script>
 
 
 <script>
 
-let currentPrice = 0;
+
+ document.getElementById("pairName").innerText =
+    selectedSymbol + " / USDT";
+  let currentPrice = 0;
 
 let previousPrice = 0;
 
@@ -816,7 +819,8 @@ function connectBinance() {
 
             const response =
                 await fetch(
-                    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+                   "https://api.binance.com/api/v3/ticker/price?symbol=" +
+                   selectedSymbol + "USDT",
                     {
                         cache: "no-store",
                         signal: controller.signal
@@ -891,7 +895,7 @@ function startFallbackPrice() {
                     params: {
                         channel: "ticker",
                         symbol: [
-                            "BTC/USD"
+                           selectedSymbol + "/USD"
                         ]
                     }
                 })
@@ -1059,7 +1063,8 @@ async function getFreshPrice() {
         const timeout = setTimeout(() => controller.abort(), 2500);
 
         const response = await fetch(
-            "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+          "https://api.binance.com/api/v3/ticker/price?symbol=" +
+selectedSymbol + "USDT",
             {
                 cache: "no-store",
                 signal: controller.signal

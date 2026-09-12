@@ -7,7 +7,7 @@
 <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
-/>
+>
 
 <title>Markets</title>
 
@@ -17,6 +17,10 @@
     box-sizing: border-box;
 }
 
+html {
+    background: #090d12;
+}
+
 body {
     margin: 0;
     font-family:
@@ -24,324 +28,452 @@ body {
         Helvetica,
         sans-serif;
 
-    background: #0b0e11;
-    color: #f5f5f5;
+    background: #090d12;
+    color: #f5f7fa;
 
     padding-bottom: 72px;
 }
 
 
-/* HEADER */
+/* =========================
+   HEADER
+========================= */
 
-.header {
-    padding: 18px 16px 12px;
-
-    background: #0b0e11;
+.topbar {
+    padding: 18px 18px 14px;
 
     border-bottom:
-        1px solid #202630;
+        1px solid #1d2530;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0c121a 0%,
+            #090d12 100%
+        );
 }
 
-.header-top {
+.top-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
 }
 
-.title {
-    font-size: 23px;
+.page-title {
+    font-size: 27px;
     font-weight: 700;
+    letter-spacing: -0.4px;
 }
 
-.connection {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.subtitle {
+    margin-top: 5px;
 
-    color: #8a94a6;
+    color: #7f8b9d;
+
     font-size: 12px;
 }
 
-.status-dot {
+
+/* LIVE STATUS */
+
+.live-area {
+    text-align: right;
+
+    font-size: 11px;
+
+    color: #778397;
+}
+
+.live-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+
+    margin-bottom: 4px;
+
+    color: #25d695;
+}
+
+.live-dot {
     width: 7px;
     height: 7px;
 
-    background: #f0b90b;
-
     border-radius: 50%;
+
+    background: #f5b942;
 }
 
-.status-dot.online {
-    background: #16c784;
+.live-dot.online {
+    background: #25d695;
+
+    box-shadow:
+        0 0 8px
+        rgba(37,214,149,.5);
 }
 
-.status-dot.offline {
-    background: #f6465d;
+.live-dot.error {
+    background: #f05261;
 }
 
 
-/* SEARCH */
+/* =========================
+   SEARCH
+========================= */
 
-.search-area {
-    margin-top: 15px;
+.search-wrap {
+    margin-top: 16px;
 }
 
 .search-box {
     width: 100%;
 
-    padding: 12px 14px;
+    height: 42px;
 
-    background: #171a21;
+    padding:
+        0 15px;
 
     border:
-        1px solid #292f3a;
+        1px solid #263140;
 
     border-radius: 8px;
 
-    color: white;
+    background: #111822;
+
+    color: #ffffff;
 
     outline: none;
 
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .search-box::placeholder {
-    color: #697386;
+    color: #68778b;
+}
+
+.search-box:focus {
+    border-color: #2f81f7;
 }
 
 
-/* TABS */
+/* =========================
+   TABS
+========================= */
+
+.toolbar {
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+        space-between;
+
+    padding:
+        14px 18px;
+
+    border-bottom:
+        1px solid #1d2530;
+}
 
 .tabs {
     display: flex;
-
-    gap: 24px;
-
-    padding:
-        0 16px;
-
-    height: 52px;
-
-    align-items: center;
-
-    border-bottom:
-        1px solid #202630;
+    gap: 10px;
 }
 
-.tab {
-    height: 52px;
+.tab-btn {
+    min-width: 115px;
 
-    display: flex;
-    align-items: center;
+    height: 38px;
 
-    color: #8a94a6;
+    border:
+        1px solid #263140;
 
-    font-size: 14px;
+    border-radius: 8px;
+
+    background: #0d131b;
+
+    color: #9aa6b6;
 
     cursor: pointer;
 
-    position: relative;
+    font-size: 13px;
 }
 
-.tab.active {
-    color: #ffffff;
-    font-weight: 600;
-}
+.tab-btn.active {
+    border-color: #2878ee;
 
-.tab.active::after {
-    content: "";
+    color: white;
 
-    position: absolute;
+    background:
+        linear-gradient(
+            135deg,
+            #2580ff,
+            #1467dc
+        );
 
-    bottom: 0;
-
-    left: 0;
-    right: 0;
-
-    height: 2px;
-
-    background: #f0b90b;
+    box-shadow:
+        0 0 14px
+        rgba(39,123,245,.18);
 }
 
 
-/* MARKET */
+/* =========================
+   TABLE WRAPPER
+========================= */
 
-.market-section {
-    padding: 8px 0;
+.market-container {
+    width: 100%;
+
+    overflow-x: auto;
 }
 
-.market-header {
-    display: grid;
+.market-table {
+    width: 100%;
 
-    grid-template-columns:
-        1.6fr
-        1.1fr
-        1fr;
+    min-width: 1050px;
+
+    border-collapse: collapse;
+}
+
+
+/* HEADER */
+
+.market-table thead {
+    background: #101720;
+}
+
+.market-table th {
+    height: 42px;
 
     padding:
-        10px 16px;
+        0 12px;
 
-    color: #697386;
+    text-align: right;
 
     font-size: 11px;
+
+    font-weight: 500;
+
+    color: #78869a;
+
+    white-space: nowrap;
 }
 
-.market-header div:nth-child(2),
-.market-header div:nth-child(3) {
-    text-align: right;
+.market-table th:first-child {
+    text-align: left;
+
+    padding-left: 18px;
 }
 
 
 /* ROW */
 
-.market-row {
-    display: grid;
-
-    grid-template-columns:
-        1.6fr
-        1.1fr
-        1fr;
-
-    align-items: center;
-
-    min-height: 72px;
-
-    padding:
-        8px 16px;
+.market-table tbody tr {
+    height: 62px;
 
     border-bottom:
-        1px solid #171b22;
+        1px solid #19222d;
 
-    cursor: pointer;
+    transition:
+        background .15s ease;
 }
 
-.market-row:active {
-    background: #14181f;
+.market-table tbody tr:hover {
+    background: #101720;
 }
 
-.coin-info {
+.market-table td {
+    padding:
+        0 12px;
+
+    text-align: right;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+.market-table td:first-child {
+    padding-left: 18px;
+
+    text-align: left;
+}
+
+
+/* =========================
+   COIN AREA
+========================= */
+
+.coin-cell {
     display: flex;
+
     align-items: center;
 
-    min-width: 0;
+    gap: 10px;
 }
 
-.star {
-    color: #596273;
+.favorite {
+    width: 22px;
 
-    font-size: 17px;
-
-    margin-right: 11px;
+    color: #526175;
 
     cursor: pointer;
-}
 
-.star.active {
-    color: #f0b90b;
-}
-
-.coin-text {
-    min-width: 0;
-}
-
-.coin-pair {
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.quote {
-    color: #7e8796;
-
-    font-size: 12px;
-}
-
-.coin-name {
-    color: #697386;
-
-    font-size: 11px;
-
-    margin-top: 5px;
-}
-
-.price-box {
-    text-align: right;
-}
-
-.price {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.range {
-    color: #697386;
-
-    font-size: 10px;
-
-    margin-top: 5px;
-}
-
-.change-box {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.change {
-    width: 78px;
-
-    padding:
-        7px 5px;
-
-    border-radius: 6px;
+    font-size: 16px;
 
     text-align: center;
 
+    user-select: none;
+}
+
+.favorite.active {
+    color: #ffbd2e;
+}
+
+.coin-logo {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 50%;
+
+    object-fit: contain;
+
+    background: #151c25;
+}
+
+.coin-main {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.coin-symbol {
     font-size: 13px;
+
+    font-weight: 700;
+
+    color: #ffffff;
+}
+
+.coin-name {
+    font-size: 11px;
+
+    color: #69788c;
+
+    max-width: 105px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.rank {
+    color: #5f6d80;
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+
+/* =========================
+   PRICE
+========================= */
+
+.last-price {
     font-weight: 600;
+
+    color: #edf2f7;
 }
 
-.change.positive {
-    color: #16c784;
-    background:
-        rgba(22,199,132,.11);
+.positive {
+    color: #27d79a;
 }
 
-.change.negative {
-    color: #f6465d;
-    background:
-        rgba(246,70,93,.11);
+.negative {
+    color: #f25a67;
 }
 
-.change.neutral {
-    color: #8a94a6;
-    background:
-        rgba(138,148,166,.08);
+.neutral {
+    color: #8190a3;
 }
 
 
-/* SMALL NOTICE */
+/* =========================
+   SPARKLINE
+========================= */
 
-.notice {
-    margin:
-        18px 16px;
+.sparkline {
+    width: 100px;
+    height: 36px;
 
-    padding: 12px;
+    display: block;
 
-    color: #8a94a6;
+    margin-left: auto;
+}
 
-    background: #151920;
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+    padding: 55px 20px;
+
+    text-align: center;
+
+    color: #718096;
+}
+
+.error-box {
+    margin: 20px;
+
+    padding: 16px;
+
+    text-align: center;
+
+    color: #f08d95;
 
     border:
-        1px solid #252b35;
+        1px solid #3d252b;
 
     border-radius: 8px;
 
-    font-size: 11px;
-
-    line-height: 1.5;
+    background: #1b1216;
 }
 
 
-/* BOTTOM NAV */
+/* =========================
+   FOOT NOTE
+========================= */
+
+.market-note {
+    margin:
+        18px;
+
+    padding:
+        12px 14px;
+
+    border:
+        1px solid #202a36;
+
+    border-radius: 8px;
+
+    background: #0f151d;
+
+    color: #69788c;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
 
 .bottom-nav {
     position: fixed;
@@ -352,17 +484,23 @@ body {
 
     height: 65px;
 
-    background: #171a21;
+    background:
+        rgba(
+            13,
+            19,
+            27,
+            .97
+        );
 
     border-top:
-        1px solid #292f3a;
+        1px solid #25303e;
 
     display: grid;
 
     grid-template-columns:
-        repeat(4,1fr);
+        repeat(4, 1fr);
 
-    z-index: 1000;
+    z-index: 999;
 }
 
 .nav-item {
@@ -371,47 +509,243 @@ body {
     justify-content: center;
     align-items: center;
 
-    color: #8a94a6;
-
     text-decoration: none;
 
-    font-size: 13px;
+    font-size: 12px;
+
+    color: #78869a;
 }
 
 .nav-item.active {
-    color: #f0b90b;
+    color: #3389ff;
 }
 
 
-/* MOBILE */
+/* =========================
+   DESKTOP
+========================= */
 
-@media (max-width: 480px) {
+@media (
+    min-width: 900px
+) {
 
-    .market-header,
-    .market-row {
+    body {
+        max-width: 1500px;
 
-        grid-template-columns:
-            1.45fr
-            1fr
-            .85fr;
+        margin: 0 auto;
     }
 
-    .market-row {
+}
+
+
+/* =========================
+   MOBILE DESIGN
+========================= */
+
+@media (
+    max-width: 700px
+) {
+
+    .topbar {
         padding:
-            8px 11px;
+            18px 13px
+            12px;
     }
 
-    .market-header {
+    .page-title {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        font-size: 11px;
+    }
+
+    .live-area {
+        font-size: 9px;
+    }
+
+
+    /* tabs */
+
+    .toolbar {
         padding:
-            10px 11px;
+            12px 10px;
     }
 
-    .star {
-        margin-right: 8px;
+    .tabs {
+        width: 100%;
+
+        gap: 6px;
     }
 
-    .change {
-        width: 68px;
+    .tab-btn {
+        min-width: 0;
+
+        width: 33.33%;
+
+        font-size: 11px;
+
+        height: 35px;
+    }
+
+
+    /* table */
+
+    .market-container {
+        overflow-x: hidden;
+    }
+
+    .market-table {
+        min-width: 0;
+        width: 100%;
+    }
+
+
+    /*
+       MOBILE ONLY SHOW:
+       COIN
+       PRICE
+       CHANGE
+       CHART
+    */
+
+    .hide-mobile {
+        display: none;
+    }
+
+
+    .market-table th {
+        padding:
+            0 5px;
+
+        font-size: 9px;
+    }
+
+    .market-table th:first-child {
+        padding-left: 8px;
+    }
+
+
+    .market-table td {
+        padding:
+            0 5px;
+
+        font-size: 11px;
+    }
+
+    .market-table td:first-child {
+        padding-left: 8px;
+    }
+
+
+    .market-table tbody tr {
+        height: 64px;
+    }
+
+
+    /*
+       Width distribution
+    */
+
+    .col-coin {
+        width: 39%;
+    }
+
+    .col-price {
+        width: 21%;
+    }
+
+    .col-change {
+        width: 18%;
+    }
+
+    .col-chart {
+        width: 22%;
+    }
+
+
+    .favorite {
+        display: none;
+    }
+
+
+    .coin-logo {
+        width: 29px;
+        height: 29px;
+    }
+
+
+    .coin-cell {
+        gap: 7px;
+    }
+
+
+    .coin-main {
+        display: block;
+    }
+
+
+    .coin-symbol {
+        display: block;
+
+        font-size: 12px;
+    }
+
+
+    .coin-name {
+        display: block;
+
+        max-width: 80px;
+
+        margin-top: 3px;
+
+        font-size: 9px;
+    }
+
+
+    .rank {
+        display: none;
+    }
+
+
+    .sparkline {
+        width: 72px;
+
+        height: 32px;
+    }
+
+
+    .market-note {
+        margin:
+            12px 10px;
+
+        font-size: 10px;
+    }
+
+}
+
+
+/* VERY SMALL PHONES */
+
+@media (
+    max-width: 380px
+) {
+
+    .coin-logo {
+        width: 25px;
+        height: 25px;
+    }
+
+    .coin-name {
+        max-width: 55px;
+    }
+
+    .sparkline {
+        width: 58px;
+    }
+
+    .market-table td {
+        font-size: 10px;
     }
 
 }
@@ -423,932 +757,1110 @@ body {
 <body>
 
 
-<!-- HEADER -->
+<!-- ======================
+     HEADER
+====================== -->
 
-<div class="header">
+<header class="topbar">
 
-    <div class="header-top">
+    <div class="top-line">
 
-        <div class="title">
-            Markets
+        <div>
+
+            <div class="page-title">
+                Markets
+            </div>
+
+            <div class="subtitle">
+                Global crypto market
+                · Demo market data
+            </div>
+
         </div>
 
 
-        <div class="connection">
+        <div class="live-area">
 
-            <div
-                id="statusDot"
-                class="status-dot"
-            ></div>
+            <div class="live-row">
 
-            <span id="statusText">
-                Connecting...
-            </span>
+                <span
+                    id="liveDot"
+                    class="live-dot"
+                ></span>
+
+                <span id="liveText">
+                    Loading
+                </span>
+
+            </div>
+
+            <div id="lastUpdated">
+                --
+            </div>
 
         </div>
 
     </div>
 
 
-    <div class="search-area">
+    <div class="search-wrap">
 
         <input
-            id="search"
+            id="searchInput"
             class="search-box"
             type="text"
-            placeholder="Search crypto"
-            oninput="filterCoins()"
+            placeholder="Search coin or symbol..."
         >
 
     </div>
 
-</div>
+</header>
 
 
-<!-- TABS -->
 
-<div class="tabs">
+<!-- ======================
+     TABS
+====================== -->
 
-    <div
-        class="tab"
-        onclick="changeTab(this)"
-    >
-        Favorites
-    </div>
+<section class="toolbar">
 
-    <div
-        class="tab active"
-        onclick="changeTab(this)"
-    >
-        Spot
-    </div>
+    <div class="tabs">
 
-    <div
-        class="tab"
-        onclick="changeTab(this)"
-    >
-        Derivatives
-    </div>
+        <button
+            id="favoritesTab"
+            class="tab-btn"
+        >
+            ★ Favorites
+        </button>
 
-</div>
+        <button
+            id="spotTab"
+            class="tab-btn active"
+        >
+            Spot
+        </button>
 
-
-<!-- MARKET -->
-
-<div class="market-section">
-
-    <div class="market-header">
-
-        <div>
-            Trading Pair
-        </div>
-
-        <div>
-            Last Price
-        </div>
-
-        <div>
-            24h Change
-        </div>
+        <button
+            id="derivativesTab"
+            class="tab-btn"
+        >
+            Derivatives
+        </button>
 
     </div>
 
-
-    <!-- BTC -->
-
-    <div
-        class="market-row"
-        data-symbol="BTC"
-        data-name="Bitcoin"
-        onclick="openTrade('BTC')"
-    >
-
-        <div class="coin-info">
-
-            <span
-                class="star active"
-                onclick="toggleStar(event,this)"
-            >
-                ★
-            </span>
-
-            <div class="coin-text">
-
-                <div class="coin-pair">
-                    BTC<span class="quote">/USDT</span>
-                </div>
-
-                <div class="coin-name">
-                    Bitcoin
-                </div>
-
-            </div>
-
-        </div>
+</section>
 
 
-        <div class="price-box">
 
-            <div
-                id="BTC-price"
-                class="price"
-            >
-                --
-            </div>
+<!-- ======================
+     MARKET TABLE
+====================== -->
 
-            <div
-                id="BTC-range"
-                class="range"
-            >
-                H -- / L --
-            </div>
+<div class="market-container">
 
-        </div>
+<table class="market-table">
+
+<thead>
+
+<tr>
+
+    <th class="col-coin">
+        Coin
+    </th>
+
+    <th class="col-price">
+        Last Price
+    </th>
+
+    <th class="col-change">
+        Change 24h
+    </th>
+
+    <th class="hide-mobile">
+        High 24h
+    </th>
+
+    <th class="hide-mobile">
+        Low 24h
+    </th>
+
+    <th class="hide-mobile">
+        Volume 24h
+    </th>
+
+    <th class="col-chart">
+        Chart 24h
+    </th>
+
+</tr>
+
+</thead>
 
 
-        <div class="change-box">
+<tbody id="marketBody">
 
-            <div
-                id="BTC-change"
-                class="change neutral"
-            >
-                --
-            </div>
+<tr>
 
-        </div>
+<td colspan="7">
 
+    <div class="loading">
+        Loading market data...
     </div>
 
+</td>
 
-    <!-- ETH -->
+</tr>
 
-    <div
-        class="market-row"
-        data-symbol="ETH"
-        data-name="Ethereum"
-        onclick="openTrade('ETH')"
-    >
+</tbody>
 
-        <div class="coin-info">
-
-            <span
-                class="star"
-                onclick="toggleStar(event,this)"
-            >
-                ★
-            </span>
-
-            <div class="coin-text">
-
-                <div class="coin-pair">
-                    ETH<span class="quote">/USDT</span>
-                </div>
-
-                <div class="coin-name">
-                    Ethereum
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="price-box">
-
-            <div
-                id="ETH-price"
-                class="price"
-            >
-                --
-            </div>
-
-            <div
-                id="ETH-range"
-                class="range"
-            >
-                H -- / L --
-            </div>
-
-        </div>
-
-
-        <div class="change-box">
-
-            <div
-                id="ETH-change"
-                class="change neutral"
-            >
-                --
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- SOL -->
-
-    <div
-        class="market-row"
-        data-symbol="SOL"
-        data-name="Solana"
-        onclick="openTrade('SOL')"
-    >
-
-        <div class="coin-info">
-
-            <span
-                class="star"
-                onclick="toggleStar(event,this)"
-            >
-                ★
-            </span>
-
-            <div class="coin-text">
-
-                <div class="coin-pair">
-                    SOL<span class="quote">/USDT</span>
-                </div>
-
-                <div class="coin-name">
-                    Solana
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="price-box">
-
-            <div
-                id="SOL-price"
-                class="price"
-            >
-                --
-            </div>
-
-            <div
-                id="SOL-range"
-                class="range"
-            >
-                H -- / L --
-            </div>
-
-        </div>
-
-
-        <div class="change-box">
-
-            <div
-                id="SOL-change"
-                class="change neutral"
-            >
-                --
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- XRP -->
-
-    <div
-        class="market-row"
-        data-symbol="XRP"
-        data-name="XRP"
-        onclick="openTrade('XRP')"
-    >
-
-        <div class="coin-info">
-
-            <span
-                class="star"
-                onclick="toggleStar(event,this)"
-            >
-                ★
-            </span>
-
-            <div class="coin-text">
-
-                <div class="coin-pair">
-                    XRP<span class="quote">/USDT</span>
-                </div>
-
-                <div class="coin-name">
-                    XRP
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="price-box">
-
-            <div
-                id="XRP-price"
-                class="price"
-            >
-                --
-            </div>
-
-            <div
-                id="XRP-range"
-                class="range"
-            >
-                H -- / L --
-            </div>
-
-        </div>
-
-
-        <div class="change-box">
-
-            <div
-                id="XRP-change"
-                class="change neutral"
-            >
-                --
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ADA -->
-
-    <div
-        class="market-row"
-        data-symbol="ADA"
-        data-name="Cardano"
-        onclick="openTrade('ADA')"
-    >
-
-        <div class="coin-info">
-
-            <span
-                class="star"
-                onclick="toggleStar(event,this)"
-            >
-                ★
-            </span>
-
-            <div class="coin-text">
-
-                <div class="coin-pair">
-                    ADA<span class="quote">/USDT</span>
-                </div>
-
-                <div class="coin-name">
-                    Cardano
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="price-box">
-
-            <div
-                id="ADA-price"
-                class="price"
-            >
-                --
-            </div>
-
-            <div
-                id="ADA-range"
-                class="range"
-            >
-                H -- / L --
-            </div>
-
-        </div>
-
-
-        <div class="change-box">
-
-            <div
-                id="ADA-change"
-                class="change neutral"
-            >
-                --
-            </div>
-
-        </div>
-
-    </div>
+</table>
 
 </div>
 
 
-<div class="notice">
 
-    Demo market interface.
-    Prices are provided for market reference.
-    Demo trading currently supports BTC/USDT.
+<div class="market-note">
 
-</div>
-
-
-<!-- BOTTOM NAV -->
-
-<div class="bottom-nav">
-
-    <a
-        class="nav-item active"
-        href="index.html"
-    >
-        Markets
-    </a>
-
-
-    <a
-        class="nav-item"
-        href="trading.html"
-    >
-        Trading
-    </a>
-
-
-    <a
-        class="nav-item"
-        href="assets.html"
-    >
-        Assets
-    </a>
-
-
-    <a
-        class="nav-item"
-        href="#"
-    >
-        Profile
-    </a>
+    Demo interface only.
+    Market information is provided for reference.
+    Data source: CoinGecko.
+    Prices may differ slightly from the
+    settlement reference used on the demo trading page.
 
 </div>
+
+
+
+<!-- ======================
+     NAV
+====================== -->
+
+<nav class="bottom-nav">
+
+<a
+    href="index.html"
+    class="nav-item active"
+>
+    Markets
+</a>
+
+<a
+    href="trading.html"
+    class="nav-item"
+>
+    Trading
+</a>
+
+<a
+    href="assets.html"
+    class="nav-item"
+>
+    Assets
+</a>
+
+<a
+    href="#"
+    class="nav-item"
+>
+    Profile
+</a>
+
+</nav>
+
 
 
 <script>
 
-/* -------------------------
-   KRAKEN LIVE MARKET DATA
--------------------------- */
+/* =========================
+   CONFIG
+========================= */
 
-let socket = null;
-
-
-/* Kraken symbol -> website symbol */
-
-const symbolMap = {
-
-    "BTC/USD": "BTC",
-    "ETH/USD": "ETH",
-    "SOL/USD": "SOL",
-    "XRP/USD": "XRP",
-    "ADA/USD": "ADA"
-
-};
+const API_URL =
+    "https://api.coingecko.com/api/v3/coins/markets" +
+    "?vs_currency=usd" +
+    "&order=market_cap_desc" +
+    "&per_page=30" +
+    "&page=1" +
+    "&sparkline=true" +
+    "&price_change_percentage=24h";
 
 
-function connectMarket() {
+let coins = [];
 
-    const statusText =
+let favorites =
+    JSON.parse(
+        localStorage.getItem(
+            "marketFavorites"
+        ) || "[]"
+    );
+
+let currentView = "spot";
+
+
+/* =========================
+   FETCH MARKET DATA
+========================= */
+
+async function loadMarket() {
+
+    const liveDot =
         document.getElementById(
-            "statusText"
+            "liveDot"
         );
 
-    const statusDot =
+    const liveText =
         document.getElementById(
-            "statusDot"
+            "liveText"
         );
 
 
-    statusText.innerText =
-        "Connecting...";
+    liveText.innerText =
+        "Updating";
 
 
     try {
 
-        socket =
-            new WebSocket(
-                "wss://ws.kraken.com/v2"
+        const response =
+            await fetch(
+                API_URL,
+                {
+                    cache:
+                        "no-store"
+                }
             );
 
 
-        socket.onopen =
-            function () {
+        if (!response.ok) {
 
-                socket.send(
-
-                    JSON.stringify({
-
-                        method:
-                            "subscribe",
-
-                        params: {
-
-                            channel:
-                                "ticker",
-
-                            symbol: [
-
-                                "BTC/USD",
-                                "ETH/USD",
-                                "SOL/USD",
-                                "XRP/USD",
-                                "ADA/USD"
-
-                            ]
-
-                        }
-
-                    })
-
-                );
+            throw new Error(
+                "Market API error"
+            );
+        }
 
 
-                statusText.innerText =
-                    "Live";
-
-                statusDot.className =
-                    "status-dot online";
-            };
+        const data =
+            await response.json();
 
 
-        socket.onmessage =
-            function (event) {
+        if (
+            !Array.isArray(data)
+        ) {
 
-                try {
-
-                    const message =
-                        JSON.parse(
-                            event.data
-                        );
-
-
-                    if (
-                        message.channel !==
-                        "ticker"
-                    ) {
-                        return;
-                    }
+            throw new Error(
+                "Invalid market data"
+            );
+        }
 
 
-                    if (
-                        !message.data ||
-                        !message.data.length
-                    ) {
-                        return;
-                    }
+        coins = data;
 
 
-                    message.data.forEach(
-                        updateTicker
-                    );
-
-                } catch (error) {
-
-                    console.log(
-                        error
-                    );
-                }
-            };
+        renderMarket();
 
 
-        socket.onerror =
-            function () {
-
-                statusText.innerText =
-                    "Connection error";
-
-                statusDot.className =
-                    "status-dot offline";
-            };
+        liveDot.className =
+            "live-dot online";
 
 
-        socket.onclose =
-            function () {
-
-                statusText.innerText =
-                    "Reconnecting...";
-
-                statusDot.className =
-                    "status-dot offline";
+        liveText.innerText =
+            "Live";
 
 
-                setTimeout(
-                    connectMarket,
-                    3000
-                );
-            };
+        document
+            .getElementById(
+                "lastUpdated"
+            )
+            .innerText =
+                "Updated " +
+                new Date()
+                    .toLocaleTimeString();
+
 
     } catch (error) {
 
-        statusText.innerText =
+        console.log(
+            error
+        );
+
+
+        liveDot.className =
+            "live-dot error";
+
+
+        liveText.innerText =
             "Unavailable";
 
-        statusDot.className =
-            "status-dot offline";
+
+        document
+            .getElementById(
+                "marketBody"
+            )
+            .innerHTML = `
+
+            <tr>
+
+                <td colspan="7">
+
+                    <div class="error-box">
+
+                        Market data is temporarily
+                        unavailable.<br><br>
+
+                        Please refresh again later.
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
     }
+
 }
 
 
-function updateTicker(data) {
+/* =========================
+   RENDER
+========================= */
 
-    const symbol =
-        symbolMap[
-            data.symbol
-        ];
+function renderMarket() {
+
+    const tbody =
+        document.getElementById(
+            "marketBody"
+        );
 
 
-    if (!symbol) {
+    const keyword =
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    let displayCoins =
+        [...coins];
+
+
+    if (
+        currentView ===
+        "favorites"
+    ) {
+
+        displayCoins =
+            displayCoins.filter(
+                coin =>
+                    favorites.includes(
+                        coin.id
+                    )
+            );
+    }
+
+
+    if (keyword) {
+
+        displayCoins =
+            displayCoins.filter(
+                coin =>
+
+                    coin.name
+                        .toLowerCase()
+                        .includes(
+                            keyword
+                        )
+
+                    ||
+
+                    coin.symbol
+                        .toLowerCase()
+                        .includes(
+                            keyword
+                        )
+
+            );
+    }
+
+
+    if (
+        displayCoins.length === 0
+    ) {
+
+        tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="7">
+
+                <div class="loading">
+                    No coins found.
+                </div>
+
+            </td>
+
+        </tr>
+
+        `;
+
         return;
     }
 
 
-    const price =
-        Number(
-            data.last
-        );
+    tbody.innerHTML = "";
 
 
-    const high =
-        Number(
-            data.high
-        );
-
-
-    const low =
-        Number(
-            data.low
-        );
-
-
-    const change =
-        Number(
-            data.change_pct
-        );
-
-
-    const priceElement =
-        document.getElementById(
-            symbol + "-price"
-        );
-
-
-    const changeElement =
-        document.getElementById(
-            symbol + "-change"
-        );
-
-
-    const rangeElement =
-        document.getElementById(
-            symbol + "-range"
-        );
-
-
-    if (
-        Number.isFinite(price)
-    ) {
-
-        priceElement.innerText =
-            formatPrice(
-                price
-            );
-    }
-
-
-    if (
-        Number.isFinite(high) &&
-        Number.isFinite(low)
-    ) {
-
-        rangeElement.innerText =
-            "H " +
-            formatSmallPrice(
-                high
-            ) +
-            " / L " +
-            formatSmallPrice(
-                low
-            );
-    }
-
-
-    if (
-        Number.isFinite(change)
-    ) {
-
-        changeElement.innerText =
-            (
-                change >= 0
-                    ? "+"
-                    : ""
-            ) +
-            change.toFixed(2) +
-            "%";
-
-
-        if (change > 0) {
-
-            changeElement.className =
-                "change positive";
-
-        } else if (
-            change < 0
+    displayCoins.forEach(
+        function (
+            coin,
+            index
         ) {
 
-            changeElement.className =
-                "change negative";
+            const change =
+                Number(
+                    coin.price_change_percentage_24h
+                );
 
-        } else {
 
-            changeElement.className =
-                "change neutral";
+            let changeClass =
+                "neutral";
+
+
+            if (
+                Number.isFinite(change)
+            ) {
+
+                if (
+                    change > 0
+                ) {
+
+                    changeClass =
+                        "positive";
+
+                } else if (
+                    change < 0
+                ) {
+
+                    changeClass =
+                        "negative";
+                }
+            }
+
+
+            const tr =
+                document.createElement(
+                    "tr"
+                );
+
+
+            tr.innerHTML = `
+
+            <td
+                class="col-coin"
+                onclick="openCoin('${coin.symbol}')"
+                style="cursor:pointer;"
+            >
+
+                <div class="coin-cell">
+
+                    <span
+                        class="
+                            favorite
+                            ${
+                                favorites.includes(
+                                    coin.id
+                                )
+                                    ? "active"
+                                    : ""
+                            }
+                        "
+                        onclick="
+                            toggleFavorite(
+                                event,
+                                '${coin.id}'
+                            )
+                        "
+                    >
+                        ★
+                    </span>
+
+
+                    <img
+                        class="coin-logo"
+                        src="${coin.image}"
+                        alt="${coin.symbol}"
+                        loading="lazy"
+                    >
+
+
+                    <div>
+
+                        <div class="coin-main">
+
+                            <span class="coin-symbol">
+                                ${coin.symbol.toUpperCase()}
+                            </span>
+
+                            <span class="coin-name">
+                                ${coin.name}
+                            </span>
+
+                        </div>
+
+
+                        <div class="rank">
+                            #${coin.market_cap_rank || index + 1}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </td>
+
+
+
+            <td class="col-price">
+
+                <span class="last-price">
+
+                    ${formatPrice(
+                        coin.current_price
+                    )}
+
+                </span>
+
+            </td>
+
+
+
+            <td
+                class="
+                    col-change
+                    ${changeClass}
+                "
+            >
+
+                ${formatChange(
+                    change
+                )}
+
+            </td>
+
+
+
+            <td class="hide-mobile">
+
+                ${formatPrice(
+                    coin.high_24h
+                )}
+
+            </td>
+
+
+
+            <td class="hide-mobile">
+
+                ${formatPrice(
+                    coin.low_24h
+                )}
+
+            </td>
+
+
+
+            <td class="hide-mobile">
+
+                ${formatVolume(
+                    coin.total_volume
+                )}
+
+            </td>
+
+
+
+            <td class="col-chart">
+
+                <canvas
+                    class="sparkline"
+                    id="chart-${coin.id}"
+                    width="110"
+                    height="38"
+                ></canvas>
+
+            </td>
+
+            `;
+
+
+            tbody.appendChild(
+                tr
+            );
+
+
+            const prices =
+                coin.sparkline_in_7d &&
+                Array.isArray(
+                    coin.sparkline_in_7d.price
+                )
+                    ? coin.sparkline_in_7d.price
+                    : [];
+
+
+            /*
+              CoinGecko returns a 7-day
+              sparkline.
+
+              Taking approximately the last
+              1/7 gives the latest 24h section.
+            */
+
+            const pointCount =
+                Math.max(
+                    12,
+                    Math.round(
+                        prices.length / 7
+                    )
+                );
+
+
+            const last24h =
+                prices.slice(
+                    -pointCount
+                );
+
+
+            setTimeout(
+                function () {
+
+                    drawSparkline(
+                        "chart-" +
+                            coin.id,
+
+                        last24h,
+
+                        change
+                    );
+
+                },
+                0
+            );
+
         }
-    }
+    );
+
 }
 
 
+/* =========================
+   SPARKLINE
+========================= */
 
-/* -------------------------
-   PRICE FORMAT
--------------------------- */
+function drawSparkline(
+    canvasId,
+    values,
+    change
+) {
 
-function formatPrice(price) {
+    const canvas =
+        document.getElementById(
+            canvasId
+        );
 
-    if (price >= 1000) {
 
-        return "$" +
-            price.toLocaleString(
-                undefined,
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            );
+    if (
+        !canvas ||
+        !values ||
+        values.length < 2
+    ) {
 
+        return;
     }
 
 
-    if (price >= 1) {
+    const ctx =
+        canvas.getContext(
+            "2d"
+        );
+
+
+    const width =
+        canvas.width;
+
+
+    const height =
+        canvas.height;
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    const min =
+        Math.min(
+            ...values
+        );
+
+
+    const max =
+        Math.max(
+            ...values
+        );
+
+
+    const range =
+        max - min || 1;
+
+
+    const padding =
+        4;
+
+
+    ctx.beginPath();
+
+
+    values.forEach(
+        function (
+            value,
+            index
+        ) {
+
+            const x =
+                padding +
+                (
+                    index /
+                    (
+                        values.length -
+                        1
+                    )
+                ) *
+                (
+                    width -
+                    padding * 2
+                );
+
+
+            const y =
+                height -
+                padding -
+                (
+                    (
+                        value -
+                        min
+                    ) /
+                    range
+                ) *
+                (
+                    height -
+                    padding * 2
+                );
+
+
+            if (
+                index === 0
+            ) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            } else {
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+            }
+
+        }
+    );
+
+
+    ctx.lineWidth =
+        2;
+
+
+    if (
+        Number(change) >= 0
+    ) {
+
+        ctx.strokeStyle =
+            "#27d79a";
+
+    } else {
+
+        ctx.strokeStyle =
+            "#f25a67";
+    }
+
+
+    ctx.lineCap =
+        "round";
+
+
+    ctx.lineJoin =
+        "round";
+
+
+    ctx.stroke();
+
+}
+
+
+/* =========================
+   FORMAT PRICE
+========================= */
+
+function formatPrice(
+    value
+) {
+
+    const num =
+        Number(
+            value
+        );
+
+
+    if (
+        !Number.isFinite(num)
+    ) {
+
+        return "--";
+    }
+
+
+    if (
+        num >= 1000
+    ) {
 
         return "$" +
-            price.toFixed(3);
+            num.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        2
+                }
+            );
+    }
+
+
+    if (
+        num >= 1
+    ) {
+
+        return "$" +
+            num.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        4
+                }
+            );
+    }
+
+
+    if (
+        num >= 0.01
+    ) {
+
+        return "$" +
+            num.toFixed(
+                4
+            );
     }
 
 
     return "$" +
-        price.toFixed(4);
-}
-
-
-function formatSmallPrice(price) {
-
-    if (price >= 1000) {
-
-        return price.toLocaleString(
-            undefined,
-            {
-                maximumFractionDigits: 0
-            }
+        num.toFixed(
+            8
         );
-    }
 
-
-    if (price >= 1) {
-
-        return price.toFixed(2);
-    }
-
-
-    return price.toFixed(3);
 }
 
 
+/* =========================
+   FORMAT CHANGE
+========================= */
 
-/* -------------------------
-   SEARCH
--------------------------- */
+function formatChange(
+    value
+) {
 
-function filterCoins() {
-
-    const input =
-        document
-            .getElementById(
-                "search"
-            )
-            .value
-            .toLowerCase();
-
-
-    const rows =
-        document.querySelectorAll(
-            ".market-row"
+    const num =
+        Number(
+            value
         );
 
 
-    rows.forEach(
-        function (row) {
+    if (
+        !Number.isFinite(num)
+    ) {
 
-            const symbol =
-                row.dataset.symbol
-                    .toLowerCase();
-
-            const name =
-                row.dataset.name
-                    .toLowerCase();
+        return "--";
+    }
 
 
-            if (
-                symbol.includes(
-                    input
-                ) ||
-                name.includes(
-                    input
-                )
-            ) {
+    return (
+        num >= 0
+            ? "+"
+            : ""
+    ) +
+    num.toFixed(
+        2
+    ) +
+    "%";
 
-                row.style.display =
-                    "grid";
-
-            } else {
-
-                row.style.display =
-                    "none";
-            }
-        }
-    );
 }
 
 
+/* =========================
+   FORMAT VOLUME
+========================= */
 
-/* -------------------------
+function formatVolume(
+    value
+) {
+
+    const num =
+        Number(
+            value
+        );
+
+
+    if (
+        !Number.isFinite(num)
+    ) {
+
+        return "--";
+    }
+
+
+    if (
+        num >= 1e9
+    ) {
+
+        return "$" +
+            (
+                num /
+                1e9
+            ).toFixed(
+                2
+            ) +
+            "B";
+    }
+
+
+    if (
+        num >= 1e6
+    ) {
+
+        return "$" +
+            (
+                num /
+                1e6
+            ).toFixed(
+                2
+            ) +
+            "M";
+    }
+
+
+    if (
+        num >= 1e3
+    ) {
+
+        return "$" +
+            (
+                num /
+                1e3
+            ).toFixed(
+                1
+            ) +
+            "K";
+    }
+
+
+    return "$" +
+        num.toFixed(
+            0
+        );
+
+}
+
+
+/* =========================
    FAVORITES
--------------------------- */
+========================= */
 
-function toggleStar(
+function toggleFavorite(
     event,
-    element
+    id
 ) {
 
     event.stopPropagation();
 
-    element
-        .classList
-        .toggle(
-            "active"
-        );
-}
-
-
-
-/* -------------------------
-   TABS
--------------------------- */
-
-function changeTab(
-    selected
-) {
-
-    document
-        .querySelectorAll(
-            ".tab"
-        )
-        .forEach(
-            function (tab) {
-
-                tab.classList
-                    .remove(
-                        "active"
-                    );
-            }
-        );
-
-
-    selected
-        .classList
-        .add(
-            "active"
-        );
-}
-
-
-
-/* -------------------------
-   OPEN TRADING
--------------------------- */
-
-function openTrade(symbol) {
 
     if (
-        symbol === "BTC"
+        favorites.includes(
+            id
+        )
+    ) {
+
+        favorites =
+            favorites.filter(
+                item =>
+                    item !== id
+            );
+
+    } else {
+
+        favorites.push(
+            id
+        );
+    }
+
+
+    localStorage.setItem(
+        "marketFavorites",
+        JSON.stringify(
+            favorites
+        )
+    );
+
+
+    renderMarket();
+
+}
+
+
+/* =========================
+   OPEN COIN
+========================= */
+
+function openCoin(
+    symbol
+) {
+
+    symbol =
+        symbol.toLowerCase();
+
+
+    if (
+        symbol === "btc"
     ) {
 
         window.location.href =
@@ -1359,16 +1871,141 @@ function openTrade(symbol) {
 
 
     alert(
-        symbol +
+        symbol.toUpperCase() +
         "/USDT demo trading will be added later."
     );
+
 }
 
 
+/* =========================
+   SEARCH
+========================= */
 
-/* START */
+document
+    .getElementById(
+        "searchInput"
+    )
+    .addEventListener(
+        "input",
+        renderMarket
+    );
 
-connectMarket();
+
+/* =========================
+   TABS
+========================= */
+
+const spotTab =
+    document.getElementById(
+        "spotTab"
+    );
+
+const favoritesTab =
+    document.getElementById(
+        "favoritesTab"
+    );
+
+const derivativesTab =
+    document.getElementById(
+        "derivativesTab"
+    );
+
+
+function selectTab(
+    selected
+) {
+
+    [
+        spotTab,
+        favoritesTab,
+        derivativesTab
+
+    ].forEach(
+        function (
+            button
+        ) {
+
+            button.classList
+                .remove(
+                    "active"
+                );
+
+        }
+    );
+
+
+    selected.classList
+        .add(
+            "active"
+        );
+
+}
+
+
+spotTab.onclick =
+    function () {
+
+        currentView =
+            "spot";
+
+        selectTab(
+            spotTab
+        );
+
+        renderMarket();
+
+    };
+
+
+favoritesTab.onclick =
+    function () {
+
+        currentView =
+            "favorites";
+
+        selectTab(
+            favoritesTab
+        );
+
+        renderMarket();
+
+    };
+
+
+derivativesTab.onclick =
+    function () {
+
+        currentView =
+            "spot";
+
+        selectTab(
+            derivativesTab
+        );
+
+        alert(
+            "Derivatives market will be added later."
+        );
+
+    };
+
+
+/* =========================
+   START
+========================= */
+
+loadMarket();
+
+
+/*
+    Refresh market information
+    every 45 seconds.
+*/
+
+setInterval(
+    loadMarket,
+    45000
+);
 
 </script>
 

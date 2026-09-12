@@ -1851,29 +1851,15 @@ function toggleFavorite(
    OPEN COIN
 ========================= */
 
-function openCoin(
-    symbol
-) {
+function openCoin(symbol) {
 
-    symbol =
-        symbol.toLowerCase();
+    symbol = symbol.toUpperCase();
 
+    window.location.href =
+        "trading.html?symbol=" +
+        encodeURIComponent(symbol);
 
-    if (
-        symbol === "btc"
-    ) {
-
-        window.location.href =
-            "trading.html";
-
-        return;
-    }
-
-
-    alert(
-        symbol.toUpperCase() +
-        "/USDT demo trading will be added later."
-    );
+}
 
 }
 

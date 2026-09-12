@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Assets</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0e11;
+      color: #ffffff;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 18px 16px;
+      border-bottom: 1px solid #252a34;
+      background: #171a21;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .container {
+      padding: 14px;
+    }
+
+    .card {
+      background: #171a21;
+      border: 1px solid #252a34;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      color: #8a94a6;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .big-number {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .positive {
+      color: #16c784;
+    }
+
+    .negative {
+      color: #f6465d;
+    }
+
+    .neutral {
+      color: #f0b90b;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #303640;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      background: #3b424e;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #171a21;
+      border-top: 1px solid #252a34;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8a94a6;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .nav-item.active {
+      color: #f0b90b;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h2>Assets</h2>
+  </div>
+
+  <div class="container">
+
+    <div class="card">
+      <div class="label">Demo Total Assets</div>
+      <div class="big-number">
+        <span id="balance">10000.00</span> USDT
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Total Demo P&L</div>
+      <div id="pnl" class="big-number">0.00 USDT</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Total Orders</div>
+        <div id="totalOrders" class="stat-value">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Win Rate</div>
+        <div id="winRate" class="stat-value">0%</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Wins</div>
+        <div id="wins" class="stat-value positive">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Losses</div>
+        <div id="losses" class="stat-value negative">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Draws</div>
+        <div id="draws" class="stat-value neutral">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Starting Balance</div>
+        <div class="stat-value">10000.00</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="reset-btn" onclick="resetDemo()">
+        Reset Demo Data
+      </button>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a class="nav-item" href="index.html">Markets</a>
+    <a class="nav-item" href="trading.html">Trading</a>
+    <a class="nav-item active" href="assets.html">Assets</a>
+    <a class="nav-item" href="#">Profile</a>
+  </div>
+
+  <script>
+    const STARTING_BALANCE = 10000;
+
+    function loadAssets() {
+      const savedBalance =
+        Number(localStorage.getItem("demoBalance"));
+
+      const balance =
+        Number.isFinite(savedBalance) && savedBalance > 0
+          ? savedBalance
+          : STARTING_BALANCE;
+
+      let history = [];
+
+      try {
+        history =
+          JSON.parse(
+            localStorage.getItem("demoHistory")
+          ) || [];
+      } catch (error) {
+        history = [];
+      }
+
+      const wins =
+        history.filter(
+          order => order.result === "WIN"
+        ).length;
+
+      const losses =
+        history.filter(
+          order => order.result === "LOSS"
+        ).length;
+
+      const draws =
+        history.filter(
+          order => order.result === "DRAW"
+        ).length;
+
+      const totalOrders =
+        history.length;
+
+      const winRate =
+        totalOrders > 0
+          ? ((wins / totalOrders) * 100).toFixed(1)
+          : "0.0";
+
+      const pnl =
+        balance - STARTING_BALANCE;
+
+      document.getElementById("balance")
+        .innerText =
+        balance.toFixed(2);
+
+      const pnlElement =
+        document.getElementById("pnl");
+
+      pnlElement.innerText =
+        (pnl >= 0 ? "+" : "") +
+        pnl.toFixed(2) +
+        " USDT";
+
+      pnlElement.className =
+        "big-number " +
+        (
+          pnl > 0
+            ? "positive"
+            : pnl < 0
+            ? "negative"
+            : "neutral"
+        );
+
+      document.getElementById("totalOrders")
+        .innerText =
+        totalOrders;
+
+      document.getElementById("winRate")
+        .innerText =
+        winRate + "%";
+
+      document.getElementById("wins")
+        .innerText =
+        wins;
+
+      document.getElementById("losses")
+        .innerText =
+        losses;
+
+      document.getElementById("draws")
+        .innerText =
+        draws;
+    }
+
+    function resetDemo() {
+      const confirmed =
+        confirm(
+          "Reset demo balance and order history?"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      localStorage.setItem(
+        "demoBalance",
+        STARTING_BALANCE
+      );
+
+      localStorage.setItem(
+        "demoHistory",
+        JSON.stringify([])
+      );
+
+      loadAssets();
+    }
+
+    loadAssets();
+  </script>
+
+</body>
+</html>

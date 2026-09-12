@@ -1,1177 +1,1521 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BTC/USDT Trading Demo</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Trading Demo</title>
 
 <style>
-*{
-  box-sizing:border-box;
+
+* {
+    box-sizing: border-box;
 }
 
-body{
-  margin:0;
-  background:#0b0e11;
-  color:#eaecef;
-  font-family:Arial,Helvetica,sans-serif;
-  padding-bottom:75px;
+body {
+    margin: 0;
+    background: #080d13;
+    color: #eef3f8;
+    font-family: Arial, Helvetica, sans-serif;
+    padding-bottom: 75px;
 }
 
-.header{
-  background:#181a20;
-  padding:16px 20px;
-  border-bottom:1px solid #2b3139;
+.header {
+    background: #0d141d;
+    padding: 16px;
+    border-bottom: 1px solid #202b38;
 }
 
-.pair{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.pair-name{
-  font-size:22px;
-  font-weight:bold;
+.pair-name {
+    font-size: 23px;
+    font-weight: 700;
 }
 
-.demo-tag{
-  background:#2b3139;
-  color:#f0b90b;
-  padding:6px 10px;
-  border-radius:6px;
-  font-size:12px;
+.demo-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 7px;
+    border-radius: 5px;
+    background: #243348;
+    color: #8fb9ff;
+    font-size: 10px;
 }
 
-.price{
-  font-size:32px;
-  font-weight:bold;
-  margin-top:12px;
+.price {
+    margin-top: 12px;
+    font-size: 31px;
+    font-weight: 700;
 }
 
-.price.green{
-  color:#0ecb81;
+.price.green {
+    color: #24d79a;
 }
 
-.price.red{
-  color:#f6465d;
+.price.red {
+    color: #f25b68;
 }
 
-.sub-info{
-  display:flex;
-  gap:20px;
-  margin-top:8px;
-  color:#848e9c;
-  font-size:13px;
+.sub-info {
+    margin-top: 8px;
+    display: flex;
+    gap: 18px;
+    font-size: 11px;
+    color: #79879b;
 }
 
-.balance-card{
-  margin:12px;
-  padding:16px;
-  background:#181a20;
-  border-radius:10px;
+.status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f2b742;
+    margin-right: 5px;
 }
 
-.balance-title{
-  color:#848e9c;
-  font-size:13px;
+.status-dot.online {
+    background: #24d79a;
 }
 
-.balance{
-  font-size:26px;
-  font-weight:bold;
-  margin-top:5px;
+.status-dot.error {
+    background: #f25b68;
 }
 
-.chart-container{
-  margin:12px;
-  height:360px;
-  border-radius:10px;
-  overflow:hidden;
-  background:#181a20;
+.balance-box {
+    margin: 13px;
+    padding: 14px;
+    border: 1px solid #202c39;
+    border-radius: 8px;
+    background: #0e161f;
 }
 
-.trade-panel{
-  background:#181a20;
-  margin:12px;
-  border-radius:10px;
-  padding:18px;
+.balance-label {
+    font-size: 11px;
+    color: #718095;
 }
 
-.panel-title{
-  font-size:18px;
-  font-weight:bold;
-  margin-bottom:15px;
+.balance {
+    margin-top: 5px;
+    font-size: 23px;
+    font-weight: 700;
 }
 
-label{
-  display:block;
-  color:#848e9c;
-  font-size:13px;
-  margin-top:15px;
-  margin-bottom:7px;
+.chart-box {
+    margin: 13px;
+    height: 390px;
+    border: 1px solid #202b37;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0c1219;
 }
 
-select,
-input{
-  width:100%;
-  padding:14px;
-  border-radius:7px;
-  background:#0b0e11;
-  color:white;
-  border:1px solid #474d57;
-  font-size:16px;
-  outline:none;
+#tradingview_chart {
+    height: 100%;
+    width: 100%;
 }
 
-.quick-amount{
-  display:flex;
-  gap:8px;
-  margin-top:8px;
+.trade-panel {
+    margin: 13px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #202b38;
+    background: #0e161f;
 }
 
-.quick-amount button{
-  flex:1;
-  padding:8px;
-  border:0;
-  background:#2b3139;
-  color:#eaecef;
-  border-radius:5px;
-  cursor:pointer;
+.panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
 }
 
-.payout{
-  margin-top:12px;
-  padding:10px;
-  background:#0b0e11;
-  border-radius:7px;
-  color:#848e9c;
-  font-size:13px;
+.label {
+    font-size: 11px;
+    color: #758398;
+    margin-bottom: 7px;
 }
 
-.trade-buttons{
-  display:flex;
-  gap:12px;
-  margin-top:18px;
+.duration-box {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid #293647;
+    border-radius: 7px;
+    background: #111a24;
+    margin-bottom: 15px;
 }
 
-.trade-buttons button{
-  flex:1;
-  padding:16px;
-  border:0;
-  border-radius:7px;
-  font-size:17px;
-  font-weight:bold;
-  color:white;
-  cursor:pointer;
+.amount-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 7px;
+    border: 1px solid #293647;
+    background: #111a24;
+    color: white;
+    outline: none;
+    font-size: 14px;
 }
 
-.up{
-  background:#0ecb81;
+.amount-buttons {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 7px;
+    margin-top: 8px;
 }
 
-.down{
-  background:#f6465d;
+.amount-buttons button {
+    height: 35px;
+    border: 1px solid #293647;
+    background: #111923;
+    color: #a5b0bf;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-.trade-buttons button:disabled{
-  opacity:.4;
-  cursor:not-allowed;
+.trade-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 15px;
 }
 
-.active-order{
-  display:none;
-  margin-top:20px;
-  padding:15px;
-  border:1px solid #2b3139;
-  border-radius:8px;
-  background:#0b0e11;
+.trade-buttons button {
+    height: 48px;
+    border: 0;
+    border-radius: 7px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
 }
 
-.order-row{
-  display:flex;
-  justify-content:space-between;
-  padding:6px 0;
-  color:#848e9c;
+.up-btn {
+    background: #18b981;
 }
 
-.order-row strong{
-  color:#eaecef;
+.down-btn {
+    background: #e94f5d;
 }
 
-.timer{
-  font-size:30px;
-  font-weight:bold;
-  color:#f0b90b;
-  text-align:center;
-  padding:15px 0;
+.trade-buttons button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
 }
 
-.result{
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  margin-top:10px;
+.order-box {
+    display: none;
+    margin: 13px;
+    padding: 15px;
+    border: 1px solid #2b3948;
+    border-radius: 8px;
+    background: #101923;
 }
 
-.win{
-  color:#0ecb81;
+.order-box.active {
+    display: block;
 }
 
-.loss{
-  color:#f6465d;
+.order-title {
+    font-weight: 700;
+    margin-bottom: 12px;
 }
 
-.draw{
-  color:#f0b90b;
+.order-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 11px;
 }
 
-.history{
-  margin:12px;
-  background:#181a20;
-  border-radius:10px;
-  overflow:hidden;
+.order-item {
+    padding: 10px;
+    background: #0b1219;
+    border-radius: 6px;
 }
 
-.history-header{
-  padding:16px;
-  font-size:18px;
-  font-weight:bold;
-  border-bottom:1px solid #2b3139;
+.order-item-label {
+    font-size: 10px;
+    color: #748196;
 }
 
-.history-table{
-  overflow-x:auto;
+.order-item-value {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:700px;
+.countdown {
+    font-size: 27px;
+    font-weight: 700;
+    color: #3388ff;
 }
 
-th,
-td{
-  padding:13px 14px;
-  text-align:left;
-  border-bottom:1px solid #2b3139;
-  font-size:13px;
+.history {
+    margin: 13px;
+    border: 1px solid #202b38;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e161f;
 }
 
-th{
-  color:#848e9c;
+.history-title {
+    padding: 14px;
+    font-weight: 700;
+    border-bottom: 1px solid #202b38;
 }
 
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:65px;
-  background:#181a20;
-  border-top:1px solid #2b3139;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  z-index:100;
+.history-scroll {
+    overflow-x: auto;
 }
 
-.bottom-nav a{
-  color:#848e9c;
-  text-decoration:none;
-  font-size:14px;
+.history table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
 }
 
-.bottom-nav a.active{
-  color:#f0b90b;
-  font-weight:bold;
+.history th,
+.history td {
+    height: 40px;
+    padding: 0 10px;
+    text-align: right;
+    font-size: 11px;
+    border-bottom: 1px solid #19232e;
+    white-space: nowrap;
 }
 
-.status{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#f6465d;
-  display:inline-block;
-  margin-right:5px;
+.history th {
+    color: #748196;
+    font-weight: 500;
 }
 
-.status.online{
-  background:#0ecb81;
+.history th:first-child,
+.history td:first-child {
+    text-align: left;
 }
 
-@media(max-width:700px){
+.win {
+    color: #24d79a;
+}
 
-  .chart-container{
-    height:310px;
-    margin:8px;
-  }
+.loss {
+    color: #f25b68;
+}
 
-  .trade-panel,
-  .balance-card,
-  .history{
-    margin:8px;
-  }
+.draw {
+    color: #f2b742;
+}
 
-  .price{
-    font-size:27px;
-  }
+.empty {
+    padding: 25px;
+    text-align: center;
+    color: #748196;
+    font-size: 12px;
+}
+
+.notice {
+    margin: 13px;
+    padding: 11px 13px;
+    border: 1px solid #202b38;
+    border-radius: 7px;
+    background: #0d151e;
+    color: #6f7d91;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 64px;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    background: #0d141d;
+    border-top: 1px solid #25303c;
+    z-index: 999;
+}
+
+.bottom-nav a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #7e8a9e;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.bottom-nav a.active {
+    color: #3388ff;
+}
+
+@media (min-width: 900px) {
+
+    body {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .chart-box {
+        height: 470px;
+    }
 
 }
+
+@media (max-width: 600px) {
+
+    .chart-box {
+        height: 350px;
+        margin: 10px;
+    }
+
+    .trade-panel,
+    .balance-box,
+    .order-box,
+    .history,
+    .notice {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="header">
+<header class="header">
 
-  <div class="pair">
+    <div class="header-top">
 
-   <div class="pair-name" id="pairName">
-    BTC / USDT
-</div>
-    <div class="demo-tag">
-      DEMO
-    </div>
+        <div>
+            <span id="pairName" class="pair-name">
+                BTC / USDT
+            </span>
 
-  </div>
-
-  <div
-    id="price"
-    class="price">
-    Loading...
-  </div>
-
-  <div class="sub-info">
-
-    <div>
-      <span
-        id="connectionDot"
-        class="status">
-      </span>
-
-      <span id="connectionText">
-        Connecting...
-      </span>
-    </div>
-
-    <div>
-      Demo Settlement Price
-    </div>
-
-  </div>
-
-</div>
-
-
-<div class="balance-card">
-
-  <div class="balance-title">
-    Demo Balance
-  </div>
-
-  <div class="balance">
-    <span id="balance">
-      10000.00
-    </span>
-    USDT
-  </div>
-
-</div>
-
-
-<div class="chart-container">
-  <div id="tradingview_chart" style="height:100%;width:100%;"></div>
-</div>
-
-<script>
-const allowedSymbols = [
-    "BTC", "ETH", "BNB", "SOL", "XRP",
-    "DOGE", "ADA", "TRX", "AVAX", "LINK",
-    "DOT", "BCH", "LTC", "UNI", "XLM",
-    "TON", "SHIB", "HBAR", "SUI", "APT",
-    "NEAR", "ICP", "ETC", "FIL", "ATOM",
-    "ARB", "OP", "AAVE", "PEPE", "POL"
-];
-
-const urlParams =
-    new URLSearchParams(window.location.search);
-
-let selectedSymbol =
-    (urlParams.get("symbol") || "BTC").toUpperCase();
-
-if (!allowedSymbols.includes(selectedSymbol)) {
-    selectedSymbol = "BTC";
-}
-</script>
-  <script
-  type="text/javascript"
-  src="https://s3.tradingview.com/tv.js">
-</script>
-
-<script>
-  new TradingView.widget({
-    autosize: true,
-    symbol: "BINANCE:" + selectedSymbol + "USDT",
-    interval: "1",
-    timezone: "Etc/UTC",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    toolbar_bg: "#171a21",
-    enable_publishing: false,
-    allow_symbol_change: false,
-    container_id: "tradingview_chart"
-  });
-</script>
-
-
-<div class="trade-panel">
-
-  <div class="panel-title">
-    Second Contract
-  </div>
-
-  <label>
-    Duration
-  </label>
-
-  <select id="duration">
-
-    <option value="30">
-      30 seconds
-    </option>
-
-    <option value="60">
-      60 seconds
-    </option>
-
-  </select>
-
-
-  <label>
-    Amount
-  </label>
-
-  <input
-    id="amount"
-    type="number"
-    value="100"
-    min="1"
-    placeholder="Enter amount">
-
-
-  <div class="quick-amount">
-
-    <button onclick="setAmount(100)">
-      100
-    </button>
-
-    <button onclick="setAmount(500)">
-      500
-    </button>
-
-    <button onclick="setAmount(1000)">
-      1000
-    </button>
-
-    <button onclick="setAmount(5000)">
-      5000
-    </button>
-
-  </div>
-
-
-  <div class="payout">
-
-    Demo payout:
-    <strong>80%</strong>
-
-    <br>
-
-    Example:
-    100 USDT win =
-    +80 USDT profit
-
-  </div>
-
-
-  <div class="trade-buttons">
-
-    <button
-      id="upButton"
-      class="up"
-      onclick="placeOrder('UP')">
-
-      ↑ UP
-
-    </button>
-
-    <button
-      id="downButton"
-      class="down"
-      onclick="placeOrder('DOWN')">
-
-      ↓ DOWN
-
-    </button>
-
-  </div>
-
-
-  <div
-    id="activeOrder"
-    class="active-order">
-
-    <div class="timer">
-
-      <span id="timer">
-        30
-      </span>s
+            <span class="demo-tag">
+                DEMO
+            </span>
+        </div>
 
     </div>
-
-
-    <div class="order-row">
-
-      <span>
-        Direction
-      </span>
-
-      <strong id="orderDirection">
-        -
-      </strong>
-
-    </div>
-
-
-    <div class="order-row">
-
-      <span>
-        Amount
-      </span>
-
-      <strong id="orderAmount">
-        -
-      </strong>
-
-    </div>
-
-
-    <div class="order-row">
-
-      <span>
-        Entry Price
-      </span>
-
-      <strong id="entryPrice">
-        -
-      </strong>
-
-    </div>
-
-
-    <div class="order-row">
-
-      <span>
-        Current Price
-      </span>
-
-      <strong id="currentPrice">
-        -
-      </strong>
-
-    </div>
-
 
     <div
-      id="result"
-      class="result">
+        id="price"
+        class="price"
+    >
+        Loading...
     </div>
 
-  </div>
+    <div class="sub-info">
 
+        <div>
+            <span
+                id="connectionDot"
+                class="status-dot"
+            ></span>
+
+            <span id="connectionText">
+                Connecting...
+            </span>
+        </div>
+
+        <div>
+            Demo Settlement Price
+        </div>
+
+    </div>
+
+</header>
+
+
+<section class="balance-box">
+
+    <div class="balance-label">
+        Demo Balance
+    </div>
+
+    <div class="balance">
+        <span id="balance">
+            10000.00
+        </span>
+        USDT
+    </div>
+
+</section>
+
+
+<section class="chart-box">
+
+    <div id="tradingview_chart"></div>
+
+</section>
+
+
+<section class="trade-panel">
+
+    <div class="panel-title">
+        Second Contract
+    </div>
+
+    <div class="label">
+        Duration
+    </div>
+
+    <div class="duration-box">
+        30 Seconds
+    </div>
+
+    <div class="label">
+        Amount (USDT)
+    </div>
+
+    <input
+        id="amount"
+        class="amount-input"
+        type="number"
+        min="1"
+        step="1"
+        value="100"
+    >
+
+    <div class="amount-buttons">
+
+        <button onclick="setAmount(100)">
+            100
+        </button>
+
+        <button onclick="setAmount(500)">
+            500
+        </button>
+
+        <button onclick="setAmount(1000)">
+            1000
+        </button>
+
+        <button onclick="setAmount(5000)">
+            5000
+        </button>
+
+    </div>
+
+    <div class="trade-buttons">
+
+        <button
+            id="upBtn"
+            class="up-btn"
+            onclick="placeOrder('UP')"
+        >
+            UP
+        </button>
+
+        <button
+            id="downBtn"
+            class="down-btn"
+            onclick="placeOrder('DOWN')"
+        >
+            DOWN
+        </button>
+
+    </div>
+
+</section>
+
+
+<section
+    id="orderBox"
+    class="order-box"
+>
+
+    <div class="order-title">
+        Active Demo Order
+    </div>
+
+    <div class="order-grid">
+
+        <div class="order-item">
+            <div class="order-item-label">
+                Pair
+            </div>
+            <div
+                id="activePair"
+                class="order-item-value"
+            >
+                --
+            </div>
+        </div>
+
+        <div class="order-item">
+            <div class="order-item-label">
+                Direction
+            </div>
+            <div
+                id="activeDirection"
+                class="order-item-value"
+            >
+                --
+            </div>
+        </div>
+
+        <div class="order-item">
+            <div class="order-item-label">
+                Amount
+            </div>
+            <div
+                id="activeAmount"
+                class="order-item-value"
+            >
+                --
+            </div>
+        </div>
+
+        <div class="order-item">
+            <div class="order-item-label">
+                Entry
+            </div>
+            <div
+                id="activeEntry"
+                class="order-item-value"
+            >
+                --
+            </div>
+        </div>
+
+        <div class="order-item">
+            <div class="order-item-label">
+                Time Left
+            </div>
+            <div
+                id="countdown"
+                class="countdown"
+            >
+                30
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="history">
+
+    <div class="history-title">
+        Demo Order History
+    </div>
+
+    <div class="history-scroll">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Pair</th>
+                    <th>Side</th>
+                    <th>Amount</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+
+            <tbody id="historyBody"></tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<div class="notice">
+    DEMO ONLY — No real-money trading, deposits or withdrawals.
+    Prices are market references and may differ between data providers.
 </div>
 
 
-<div class="history">
+<nav class="bottom-nav">
 
-  <div class="history-header">
-    Demo Order History
-  </div>
+    <a href="index.html">
+        Markets
+    </a>
 
-  <div class="history-table">
+    <a
+        id="tradingNav"
+        class="active"
+        href="trading.html?symbol=BTC"
+    >
+        Trading
+    </a>
 
-    <table>
+    <a href="assets.html">
+        Assets
+    </a>
 
-      <thead>
+    <a href="#">
+        Profile
+    </a>
 
-        <tr>
-
-          <th>
-            Time
-          </th>
-
-          <th>
-            Direction
-          </th>
-
-          <th>
-            Amount
-          </th>
-
-          <th>
-            Entry
-          </th>
-
-          <th>
-            Exit
-          </th>
-
-          <th>
-            Result
-          </th>
-
-        </tr>
-
-      </thead>
-
-      <tbody id="historyBody">
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-</div>
+</nav>
 
 
-<div class="bottom-nav">
-
-  <a href="index.html">
-    Markets
-  </a>
-
-  <a
-    href="trading.html"
-    class="active">
-    Trading
-  </a>
-
-  <a href="#">
-    Assets
-  </a>
-
-  <a href="#">
-    Profile
-  </a>
-
-</div>
-
-
-
+<script src="https://s3.tradingview.com/tv.js"></script>
 
 <script>
 
+/* =========================
+   SYMBOL CONFIG
+========================= */
 
- document.getElementById("pairName").innerText =
-    selectedSymbol + " / USDT";
-  let currentPrice = 0;
+const symbolMap = {
 
-let previousPrice = 0;
+    BTC: "bitcoin",
+    ETH: "ethereum",
+    BNB: "binancecoin",
+    SOL: "solana",
+    XRP: "ripple",
+    DOGE: "dogecoin",
+    ADA: "cardano",
+    TRX: "tron",
+    AVAX: "avalanche-2",
+    LINK: "chainlink",
+    DOT: "polkadot",
+    BCH: "bitcoin-cash",
+    LTC: "litecoin",
+    UNI: "uniswap",
+    XLM: "stellar",
+    TON: "the-open-network",
+    SHIB: "shiba-inu",
+    HBAR: "hedera-hashgraph",
+    SUI: "sui",
+    APT: "aptos",
+    NEAR: "near",
+    ICP: "internet-computer",
+    ETC: "ethereum-classic",
+    FIL: "filecoin",
+    ATOM: "cosmos",
+    ARB: "arbitrum",
+    OP: "optimism",
+    AAVE: "aave",
+    PEPE: "pepe",
+    POL: "matic-network"
 
-let activeOrder = false;
-
-let activeTimer = null;
-
-let balance =
-  Number(
-    localStorage.getItem(
-      "demoBalance"
-    )
-  ) || 10000;
-
-let history =
-  JSON.parse(
-    localStorage.getItem(
-      "demoHistory"
-    ) || "[]"
-  );
-
-
-function updateBalance(){
-
-  document
-    .getElementById("balance")
-    .innerText =
-    balance.toFixed(2);
-
-  localStorage.setItem(
-    "demoBalance",
-    balance
-  );
-
-}
-
-
-function setAmount(amount){
-
-  document
-    .getElementById("amount")
-    .value =
-    amount;
-
-}
+};
 
 
-function formatPrice(price){
-
-  return Number(price)
-    .toLocaleString(
-      undefined,
-      {
-        minimumFractionDigits:2,
-        maximumFractionDigits:2
-      }
-    );
-
-}
-
-
-function updatePrice(price){
-
-  previousPrice =
-    currentPrice;
-
-  currentPrice =
-    Number(price);
-
-  const priceElement =
-    document.getElementById(
-      "price"
-    );
-
-  priceElement.innerText =
-    "$" +
-    formatPrice(
-      currentPrice
+const params =
+    new URLSearchParams(
+        window.location.search
     );
 
 
-  if(
-    previousPrice &&
-    currentPrice >
-    previousPrice
-  ){
-
-    priceElement.className =
-      "price green";
-
-  }
-
-  else if(
-    previousPrice &&
-    currentPrice <
-    previousPrice
-  ){
-
-    priceElement.className =
-      "price red";
-
-  }
+let selectedSymbol =
+    (
+        params.get("symbol") ||
+        "BTC"
+    ).toUpperCase();
 
 
-  document
-    .getElementById(
-      "currentPrice"
-    )
-    .innerText =
-    "$" +
-    formatPrice(
-      currentPrice
-    );
-
+if (!symbolMap[selectedSymbol]) {
+    selectedSymbol = "BTC";
 }
 
 
-function connectBinance() {
-    const connectionText =
-        document.getElementById("connectionText");
+const coinGeckoId =
+    symbolMap[selectedSymbol];
 
-    const connectionDot =
-        document.getElementById("connectionDot");
 
-    connectionText.innerText =
-        "Connecting...";
+/* =========================
+   PAGE TEXT
+========================= */
 
-    async function loadPrice() {
-        try {
-            const controller =
-                new AbortController();
+document.getElementById(
+    "pairName"
+).innerText =
+    selectedSymbol +
+    " / USDT";
 
-            const timeout =
-                setTimeout(
-                    () => controller.abort(),
-                    2500
-                );
 
-            const response =
-                await fetch(
-                   "https://api.binance.com/api/v3/ticker/price?symbol=" +
-                   selectedSymbol + "USDT",
-                    {
-                        cache: "no-store",
-                        signal: controller.signal
-                    }
-                );
+document.title =
+    selectedSymbol +
+    "/USDT Trading Demo";
 
-            clearTimeout(timeout);
 
-            if (!response.ok) {
-                throw new Error("Binance REST failed");
-            }
-
-            const data =
-                await response.json();
-
-            const price =
-                Number(data.price);
-
-            if (
-                !Number.isFinite(price) ||
-                price <= 0
-            ) {
-                throw new Error("Invalid price");
-            }
-
-            updatePrice(price);
-
-            connectionDot.className =
-                "status online";
-
-            connectionText.innerText =
-                "Live";
-
-        } catch (error) {
-            console.log(
-                "Binance REST failed, using fallback"
-            );
-
-            startFallbackPrice();
-        }
-    }
-
-    loadPrice();
-
-    setInterval(
-        loadPrice,
-        1000
+document.getElementById(
+    "tradingNav"
+).href =
+    "trading.html?symbol=" +
+    encodeURIComponent(
+        selectedSymbol
     );
-}
-
-let fallbackStarted =
-  false;
 
 
-function startFallbackPrice() {
-    if (fallbackStarted) {
+/* =========================
+   TRADINGVIEW
+========================= */
+
+function loadTradingView() {
+
+    if (
+        typeof TradingView ===
+        "undefined"
+    ) {
         return;
     }
 
-    fallbackStarted = true;
+
+    new TradingView.widget({
+
+        autosize: true,
+
+        symbol:
+            "BINANCE:" +
+            selectedSymbol +
+            "USDT",
+
+        interval: "1",
+
+        timezone: "Etc/UTC",
+
+        theme: "dark",
+
+        style: "1",
+
+        locale: "en",
+
+        enable_publishing:
+            false,
+
+        allow_symbol_change:
+            false,
+
+        hide_side_toolbar:
+            false,
+
+        container_id:
+            "tradingview_chart"
+
+    });
+
+}
+
+
+loadTradingView();
+
+
+/* =========================
+   DEMO ACCOUNT
+========================= */
+
+let balance =
+    Number(
+        localStorage.getItem(
+            "demoBalance"
+        )
+    );
+
+
+if (
+    !Number.isFinite(balance)
+) {
+    balance = 10000;
+}
+
+
+let history =
+    JSON.parse(
+        localStorage.getItem(
+            "demoHistory"
+        ) ||
+        "[]"
+    );
+
+
+function updateBalance() {
+
+    document.getElementById(
+        "balance"
+    ).innerText =
+        balance.toFixed(2);
+
+
+    localStorage.setItem(
+        "demoBalance",
+        balance.toFixed(2)
+    );
+
+}
+
+
+updateBalance();
+
+
+/* =========================
+   PRICE STATE
+========================= */
+
+let currentPrice = 0;
+
+let previousPrice = 0;
+
+let lastPriceUpdate = 0;
+
+let binanceSocket = null;
+
+let krakenSocket = null;
+
+let fallbackTimer = null;
+
+let usingFallback = false;
+
+
+/* =========================
+   PRICE DISPLAY
+========================= */
+
+function formatPrice(price) {
+
+    const n =
+        Number(price);
+
+
+    if (
+        !Number.isFinite(n)
+    ) {
+        return "--";
+    }
+
+
+    if (n >= 1000) {
+
+        return "$" +
+            n.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
+    }
+
+
+    if (n >= 1) {
+
+        return "$" +
+            n.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 6
+                }
+            );
+    }
+
+
+    if (n >= 0.01) {
+
+        return "$" +
+            n.toFixed(6);
+    }
+
+
+    return "$" +
+        n.toFixed(8);
+
+}
+
+
+function updatePrice(price) {
+
+    price =
+        Number(price);
+
+
+    if (
+        !Number.isFinite(price) ||
+        price <= 0
+    ) {
+        return;
+    }
+
+
+    previousPrice =
+        currentPrice;
+
+
+    currentPrice =
+        price;
+
+
+    lastPriceUpdate =
+        Date.now();
+
+
+    const priceEl =
+        document.getElementById(
+            "price"
+        );
+
+
+    priceEl.innerText =
+        formatPrice(price);
+
+
+    priceEl.classList.remove(
+        "green",
+        "red"
+    );
+
+
+    if (
+        previousPrice > 0
+    ) {
+
+        if (
+            currentPrice >
+            previousPrice
+        ) {
+
+            priceEl.classList
+                .add("green");
+
+        } else if (
+            currentPrice <
+            previousPrice
+        ) {
+
+            priceEl.classList
+                .add("red");
+        }
+    }
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function setStatus(
+    text,
+    type
+) {
+
+    const dot =
+        document.getElementById(
+            "connectionDot"
+        );
+
+
+    const textEl =
+        document.getElementById(
+            "connectionText"
+        );
+
+
+    dot.className =
+        "status-dot";
+
+
+    if (type) {
+        dot.classList.add(type);
+    }
+
+
+    textEl.innerText =
+        text;
+
+}
+
+
+/* =========================
+   BINANCE WEBSOCKET
+========================= */
+
+function connectBinance() {
 
     try {
-        const ws =
+
+        const streamSymbol =
+            selectedSymbol
+                .toLowerCase() +
+            "usdt";
+
+
+        binanceSocket =
             new WebSocket(
-                "wss://ws.kraken.com/v2"
+
+                "wss://stream.binance.com:9443/ws/" +
+                streamSymbol +
+                "@trade"
+
             );
 
-        ws.onopen = function () {
-            ws.send(
-                JSON.stringify({
-                    method: "subscribe",
-                    params: {
-                        channel: "ticker",
-                        symbol: [
-                           selectedSymbol + "/USD"
-                        ]
+
+        const timeout =
+            setTimeout(
+                function () {
+
+                    if (
+                        !currentPrice
+                    ) {
+
+                        try {
+                            binanceSocket.close();
+                        } catch (e) {}
+
+                        startFallback();
                     }
-                })
+
+                },
+                5000
             );
 
-            document
-                .getElementById("connectionDot")
-                .className =
-                "status online";
 
-            document
-                .getElementById("connectionText")
-                .innerText =
-                "Fallback Live";
-        };
+        binanceSocket.onopen =
+            function () {
 
-        ws.onmessage =
+                setStatus(
+                    "Connecting live price...",
+                    "online"
+                );
+
+            };
+
+
+        binanceSocket.onmessage =
             function (event) {
 
-                const message =
-                    JSON.parse(
-                        event.data
-                    );
+                try {
 
-                if (
-                    message.channel === "ticker" &&
-                    message.data &&
-                    message.data.length > 0
-                ) {
-                    const price =
-                        Number(
-                            message.data[0].last
+                    const data =
+                        JSON.parse(
+                            event.data
                         );
+
+
+                    const price =
+                        Number(data.p);
+
 
                     if (
                         Number.isFinite(price) &&
                         price > 0
                     ) {
-                        updatePrice(price);
+
+                        clearTimeout(
+                            timeout
+                        );
+
+
+                        setStatus(
+                            "Live",
+                            "online"
+                        );
+
+
+                        updatePrice(
+                            price
+                        );
+
                     }
-                }
+
+                } catch (error) {}
+
             };
 
-        ws.onerror =
-            function () {
-                document
-                    .getElementById("connectionText")
-                    .innerText =
-                    "Price unavailable";
-            };
 
-        ws.onclose =
+        binanceSocket.onerror =
             function () {
-                fallbackStarted =
-                    false;
 
-                setTimeout(
-                    startFallbackPrice,
-                    3000
+                clearTimeout(
+                    timeout
                 );
+
+                startFallback();
+
             };
+
+
+        binanceSocket.onclose =
+            function () {
+
+                if (
+                    !usingFallback
+                ) {
+
+                    setTimeout(
+                        connectBinance,
+                        3000
+                    );
+                }
+
+            };
+
 
     } catch (error) {
-        fallbackStarted =
-            false;
 
-        document
-            .getElementById("connectionText")
-            .innerText =
-            "Price unavailable";
-    }
-}
-function placeOrder(direction){
+        startFallback();
 
-  if(activeOrder){
-    alert("Please wait for the current demo order to finish.");
-    return;
-  }
-
-  if(!currentPrice){
-    alert("Market price is still loading.");
-    return;
-  }
-
-  const amount = Number(
-    document.getElementById("amount").value
-  );
-
-  const duration = Number(
-    document.getElementById("duration").value
-  );
-
-  if(!amount || amount <= 0){
-    alert("Enter a valid amount.");
-    return;
-  }
-
-  if(amount > balance){
-    alert("Not enough demo balance.");
-    return;
-  }
-
-  // 锁定订单
-  activeOrder = true;
-
-  document.getElementById("upButton").disabled = true;
-  document.getElementById("downButton").disabled = true;
-
-  // 记录下单时的真实价格
-  const entry = currentPrice;
-
-  // 扣除下单金额
-  balance -= amount;
-  updateBalance();
-
-  // 显示当前订单
-  const activeBox = document.getElementById("activeOrder");
-
-  activeBox.style.display = "block";
-
-  document.getElementById("orderDirection").innerText =
-    direction.toUpperCase();
-
-  document.getElementById("orderAmount").innerText =
-    amount.toFixed(2) + " USDT";
-
-  document.getElementById("entryPrice").innerText =
-    "$" + formatPrice(entry);
-
-  document.getElementById("result").innerText = "--";
-
-  // 开始倒计时
-  let remaining = duration;
-
-  document.getElementById("timer").innerText = remaining;
-
-  activeTimer = setInterval(function(){
-
-    remaining--;
-
-    document.getElementById("timer").innerText = remaining;
-
-    if(remaining <= 0){
-
-      clearInterval(activeTimer);
-
-      // 到期时直接读取最新市场价格
-      const exit = currentPrice;
-
-      settleOrder(
-        direction,
-        amount,
-        entry,
-        exit
-      );
     }
 
-  },1000);
 }
 
-async function getFreshPrice() {
-    // 第一选择：Binance BTC/USDT
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2500);
 
-        const response = await fetch(
-          "https://api.binance.com/api/v3/ticker/price?symbol=" +
-selectedSymbol + "USDT",
-            {
-                cache: "no-store",
-                signal: controller.signal
-            }
+/* =========================
+   FALLBACK
+========================= */
+
+function startFallback() {
+
+    if (usingFallback) {
+        return;
+    }
+
+
+    usingFallback = true;
+
+
+    setStatus(
+        "Fallback price",
+        "online"
+    );
+
+
+    connectKraken();
+
+
+    fallbackTimer =
+        setInterval(
+            function () {
+
+                if (
+                    Date.now() -
+                    lastPriceUpdate >
+                    8000
+                ) {
+
+                    fetchCoinGeckoPrice();
+
+                }
+
+            },
+            5000
         );
 
-        clearTimeout(timeout);
+
+    fetchCoinGeckoPrice();
+
+}
+
+
+/* =========================
+   KRAKEN FALLBACK
+========================= */
+
+function connectKraken() {
+
+    try {
+
+        krakenSocket =
+            new WebSocket(
+                "wss://ws.kraken.com/v2"
+            );
+
+
+        krakenSocket.onopen =
+            function () {
+
+                krakenSocket.send(
+
+                    JSON.stringify({
+
+                        method:
+                            "subscribe",
+
+                        params: {
+
+                            channel:
+                                "ticker",
+
+                            symbol: [
+                                selectedSymbol +
+                                "/USD"
+                            ]
+
+                        }
+
+                    })
+
+                );
+
+            };
+
+
+        krakenSocket.onmessage =
+            function (event) {
+
+                try {
+
+                    const msg =
+                        JSON.parse(
+                            event.data
+                        );
+
+
+                    if (
+                        msg.channel ===
+                            "ticker" &&
+                        msg.data &&
+                        msg.data.length
+                    ) {
+
+                        const price =
+                            Number(
+                                msg.data[0]
+                                    .last
+                            );
+
+
+                        if (
+                            Number.isFinite(
+                                price
+                            ) &&
+                            price > 0
+                        ) {
+
+                            setStatus(
+                                "Fallback Live",
+                                "online"
+                            );
+
+
+                            updatePrice(
+                                price
+                            );
+
+                        }
+
+                    }
+
+                } catch (error) {}
+
+            };
+
+
+    } catch (error) {}
+
+}
+
+
+/* =========================
+   COINGECKO FALLBACK
+========================= */
+
+async function fetchCoinGeckoPrice() {
+
+    try {
+
+        const url =
+            "https://api.coingecko.com/api/v3/simple/price" +
+            "?ids=" +
+            encodeURIComponent(
+                coinGeckoId
+            ) +
+            "&vs_currencies=usd";
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
 
         if (!response.ok) {
-            throw new Error("Binance price failed");
+            return;
         }
 
-        const data = await response.json();
-        const price = Number(data.price);
 
-        if (!Number.isFinite(price) || price <= 0) {
-            throw new Error("Invalid Binance price");
+        const data =
+            await response.json();
+
+
+        const price =
+            Number(
+                data[
+                    coinGeckoId
+                ]?.usd
+            );
+
+
+        if (
+            Number.isFinite(price) &&
+            price > 0
+        ) {
+
+            setStatus(
+                "Reference Live",
+                "online"
+            );
+
+
+            updatePrice(
+                price
+            );
+
         }
 
-        return price;
+    } catch (error) {}
 
-    } catch (error) {
-        // Binance 获取不到时，用当前页面最后一次价格
-        console.log("Fresh price failed, using currentPrice");
-        return currentPrice;
-    }
 }
-async function settleOrder(direction, amount, entry) {
-    let exit = await getFreshPrice();
 
-    if (!Number.isFinite(exit) || exit <= 0) {
-        exit = currentPrice;
+
+/* =========================
+   SAFETY FRESH PRICE
+========================= */
+
+async function ensureFreshPrice() {
+
+    if (
+        currentPrice > 0 &&
+        Date.now() -
+        lastPriceUpdate <
+        10000
+    ) {
+
+        return currentPrice;
+
     }
 
-    currentPrice = exit;
 
-    let resultType = "";
-    let resultText = "";
+    await fetchCoinGeckoPrice();
 
-    const resultElement =
-        document.getElementById("result");
 
-    if (exit === entry) {
-        // 平局：退回本金
-        balance += amount;
+    return currentPrice;
 
-        resultType = "DRAW";
-        resultText = "DRAW";
+}
 
-        resultElement.className =
-            "result draw";
 
-    } else {
-        const won =
-            (direction === "UP" && exit > entry) ||
-            (direction === "DOWN" && exit < entry);
+/* =========================
+   AMOUNT
+========================= */
 
-        if (won) {
-            // 赢：退回本金 + 80% 盈利
-            const profit = amount * 0.8;
+function setAmount(value) {
 
-            balance += amount + profit;
+    document.getElementById(
+        "amount"
+    ).value =
+        value;
 
-            resultType = "WIN";
+}
 
-            resultText =
-                "WIN +" +
-                profit.toFixed(2) +
-                " USDT";
 
-            resultElement.className =
-                "result win";
+/* =========================
+   ACTIVE ORDER
+========================= */
 
-        } else {
-            // 输：本金已经在下单时扣除
-            resultType = "LOSS";
+let activeOrder =
+    null;
 
-            resultText =
-                "LOSS -" +
-                amount.toFixed(2) +
-                " USDT";
+let activeTimer =
+    null;
 
-            resultElement.className =
-                "result loss";
-        }
+
+/* =========================
+   PLACE ORDER
+========================= */
+
+async function placeOrder(
+    direction
+) {
+
+    if (activeOrder) {
+
+        alert(
+            "A demo order is already active."
+        );
+
+        return;
     }
 
-    resultElement.innerText =
-        resultText;
 
-    const currentPriceElement =
-        document.getElementById("activeCurrentPrice");
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
 
-    if (currentPriceElement) {
-        currentPriceElement.innerText =
-            "$" + exit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        alert(
+            "Please enter a valid amount."
+        );
+
+        return;
     }
+
+
+    if (
+        amount >
+        balance
+    ) {
+
+        alert(
+            "Insufficient demo balance."
+        );
+
+        return;
+    }
+
+
+    const entry =
+        await ensureFreshPrice();
+
+
+    if (
+        !entry ||
+        entry <= 0
+    ) {
+
+        alert(
+            "Live price is not available yet. Please try again."
+        );
+
+        return;
+    }
+
+
+    balance -= amount;
 
     updateBalance();
 
-    history.unshift({
-        time:
-            new Date()
-                .toLocaleTimeString(),
+
+    activeOrder = {
+
+        symbol:
+            selectedSymbol,
 
         direction:
             direction,
@@ -1182,18 +1526,320 @@ async function settleOrder(direction, amount, entry) {
         entry:
             entry,
 
+        seconds:
+            30,
+
+        startedAt:
+            Date.now()
+
+    };
+
+
+    showActiveOrder();
+
+
+    setTradeButtons(
+        true
+    );
+
+
+    activeTimer =
+        setInterval(
+            function () {
+
+                activeOrder.seconds--;
+
+
+                document.getElementById(
+                    "countdown"
+                ).innerText =
+                    activeOrder.seconds;
+
+
+                if (
+                    activeOrder.seconds <=
+                    0
+                ) {
+
+                    clearInterval(
+                        activeTimer
+                    );
+
+
+                    settleOrder();
+
+                }
+
+            },
+            1000
+        );
+
+}
+
+
+/* =========================
+   ACTIVE ORDER UI
+========================= */
+
+function showActiveOrder() {
+
+    document.getElementById(
+        "orderBox"
+    ).classList.add(
+        "active"
+    );
+
+
+    document.getElementById(
+        "activePair"
+    ).innerText =
+        activeOrder.symbol +
+        " / USDT";
+
+
+    document.getElementById(
+        "activeDirection"
+    ).innerText =
+        activeOrder.direction;
+
+
+    document.getElementById(
+        "activeAmount"
+    ).innerText =
+        activeOrder.amount
+            .toFixed(2) +
+        " USDT";
+
+
+    document.getElementById(
+        "activeEntry"
+    ).innerText =
+        formatPrice(
+            activeOrder.entry
+        );
+
+
+    document.getElementById(
+        "countdown"
+    ).innerText =
+        activeOrder.seconds;
+
+}
+
+
+function setTradeButtons(
+    disabled
+) {
+
+    document.getElementById(
+        "upBtn"
+    ).disabled =
+        disabled;
+
+
+    document.getElementById(
+        "downBtn"
+    ).disabled =
+        disabled;
+
+}
+
+
+/* =========================
+   SETTLE ORDER
+========================= */
+
+async function settleOrder() {
+
+    if (!activeOrder) {
+        return;
+    }
+
+
+    await ensureFreshPrice();
+
+
+    const exit =
+        currentPrice;
+
+
+    if (
+        !exit ||
+        exit <= 0
+    ) {
+
+        activeOrder.seconds =
+            3;
+
+
+        activeTimer =
+            setInterval(
+                function () {
+
+                    activeOrder.seconds--;
+
+
+                    document.getElementById(
+                        "countdown"
+                    ).innerText =
+                        activeOrder.seconds;
+
+
+                    if (
+                        activeOrder.seconds <=
+                        0
+                    ) {
+
+                        clearInterval(
+                            activeTimer
+                        );
+
+                        settleOrder();
+
+                    }
+
+                },
+                1000
+            );
+
+
+        return;
+    }
+
+
+    let result =
+        "DRAW";
+
+
+    if (
+        activeOrder.direction ===
+        "UP"
+    ) {
+
+        if (
+            exit >
+            activeOrder.entry
+        ) {
+
+            result =
+                "WIN";
+
+        } else if (
+            exit <
+            activeOrder.entry
+        ) {
+
+            result =
+                "LOSS";
+        }
+
+    } else {
+
+        if (
+            exit <
+            activeOrder.entry
+        ) {
+
+            result =
+                "WIN";
+
+        } else if (
+            exit >
+            activeOrder.entry
+        ) {
+
+            result =
+                "LOSS";
+        }
+
+    }
+
+
+    let pnl =
+        0;
+
+
+    if (
+        result ===
+        "WIN"
+    ) {
+
+        pnl =
+            activeOrder.amount *
+            0.8;
+
+
+        balance +=
+            activeOrder.amount +
+            pnl;
+
+    } else if (
+        result ===
+        "DRAW"
+    ) {
+
+        balance +=
+            activeOrder.amount;
+
+    } else {
+
+        pnl =
+            -activeOrder.amount;
+
+    }
+
+
+    updateBalance();
+
+
+    const item = {
+
+        time:
+            new Date()
+                .toLocaleString(),
+
+        symbol:
+            activeOrder.symbol,
+
+        side:
+            activeOrder.direction,
+
+        amount:
+            activeOrder.amount,
+
+        entry:
+            activeOrder.entry,
+
         exit:
             exit,
 
         result:
-            resultType
-    });
+            result,
 
-    history =
-        history.slice(
-            0,
-            30
-        );
+        pnl:
+            pnl
+
+    };
+
+
+    history.unshift(
+        item
+    );
+
+
+    if (
+        history.length >
+        100
+    ) {
+
+        history =
+            history.slice(
+                0,
+                100
+            );
+
+    }
+
 
     localStorage.setItem(
         "demoHistory",
@@ -1202,118 +1848,179 @@ async function settleOrder(direction, amount, entry) {
         )
     );
 
+
     renderHistory();
 
-    activeOrder = false;
 
-    document
-        .getElementById("upButton")
-        .disabled = false;
+    document.getElementById(
+        "orderBox"
+    ).classList.remove(
+        "active"
+    );
 
-    document
-        .getElementById("downButton")
-        .disabled = false;
+
+    alert(
+        result +
+        "\n\n" +
+        selectedSymbol +
+        "/USDT\n" +
+        "Entry: " +
+        formatPrice(
+            item.entry
+        ) +
+        "\nExit: " +
+        formatPrice(
+            item.exit
+        ) +
+        "\nP&L: " +
+        (
+            item.pnl >= 0
+                ? "+"
+                : ""
+        ) +
+        item.pnl.toFixed(2) +
+        " USDT"
+    );
+
+
+    activeOrder =
+        null;
+
+
+    setTradeButtons(
+        false
+    );
+
 }
 
 
-function renderHistory(){
+/* =========================
+   HISTORY
+========================= */
 
-  const body =
-    document
-      .getElementById(
-        "historyBody"
-      );
+function renderHistory() {
 
-
-  body.innerHTML =
-    "";
-
-
-  history.forEach(
-    function(order){
-
-      let resultColor =
-        "#848e9c";
+    const body =
+        document.getElementById(
+            "historyBody"
+        );
 
 
-      if(
-        order.result ===
-        "WIN"
-      ){
+    if (
+        !history.length
+    ) {
 
-        resultColor =
-          "#0ecb81";
+        body.innerHTML =
+            `
+            <tr>
+                <td colspan="7">
+                    <div class="empty">
+                        No demo orders yet.
+                    </div>
+                </td>
+            </tr>
+            `;
 
-      }
-
-
-      if(
-        order.result ===
-        "LOSS"
-      ){
-
-        resultColor =
-          "#f6465d";
-
-      }
-
-
-      if(
-        order.result ===
-        "DRAW"
-      ){
-
-        resultColor =
-          "#f0b90b";
-
-      }
-
-
-      body.innerHTML +=
-        `
-        <tr>
-
-          <td>
-            ${order.time}
-          </td>
-
-          <td>
-            ${order.direction}
-          </td>
-
-          <td>
-            ${order.amount.toFixed(2)}
-          </td>
-
-          <td>
-            $${formatPrice(order.entry)}
-          </td>
-
-          <td>
-            $${formatPrice(order.exit)}
-          </td>
-
-          <td
-            style="color:${resultColor};font-weight:bold">
-
-            ${order.result}
-
-          </td>
-
-        </tr>
-        `;
-
+        return;
     }
-  );
+
+
+    body.innerHTML = "";
+
+
+    history
+        .slice(
+            0,
+            20
+        )
+        .forEach(
+            function (item) {
+
+                const resultClass =
+                    item.result ===
+                    "WIN"
+                        ? "win"
+                        :
+                    item.result ===
+                    "LOSS"
+                        ? "loss"
+                        :
+                        "draw";
+
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${item.time || "--"}
+                    </td>
+
+                    <td>
+                        ${(item.symbol || "BTC")} / USDT
+                    </td>
+
+                    <td>
+                        ${item.side || "--"}
+                    </td>
+
+                    <td>
+                        ${Number(item.amount || 0).toFixed(2)}
+                    </td>
+
+                    <td>
+                        ${formatPrice(item.entry)}
+                    </td>
+
+                    <td>
+                        ${formatPrice(item.exit)}
+                    </td>
+
+                    <td class="${resultClass}">
+                        ${item.result || "--"}
+                    </td>
+
+                `;
+
+
+                body.appendChild(
+                    row
+                );
+
+            }
+        );
 
 }
 
-
-updateBalance();
 
 renderHistory();
 
+
+/* =========================
+   START PRICE
+========================= */
+
 connectBinance();
+
+
+setTimeout(
+    function () {
+
+        if (
+            !currentPrice
+        ) {
+
+            startFallback();
+
+        }
+
+    },
+    5500
+);
 
 </script>
 

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Demo Platform</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f7f8fa;
+      color: #222;
+      padding-bottom: 85px;
+    }
+
+    header {
+      background: white;
+      padding: 18px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ticker {
+      background: white;
+      padding: 14px 20px;
+      display: flex;
+      gap: 34px;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .ticker span {
+      font-weight: 600;
+    }
+
+    .green {
+      color: #00a67e;
+    }
+
+    .red {
+      color: #e84545;
+    }
+
+    .market-wrap {
+      background: white;
+      margin-top: 14px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th,
+    td {
+      padding: 20px 28px;
+      border-bottom: 1px solid #eceff3;
+      text-align: left;
+    }
+
+    th {
+      color: #707a8a;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    td {
+      font-size: 15px;
+    }
+
+    .coin {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .coin-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .btc { background: #f7931a; }
+    .eth { background: #627eea; }
+    .xrp { background: #222; }
+    .sol { background: #7b2cff; }
+    .ada { background: #1c72d8; }
+    .trx { background: #ef0027; }
+
+    .chart {
+      width: 120px;
+      height: 35px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 76px;
+      background: white;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-item {
+      text-align: center;
+      color: #707a8a;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .nav-item strong {
+      display: block;
+      font-size: 22px;
+      color: #404852;
+      margin-bottom: 5px;
+    }
+
+    .nav-item.active {
+      color: #111;
+      font-weight: bold;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 14px;
+      }
+
+      th,
+      td {
+        padding: 16px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Welcome, Demo User
+</header>
+
+<div class="ticker">
+  <span>US 100 Cash CFD <b>29,370.4</b> <span class="green">+0.87%</span></span>
+  <span>EUR/USD <b>1.15960</b> <span class="red">-0.11%</span></span>
+  <span>Bitcoin <b id="ticker-btc">Loading...</b></span>
+  <span>Ethereum <b id="ticker-eth">Loading...</b></span>
+  <span>S&P 500 <b>7,657.1</b> <span class="green">+0.80%</span></span>
+</div>
+
+<div class="market-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Coins</th>
+        <th>Last Price</th>
+        <th>Change (24H)</th>
+        <th>High (24H)</th>
+        <th>Low (24H)</th>
+        <th>Volume (24H)</th>
+        <th>Chart</th>
+      </tr>
+    </thead>
+
+    <tbody id="market-table">
+
+      <tr>
+        <td>
+          <div class="coin">
+            <div class="coin-icon btc">₿</div>
+            BTC/USDT
+          </div>
+        </td>
+        <td id="btc-price">Loading...</td>
+        <td id="btc-change">-</td>
+        <td id="btc-high">-</td>
+        <td id="btc-low">-</td>
+        <td id="btc-volume">-</td>
+        <td>
+          <svg class="chart" viewBox="0 0 120 35">
+            <polyline
+              points="0,28 12,20 22,24 35,16 49,18 63,11 75,14 90,7 104,10 120,5"
+              fill="none"
+              stroke="#00a67e"
+              stroke-width="2"
+            />
+          </svg>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="coin">
+            <div class="coin-icon eth">E</div>
+            ETH/USDT
+          </div>
+        </td>
+        <td id="eth-price">Loading...</td>
+        <td id="eth-change">-</td>
+        <td id="eth-high">-</td>
+        <td id="eth-low">-</td>
+        <td id="eth-volume">-</td>
+        <td>
+          <svg class="chart" viewBox="0 0 120 35">
+            <polyline
+              points="0,10 15,13 27,8 40,18 55,11 70,21 84,16 98,7 120,4"
+              fill="none"
+              stroke="#00a67e"
+              stroke-width="2"
+            />
+          </svg>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="coin">
+            <div class="coin-icon xrp">X</div>
+            XRP/USDT
+          </div>
+        </td>
+        <td>$1.37</td>
+        <td class="green">+1.09%</td>
+        <td>$1.37</td>
+        <td>$1.35</td>
+        <td>43.61M</td>
+        <td>
+          <svg class="chart" viewBox="0 0 120 35">
+            <polyline
+              points="0,15 12,19 28,24 40,21 55,22 68,16 82,12 95,14 110,7 120,8"
+              fill="none"
+              stroke="#ff5a36"
+              stroke-width="2"
+            />
+          </svg>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="coin">
+            <div class="coin-icon sol">S</div>
+            SOL/USDT
+          </div>
+        </td>
+        <td>$102.31</td>
+        <td class="red">-0.13%</td>
+        <td>$102.56</td>
+        <td>$101.42</td>
+        <td>559.98K</td>
+        <td>
+          <svg class="chart" viewBox="0 0 120 35">
+            <polyline
+              points="0,26 13,22 25,27 37,23 52,21 62,17 73,20 85,14 98,12 111,8 120,4"
+              fill="none"
+              stroke="#ff5a36"
+              stroke-width="2"
+            />
+          </svg>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="coin">
+            <div class="coin-icon ada">A</div>
+            ADA/USDT
+          </div>
+        </td>
+        <td>$0.21</td>
+        <td class="green">+1.26%</td>
+        <td>$0.21</td>
+        <td>$0.21</td>
+        <td>43.13M</td>
+        <td>
+          <svg class="chart" viewBox="0 0 120 35">
+            <polyline
+              points="0,10 11,22 20,12 32,19 45,14 60,5 73,9 84,16 96,19 110,27 120,29"
+              fill="none"
+              stroke="#ff5a36"
+              stroke-width="2"
+            />
+          </svg>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active">
+    <strong>▥</strong>
+    Markets
+  </div>
+
+  <div class="nav-item">
+    <strong>⇄</strong>
+    Trading
+  </div>
+
+  <div class="nav-item">
+    <strong>◉</strong>
+    Assets
+  </div>
+
+  <div class="nav-item">
+    <strong>●</strong>
+    Profile
+  </div>
+</div>
+
+<script>
+  async function loadPrices() {
+    try {
+      const response = await fetch(
+        "https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22%5D"
+      );
+
+      const data = await response.json();
+
+      const btc = data.find(x => x.symbol === "BTCUSDT");
+      const eth = data.find(x => x.symbol === "ETHUSDT");
+
+      updateCoin("btc", btc);
+      updateCoin("eth", eth);
+
+      document.getElementById("ticker-btc").textContent =
+        "$" + Number(btc.lastPrice).toLocaleString();
+
+      document.getElementById("ticker-eth").textContent =
+        "$" + Number(eth.lastPrice).toLocaleString();
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function updateCoin(prefix, coin) {
+    const change = Number(coin.priceChangePercent);
+
+    document.getElementById(prefix + "-price").textContent =
+      "$" + Number(coin.lastPrice).toLocaleString();
+
+    const changeElement =
+      document.getElementById(prefix + "-change");
+
+    changeElement.textContent =
+      (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+
+    changeElement.className =
+      change >= 0 ? "green" : "red";
+
+    document.getElementById(prefix + "-high").textContent =
+      "$" + Number(coin.highPrice).toLocaleString();
+
+    document.getElementById(prefix + "-low").textContent =
+      "$" + Number(coin.lowPrice).toLocaleString();
+
+    document.getElementById(prefix + "-volume").textContent =
+      Number(coin.volume).toLocaleString(undefined, {
+        maximumFractionDigits: 0
+      });
+  }
+
+  loadPrices();
+
+  setInterval(loadPrices, 10000);
+</script>
+
+</body>
+</html>

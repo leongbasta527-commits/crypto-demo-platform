@@ -871,77 +871,67 @@ let fallbackStarted =
   false;
 
 
-function startFallbackPrice(){
-
-  if(
-    fallbackStarted
-  ){
-    return;
-  }
-
-  fallbackStarted =
-    true;
-
-
-  async function loadFallback(){
-
-    try{
-
-      const response =
-        await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-        );
-
-      const data =
-        await response.json();
-
-      if(
-        data.bitcoin &&
-        data.bitcoin.usd
-      ){
-
-        updatePrice(
-          data.bitcoin.usd
-        );
-
-        document
-          .getElementById(
-            "connectionDot"
-          )
-          .className =
-          "status online";
-
-        document
-          .getElementById(
-            "connectionText"
-          )
-          .innerText =
-          "Fallback Live";
-
-      }
-
+function startFallbackPrice() {
+    if (fallbackStarted) {
+        return;
     }
 
-    catch(error){
+    fallbackStarted = true;
 
-      console.log(
-        error
-      );
+    async function loadFallback() {
+        try {
+            const response = await fetch(
+                "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+                {
+                    cache: "no-store"
+                }
+            );
 
+            if (!response.ok) {
+                throw new Error("Coinbase price failed");
+            }
+
+            const data = await response.json();
+
+            const price =
+                Number(data.data.amount);
+
+            if (
+                !Number.isFinite(price) ||
+                price <= 0
+            ) {
+                throw new Error("Invalid Coinbase price");
+            }
+
+            updatePrice(price);
+
+            document
+                .getElementById("connectionDot")
+                .className = "status online";
+
+            document
+                .getElementById("connectionText")
+                .innerText = "Live";
+
+        } catch (error) {
+            console.log(
+                "Coinbase fallback error",
+                error
+            );
+
+            document
+                .getElementById("connectionText")
+                .innerText = "Price unavailable";
+        }
     }
 
-  }
+    loadFallback();
 
-
-  loadFallback();
-
-  setInterval(
-    loadFallback,
-    2000
-  );
-
+    setInterval(
+        loadFallback,
+        1000
+    );
 }
-
 
 function placeOrder(direction){
 

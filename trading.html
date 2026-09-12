@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trading Demo</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f7fa;
+  color:#222;
+  padding-bottom:80px
+}
+
+.top{
+  background:white;
+  padding:18px 20px;
+  border-bottom:1px solid #ddd
+}
+
+.pair{
+  font-size:20px;
+  font-weight:bold
+}
+
+.price{
+  font-size:32px;
+  margin-top:10px;
+  font-weight:bold
+}
+
+.balance{
+  margin-top:8px;
+  color:#666
+}
+
+.chart{
+  height:260px;
+  background:white;
+  margin-top:12px;
+  padding:20px;
+}
+
+.chart svg{
+  width:100%;
+  height:100%
+}
+
+.panel{
+  background:white;
+  margin-top:12px;
+  padding:20px
+}
+
+label{
+  display:block;
+  margin-top:15px;
+  margin-bottom:7px;
+  color:#666
+}
+
+select,input{
+  width:100%;
+  padding:14px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:16px
+}
+
+.buttons{
+  display:flex;
+  gap:12px;
+  margin-top:20px
+}
+
+button{
+  flex:1;
+  border:0;
+  padding:16px;
+  border-radius:8px;
+  font-size:17px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer
+}
+
+.up{background:#14a67a}
+.down{background:#e84c4c}
+
+.order{
+  background:#f5f7fa;
+  margin-top:20px;
+  padding:15px;
+  border-radius:8px;
+  line-height:1.7
+}
+
+.result{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px
+}
+
+.green{color:#14a67a}
+.red{color:#e84c4c}
+
+.nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:white;
+  border-top:1px solid #ddd;
+  display:flex;
+  align-items:center;
+  justify-content:space-around
+}
+
+.nav a{
+  text-decoration:none;
+  color:#777
+}
+
+.nav .active{
+  color:#111;
+  font-weight:bold
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div class="pair">BTC / USDT</div>
+
+  <div class="price" id="price">
+    Loading...
+  </div>
+
+  <div class="balance">
+    Demo Balance:
+    <strong><span id="balance">10000.00</span> USDT</strong>
+  </div>
+</div>
+
+<div class="chart">
+
+<svg viewBox="0 0 600 220">
+  <polyline
+    id="line"
+    fill="none"
+    stroke="#14a67a"
+    stroke-width="4"
+    points="
+    0,180
+    50,165
+    100,175
+    150,135
+    200,145
+    250,110
+    300,125
+    350,80
+    400,95
+    450,55
+    500,75
+    550,35
+    600,45
+    ">
+  </polyline>
+</svg>
+
+</div>
+
+<div class="panel">
+
+<label>Duration</label>
+
+<select id="duration">
+  <option value="30">30 seconds</option>
+  <option value="60">60 seconds</option>
+</select>
+
+<label>Amount (Demo USDT)</label>
+
+<input
+  type="number"
+  id="amount"
+  value="100"
+  min="1"
+>
+
+<div class="buttons">
+
+<button
+  class="up"
+  onclick="placeOrder('UP')">
+  ↑ UP
+</button>
+
+<button
+  class="down"
+  onclick="placeOrder('DOWN')">
+  ↓ DOWN
+</button>
+
+</div>
+
+<div
+  class="order"
+  id="orderBox"
+  style="display:none">
+
+  Direction:
+  <strong id="direction"></strong>
+
+  <br>
+
+  Entry Price:
+  <strong id="entry"></strong>
+
+  <br>
+
+  Time Remaining:
+  <strong>
+    <span id="timer"></span>s
+  </strong>
+
+  <br>
+
+  Current Price:
+  <strong id="current"></strong>
+
+  <div
+    class="result"
+    id="result">
+  </div>
+
+</div>
+
+</div>
+
+<div class="nav">
+
+<a href="index.html">
+Markets
+</a>
+
+<a
+  href="trading.html"
+  class="active">
+Trading
+</a>
+
+<a href="#">
+Assets
+</a>
+
+<a href="#">
+Profile
+</a>
+
+</div>
+
+<script>
+
+let currentPrice = 0;
+let balance = 10000;
+let activeOrder = false;
+
+async function getPrice(){
+
+  try{
+
+    const r =
+      await fetch(
+        "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+      );
+
+    const d =
+      await r.json();
+
+    currentPrice =
+      Number(d.price);
+
+    document.getElementById("price")
+      .innerText =
+      "$" +
+      currentPrice.toLocaleString();
+
+    document.getElementById("current")
+      .innerText =
+      "$" +
+      currentPrice.toLocaleString();
+
+  }catch(e){
+
+    console.log(e);
+
+  }
+
+}
+
+async function placeOrder(direction){
+
+  if(activeOrder){
+    alert("Wait for the current demo order to finish.");
+    return;
+  }
+
+  const amount =
+    Number(
+      document.getElementById("amount").value
+    );
+
+  const duration =
+    Number(
+      document.getElementById("duration").value
+    );
+
+  if(amount <= 0 || amount > balance){
+
+    alert("Invalid demo amount");
+    return;
+
+  }
+
+  if(!currentPrice){
+
+    alert("Price is still loading");
+    return;
+
+  }
+
+  activeOrder = true;
+
+  const entryPrice =
+    currentPrice;
+
+  balance -= amount;
+
+  updateBalance();
+
+  document.getElementById("orderBox")
+    .style.display = "block";
+
+  document.getElementById("direction")
+    .innerText =
+    direction;
+
+  document.getElementById("entry")
+    .innerText =
+    "$" +
+    entryPrice.toLocaleString();
+
+  document.getElementById("result")
+    .innerText = "";
+
+  let seconds =
+    duration;
+
+  document.getElementById("timer")
+    .innerText =
+    seconds;
+
+  const timer =
+    setInterval(()=>{
+
+      seconds--;
+
+      document.getElementById("timer")
+        .innerText =
+        seconds;
+
+      if(seconds <= 0){
+
+        clearInterval(timer);
+
+        settle(
+          direction,
+          entryPrice,
+          amount
+        );
+
+      }
+
+    },1000);
+
+}
+
+function settle(
+  direction,
+  entryPrice,
+  amount
+){
+
+  const exitPrice =
+    currentPrice;
+
+  let win = false;
+
+  if(
+    direction === "UP" &&
+    exitPrice > entryPrice
+  ){
+    win = true;
+  }
+
+  if(
+    direction === "DOWN" &&
+    exitPrice < entryPrice
+  ){
+    win = true;
+  }
+
+  const result =
+    document.getElementById("result");
+
+  if(exitPrice === entryPrice){
+
+    balance += amount;
+
+    result.innerText =
+      "DRAW";
+
+    result.className =
+      "result";
+
+  }
+
+  else if(win){
+
+    const profit =
+      amount * 0.80;
+
+    balance +=
+      amount + profit;
+
+    result.innerText =
+      "WIN +" +
+      profit.toFixed(2) +
+      " USDT";
+
+    result.className =
+      "result green";
+
+  }
+
+  else{
+
+    result.innerText =
+      "LOSS -" +
+      amount.toFixed(2) +
+      " USDT";
+
+    result.className =
+      "result red";
+
+  }
+
+  updateBalance();
+
+  activeOrder = false;
+
+}
+
+function updateBalance(){
+
+  document.getElementById("balance")
+    .innerText =
+    balance.toFixed(2);
+
+}
+
+getPrice();
+
+setInterval(
+  getPrice,
+  2000
+);
+
+</script>
+
+</body>
+</html>

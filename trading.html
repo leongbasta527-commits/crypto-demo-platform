@@ -793,80 +793,79 @@ function updatePrice(price){
 }
 
 
-function connectBinance(){
+function connectBinance() {
+    const connectionText =
+        document.getElementById("connectionText");
 
-  document
-    .getElementById("connectionText")
-    .innerText = "Connecting...";
+    const connectionDot =
+        document.getElementById("connectionDot");
 
-  try{
+    connectionText.innerText =
+        "Connecting...";
 
-    const socket = new WebSocket(
-      "wss://stream.binance.com:9443/ws/btcusdt@trade"
+    async function loadPrice() {
+        try {
+            const controller =
+                new AbortController();
+
+            const timeout =
+                setTimeout(
+                    () => controller.abort(),
+                    2500
+                );
+
+            const response =
+                await fetch(
+                    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+                    {
+                        cache: "no-store",
+                        signal: controller.signal
+                    }
+                );
+
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                throw new Error("Binance REST failed");
+            }
+
+            const data =
+                await response.json();
+
+            const price =
+                Number(data.price);
+
+            if (
+                !Number.isFinite(price) ||
+                price <= 0
+            ) {
+                throw new Error("Invalid price");
+            }
+
+            updatePrice(price);
+
+            connectionDot.className =
+                "status online";
+
+            connectionText.innerText =
+                "Live";
+
+        } catch (error) {
+            console.log(
+                "Binance REST failed, using fallback"
+            );
+
+            startFallbackPrice();
+        }
+    }
+
+    loadPrice();
+
+    setInterval(
+        loadPrice,
+        1000
     );
-
-    socket.onopen = function(){
-
-      document
-        .getElementById("connectionDot")
-        .className = "status online";
-
-      document
-        .getElementById("connectionText")
-        .innerText = "Live";
-
-    };
-
-    socket.onmessage = function(event){
-
-      const data = JSON.parse(event.data);
-
-      const price = parseFloat(data.p);
-
-      if(price){
-        updatePrice(price);
-      }
-
-    };
-
-    socket.onerror = function(){
-
-      document
-        .getElementById("connectionDot")
-        .className = "status offline";
-
-      document
-        .getElementById("connectionText")
-        .innerText = "Fallback Live";
-
-      startFallbackPrice();
-
-    };
-
-    socket.onclose = function(){
-
-      document
-        .getElementById("connectionDot")
-        .className = "status offline";
-
-      document
-        .getElementById("connectionText")
-        .innerText = "Fallback Live";
-
-      startFallbackPrice();
-
-    };
-
-  }catch(error){
-
-    console.log(error);
-
-    startFallbackPrice();
-
-  }
-
 }
-
 
 let fallbackStarted =
   false;

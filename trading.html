@@ -337,7 +337,7 @@ function showOrderToast(order){
   document.getElementById('toastDuration').textContent=order.duration+' Seconds';
   wrap.classList.add('show');
   clearTimeout(orderToastTimer);
-  orderToastTimer=setTimeout(hideOrderToast,2800);
+  orderToastTimer=setTimeout(hideOrderToast,5000);
 }
 function hideOrderToast(){
   const wrap=document.getElementById('orderToastWrap');

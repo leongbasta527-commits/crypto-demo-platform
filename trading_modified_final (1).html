@@ -1,0 +1,4627 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Trading Demo</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #080d13;
+    color: #eef3f8;
+    font-family: Arial, Helvetica, sans-serif;
+    padding-bottom: 75px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    background: #0b1118;
+    padding: 16px 18px 18px;
+    border-bottom: 1px solid #202b38;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.pair-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pair-name {
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.demo-tag {
+    padding: 4px 7px;
+    border-radius: 5px;
+    background: #243348;
+    color: #8fb9ff;
+    font-size: 10px;
+}
+
+.favorite-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #2b3948;
+    border-radius: 8px;
+    background: #111923;
+    color: #9ba8ba;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.favorite-btn.active {
+    color: #ffd43b;
+    border-color: #665a20;
+}
+
+.market-overview {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, .8fr);
+    gap: 34px;
+    align-items: center;
+}
+
+.latest-label {
+    color: #78879a;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+.price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.price {
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: #24d79a;
+}
+
+.price.green { color: #24d79a; }
+.price.red { color: #f25b68; }
+
+.change24 {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.change24.green { color: #24d79a; }
+.change24.red { color: #f25b68; }
+
+.mark-row {
+    margin-top: 10px;
+    color: #77869a;
+    font-size: 15px;
+}
+
+.mark-row span:last-child {
+    color: #8d9aab;
+}
+
+.feed-status {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #66768b;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f2b742;
+    margin-right: 5px;
+}
+
+.status-dot.online { background: #24d79a; }
+.status-dot.error { background: #f25b68; }
+
+.market-stats {
+    display: grid;
+    gap: 10px;
+    align-self: center;
+}
+
+.market-stat {
+    display: grid;
+    grid-template-columns: minmax(95px, 1fr) auto;
+    gap: 28px;
+    align-items: baseline;
+}
+
+.market-stat-label {
+    color: #6f7e91;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+.market-stat-value {
+    color: #eef3f8;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.market-stat-value.high,
+.market-stat-value.low {
+    color: #eef3f8;
+}
+
+@media (max-width: 700px) {
+    .market-overview {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: end;
+    }
+
+    .latest-label,
+    .mark-row,
+    .market-stat-label {
+        font-size: 12px;
+    }
+
+    .price {
+        font-size: 34px;
+    }
+
+    .change24 {
+        font-size: 17px;
+    }
+
+    .market-stat {
+        grid-template-columns: auto auto;
+        gap: 10px;
+    }
+
+    .market-stat-value {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 430px) {
+    .header {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .market-overview {
+        grid-template-columns: minmax(0, 1.08fr) minmax(145px, .92fr);
+        gap: 10px;
+    }
+
+    .price {
+        font-size: 31px;
+    }
+
+    .change24 {
+        font-size: 14px;
+    }
+
+    .price-row {
+        gap: 6px;
+    }
+
+    .market-stat-label {
+        font-size: 11px;
+    }
+
+    .market-stat-value {
+        font-size: 12px;
+    }
+
+    .market-stat {
+        gap: 5px;
+    }
+}
+
+/* =========================
+   BALANCE
+========================= */
+
+.balance-box {
+    margin: 13px;
+    padding: 14px;
+    border: 1px solid #202c39;
+    border-radius: 8px;
+    background: #0e161f;
+}
+
+.balance-label {
+    font-size: 11px;
+    color: #718095;
+}
+
+.balance {
+    margin-top: 5px;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+/* =========================
+   CHART
+========================= */
+
+.chart-box {
+    margin: 13px;
+    height: 500px;
+    border: 1px solid #202b37;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0c1219;
+}
+
+#klineChart {
+    width: 100%;
+    height: calc(100% - 44px);
+    position: relative;
+}
+
+.chart-legend {
+    position: absolute;
+    top: 54px;
+    left: 24px;
+    z-index: 4;
+    pointer-events: none;
+    font-size: 12px;
+    color: #b6c2d1;
+    line-height: 1.55;
+}
+
+.chart-symbol-line {
+    font-size: 13px;
+    color: #e8edf4;
+}
+
+.chart-ohlc {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chart-ohlc span {
+    color: #8fa0b4;
+}
+
+.chart-ohlc b {
+    font-weight: 500;
+    color: #24d79a;
+}
+
+.volume-legend {
+    position: absolute;
+    left: 24px;
+    bottom: 88px;
+    z-index: 4;
+    color: #cbd5e1;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.kline-timeframes {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    overflow-x: auto;
+    border-bottom: 1px solid #202b37;
+    background: #0d141d;
+}
+
+.kline-timeframes button {
+    flex: 0 0 auto;
+    min-width: 43px;
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #7f8c9f;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.kline-timeframes button:hover {
+    background: #151f2b;
+    color: #dfe7f1;
+}
+
+.kline-timeframes button.active {
+    color: #4c9aff;
+    background: #132238;
+    border-color: #284d78;
+}
+
+.chart-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #748196;
+    font-size: 12px;
+    background: rgba(12,18,25,.45);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.chart-box {
+    position: relative;
+}
+
+/* =========================
+   TRADING PANEL
+========================= */
+
+.trade-panel {
+    margin: 13px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #202b38;
+    background: #0e161f;
+}
+
+.panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.label {
+    font-size: 11px;
+    color: #758398;
+    margin-bottom: 7px;
+}
+
+/* =========================
+   DURATION DROPDOWN
+========================= */
+
+.duration-wrap {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.duration-select {
+    width: 100%;
+    height: 43px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border: 1px solid #293647;
+    border-radius: 7px;
+    background: #111a24;
+    color: white;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.duration-arrow {
+    color: #79879b;
+    transition: transform .15s;
+}
+
+.duration-wrap.open .duration-arrow {
+    transform: rotate(180deg);
+}
+
+.duration-menu {
+    display: none;
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 49px;
+
+    border: 1px solid #2c3949;
+    border-radius: 7px;
+
+    background: #111923;
+
+    overflow: hidden;
+
+    z-index: 50;
+
+    box-shadow:
+        0 12px 30px
+        rgba(0,0,0,.45);
+}
+
+.duration-wrap.open .duration-menu {
+    display: block;
+}
+
+.duration-option {
+    height: 42px;
+    padding: 0 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: pointer;
+
+    border-bottom:
+        1px solid #1e2935;
+
+    font-size: 13px;
+}
+
+.duration-option:last-child {
+    border-bottom: 0;
+}
+
+.duration-option:hover {
+    background: #172231;
+}
+
+.duration-option.selected {
+    color: #4c9aff;
+}
+
+/* =========================
+   AMOUNT
+========================= */
+
+.amount-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+
+    border-radius: 7px;
+    border: 1px solid #293647;
+
+    background: #111a24;
+    color: white;
+
+    outline: none;
+    font-size: 14px;
+}
+
+.amount-buttons {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.amount-buttons button {
+    height: 35px;
+
+    border: 1px solid #293647;
+    background: #111923;
+
+    color: #a5b0bf;
+
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* =========================
+   PAYOUT
+========================= */
+
+.payout-row {
+    margin-top: 13px;
+    padding: 11px 12px;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    background: #0b1219;
+    border-radius: 7px;
+
+    font-size: 12px;
+}
+
+.payout-row span:first-child {
+    color: #768499;
+}
+
+.payout-value {
+    color: #24d79a;
+    font-weight: 700;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.trade-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+
+    margin-top: 15px;
+}
+
+.trade-buttons button {
+    height: 52px;
+
+    border: 0;
+    border-radius: 7px;
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.up-btn {
+    background: #18b981;
+}
+
+.down-btn {
+    background: #e94f5d;
+}
+
+.trade-buttons button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* =========================
+   ACTIVE ORDER
+========================= */
+
+.order-box {
+    display: none;
+
+    margin: 13px;
+    padding: 15px;
+
+    border: 1px solid #2b3948;
+    border-radius: 8px;
+
+    background: #101923;
+}
+
+.order-box.active {
+    display: block;
+}
+
+.order-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.order-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+}
+
+.order-item {
+    padding: 10px;
+    background: #0b1219;
+    border-radius: 6px;
+}
+
+.order-item-label {
+    font-size: 10px;
+    color: #748196;
+}
+
+.order-item-value {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.countdown {
+    font-size: 27px;
+    font-weight: 700;
+    color: #3388ff;
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+.history {
+    margin: 13px;
+
+    border: 1px solid #202b38;
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background: #0e161f;
+}
+
+.history-title {
+    padding: 14px;
+    font-weight: 700;
+
+    border-bottom:
+        1px solid #202b38;
+}
+
+.history-scroll {
+    overflow-x: auto;
+}
+
+.history table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.history th,
+.history td {
+    height: 40px;
+
+    padding: 0 10px;
+
+    text-align: right;
+
+    font-size: 11px;
+
+    border-bottom:
+        1px solid #19232e;
+
+    white-space: nowrap;
+}
+
+.history th {
+    color: #748196;
+    font-weight: 500;
+}
+
+.history th:first-child,
+.history td:first-child {
+    text-align: left;
+}
+
+.win {
+    color: #24d79a;
+}
+
+.loss {
+    color: #f25b68;
+}
+
+.draw {
+    color: #f2b742;
+}
+
+.empty {
+    padding: 25px;
+
+    text-align: center;
+
+    color: #748196;
+
+    font-size: 12px;
+}
+
+/* =========================
+   NOTICE
+========================= */
+
+.notice {
+    margin: 13px;
+
+    padding: 11px 13px;
+
+    border: 1px solid #202b38;
+    border-radius: 7px;
+
+    background: #0d151e;
+
+    color: #6f7d91;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* =========================
+   NAV
+========================= */
+
+.bottom-nav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 64px;
+
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+
+    background: #0d141d;
+
+    border-top:
+        1px solid #25303c;
+
+    z-index: 999;
+}
+
+.bottom-nav a {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    color: #7e8a9e;
+
+    text-decoration: none;
+
+    font-size: 12px;
+}
+
+.bottom-nav a.active {
+    color: #3388ff;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (min-width: 900px) {
+
+    body {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .chart-box {
+        height: 560px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .chart-box {
+        height: 420px;
+        margin: 10px;
+    }
+
+    .trade-panel,
+    .balance-box,
+    .order-box,
+    .history,
+    .notice {
+
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .order-grid {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .pair-name {
+        font-size: 20px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+
+<header class="header">
+
+    <div class="header-top">
+
+        <div class="pair-area">
+
+            <span
+                id="pairName"
+                class="pair-name"
+            >
+                BTC / USDT
+            </span>
+
+            <span class="demo-tag">
+                DEMO
+            </span>
+
+        </div>
+
+        <button
+            id="favoriteBtn"
+            class="favorite-btn"
+            onclick="toggleFavorite()"
+            title="Add to favourites"
+        >
+            ☆
+        </button>
+
+    </div>
+
+    <div class="market-overview">
+
+        <div class="market-main">
+
+            <div class="latest-label">
+                最新成交价
+            </div>
+
+            <div class="price-row">
+
+                <div
+                    id="price"
+                    class="price"
+                >
+                    Loading...
+                </div>
+
+                <div
+                    id="change24h"
+                    class="change24"
+                >
+                    --
+                </div>
+
+            </div>
+
+            <div class="mark-row">
+                标记价格
+                <span id="markPrice">
+                    --
+                </span>
+            </div>
+
+            <div class="feed-status">
+
+                <span
+                    id="connectionDot"
+                    class="status-dot"
+                ></span>
+
+                <span id="connectionText">
+                    Connecting...
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="market-stats">
+
+            <div class="market-stat">
+                <div class="market-stat-label">
+                    24h最高
+                </div>
+                <div
+                    id="high24h"
+                    class="market-stat-value high"
+                >
+                    --
+                </div>
+            </div>
+
+            <div class="market-stat">
+                <div class="market-stat-label">
+                    24h最低
+                </div>
+                <div
+                    id="low24h"
+                    class="market-stat-value low"
+                >
+                    --
+                </div>
+            </div>
+
+            <div class="market-stat">
+                <div class="market-stat-label">
+                    24h交易额
+                </div>
+                <div
+                    id="volume24h"
+                    class="market-stat-value"
+                >
+                    --
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<section class="balance-box">
+
+    <div class="balance-label">
+        Demo Balance
+    </div>
+
+    <div class="balance">
+
+        <span id="balance">
+            10000.00
+        </span>
+
+        USDT
+
+    </div>
+
+</section>
+
+
+<section class="chart-box">
+
+    <div
+        id="klineTimeframes"
+        class="kline-timeframes"
+    >
+        <button class="active" data-interval="1m" onclick="selectKlineInterval('1m')">1m</button>
+        <button data-interval="5m" onclick="selectKlineInterval('5m')">5m</button>
+        <button data-interval="15m" onclick="selectKlineInterval('15m')">15m</button>
+        <button data-interval="30m" onclick="selectKlineInterval('30m')">30m</button>
+        <button data-interval="1h" onclick="selectKlineInterval('1h')">1h</button>
+        <button data-interval="4h" onclick="selectKlineInterval('4h')">4h</button>
+        <button data-interval="1d" onclick="selectKlineInterval('1d')">1D</button>
+    </div>
+
+    <div id="klineChart"></div>
+
+    <div
+        id="chartLoading"
+        class="chart-loading"
+    >
+        Loading K-line chart...
+    </div>
+
+</section>
+
+
+<section class="trade-panel">
+
+    <div class="panel-title">
+        Second Contract
+    </div>
+
+
+    <div class="label">
+        Duration
+    </div>
+
+
+    <div
+        id="durationWrap"
+        class="duration-wrap"
+    >
+
+        <div
+            class="duration-select"
+            onclick="toggleDurationMenu()"
+        >
+
+            <span id="durationText">
+                30 Seconds
+            </span>
+
+            <span class="duration-arrow">
+                ▼
+            </span>
+
+        </div>
+
+
+        <div class="duration-menu">
+
+            <div
+                class="duration-option selected"
+                data-seconds="30"
+                onclick="selectDuration(30)"
+            >
+                <span>30 Seconds</span>
+                <span>✓</span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="60"
+                onclick="selectDuration(60)"
+            >
+                <span>60 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="120"
+                onclick="selectDuration(120)"
+            >
+                <span>120 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="180"
+                onclick="selectDuration(180)"
+            >
+                <span>180 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="240"
+                onclick="selectDuration(240)"
+            >
+                <span>240 Seconds</span>
+                <span></span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="label">
+        Amount (USDT)
+    </div>
+
+
+    <input
+        id="amount"
+        class="amount-input"
+        type="number"
+        min="1"
+        step="1"
+        value="100"
+        oninput="updatePotentialPayout()"
+    >
+
+
+    <div class="amount-buttons">
+
+        <button onclick="setAmount(100)">
+            100
+        </button>
+
+        <button onclick="setAmount(500)">
+            500
+        </button>
+
+        <button onclick="setAmount(1000)">
+            1000
+        </button>
+
+        <button onclick="setAmount(5000)">
+            5000
+        </button>
+
+    </div>
+
+
+    <div class="payout-row">
+
+        <span>
+            Potential Profit
+        </span>
+
+        <span
+            id="potentialPayout"
+            class="payout-value"
+        >
+            +80.00 USDT
+        </span>
+
+    </div>
+
+
+    <div class="trade-buttons">
+
+        <button
+            id="upBtn"
+            class="up-btn"
+            onclick="placeOrder('UP')"
+        >
+            ↑ UP
+            <br>
+            +80%
+        </button>
+
+
+        <button
+            id="downBtn"
+            class="down-btn"
+            onclick="placeOrder('DOWN')"
+        >
+            ↓ DOWN
+            <br>
+            +80%
+        </button>
+
+    </div>
+
+</section>
+
+
+<section
+    id="orderBox"
+    class="order-box"
+>
+
+    <div class="order-title">
+        Active Demo Order
+    </div>
+
+
+    <div class="order-grid">
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Pair
+            </div>
+
+            <div
+                id="activePair"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Direction
+            </div>
+
+            <div
+                id="activeDirection"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Amount
+            </div>
+
+            <div
+                id="activeAmount"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Entry
+            </div>
+
+            <div
+                id="activeEntry"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Duration
+            </div>
+
+            <div
+                id="activeDuration"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
+            <div class="order-item-label">
+                Time Left
+            </div>
+
+            <div
+                id="countdown"
+                class="countdown"
+            >
+                --
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="history">
+
+    <div class="history-title">
+        Demo Order History
+    </div>
+
+
+    <div class="history-scroll">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Time</th>
+
+                    <th>Pair</th>
+
+                    <th>Side</th>
+
+                    <th>Duration</th>
+
+                    <th>Amount</th>
+
+                    <th>Entry</th>
+
+                    <th>Exit</th>
+
+                    <th>Result</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="historyBody"
+            ></tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<div class="notice">
+
+    DEMO ONLY — No real-money trading,
+    deposits or withdrawals.
+
+    Prices are market references and may
+    differ slightly between data providers.
+
+</div>
+
+
+<nav class="bottom-nav">
+
+    <a href="index.html">
+        Markets
+    </a>
+
+
+    <a
+        id="tradingNav"
+        class="active"
+        href="trading.html?symbol=BTC"
+    >
+        Trading
+    </a>
+
+
+    <a href="assets.html">
+        Assets
+    </a>
+
+
+    <a href="#">
+        Profile
+    </a>
+
+</nav>
+
+
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+
+
+<script>
+
+/* ==================================================
+   30 COIN CONFIG
+================================================== */
+
+const coinConfig = {
+
+    BTC: {
+        id: "bitcoin",
+        tv: "BINANCE:BTCUSDT"
+    },
+
+    ETH: {
+        id: "ethereum",
+        tv: "BINANCE:ETHUSDT"
+    },
+
+    BNB: {
+        id: "binancecoin",
+        tv: "BINANCE:BNBUSDT"
+    },
+
+    SOL: {
+        id: "solana",
+        tv: "BINANCE:SOLUSDT"
+    },
+
+    XRP: {
+        id: "ripple",
+        tv: "BINANCE:XRPUSDT"
+    },
+
+    DOGE: {
+        id: "dogecoin",
+        tv: "BINANCE:DOGEUSDT"
+    },
+
+    ADA: {
+        id: "cardano",
+        tv: "BINANCE:ADAUSDT"
+    },
+
+    TRX: {
+        id: "tron",
+        tv: "BINANCE:TRXUSDT"
+    },
+
+    AVAX: {
+        id: "avalanche-2",
+        tv: "BINANCE:AVAXUSDT"
+    },
+
+    LINK: {
+        id: "chainlink",
+        tv: "BINANCE:LINKUSDT"
+    },
+
+    DOT: {
+        id: "polkadot",
+        tv: "BINANCE:DOTUSDT"
+    },
+
+    BCH: {
+        id: "bitcoin-cash",
+        tv: "BINANCE:BCHUSDT"
+    },
+
+    LTC: {
+        id: "litecoin",
+        tv: "BINANCE:LTCUSDT"
+    },
+
+    UNI: {
+        id: "uniswap",
+        tv: "BINANCE:UNIUSDT"
+    },
+
+    XLM: {
+        id: "stellar",
+        tv: "BINANCE:XLMUSDT"
+    },
+
+    TON: {
+        id: "the-open-network",
+        tv: "BINANCE:TONUSDT"
+    },
+
+    SHIB: {
+        id: "shiba-inu",
+        tv: "BINANCE:SHIBUSDT"
+    },
+
+    HBAR: {
+        id: "hedera-hashgraph",
+        tv: "BINANCE:HBARUSDT"
+    },
+
+    SUI: {
+        id: "sui",
+        tv: "BINANCE:SUIUSDT"
+    },
+
+    APT: {
+        id: "aptos",
+        tv: "BINANCE:APTUSDT"
+    },
+
+    NEAR: {
+        id: "near",
+        tv: "BINANCE:NEARUSDT"
+    },
+
+    ICP: {
+        id: "internet-computer",
+        tv: "BINANCE:ICPUSDT"
+    },
+
+    ETC: {
+        id: "ethereum-classic",
+        tv: "BINANCE:ETCUSDT"
+    },
+
+    FIL: {
+        id: "filecoin",
+        tv: "BINANCE:FILUSDT"
+    },
+
+    ATOM: {
+        id: "cosmos",
+        tv: "BINANCE:ATOMUSDT"
+    },
+
+    ARB: {
+        id: "arbitrum",
+        tv: "BINANCE:ARBUSDT"
+    },
+
+    OP: {
+        id: "optimism",
+        tv: "BINANCE:OPUSDT"
+    },
+
+    AAVE: {
+        id: "aave",
+        tv: "BINANCE:AAVEUSDT"
+    },
+
+    PEPE: {
+        id: "pepe",
+        tv: "BINANCE:PEPEUSDT"
+    },
+
+    POL: {
+        id: "matic-network",
+        tv: "BINANCE:POLUSDT"
+    }
+
+};
+
+
+/* ==================================================
+   SELECTED SYMBOL
+================================================== */
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+let selectedSymbol =
+    (
+        urlParams.get("symbol") ||
+        "BTC"
+    ).toUpperCase();
+
+
+if (!coinConfig[selectedSymbol]) {
+
+    selectedSymbol =
+        "BTC";
+
+}
+
+
+const selectedCoin =
+    coinConfig[selectedSymbol];
+
+
+const coinGeckoId =
+    selectedCoin.id;
+
+
+/* ==================================================
+   PAGE INFO
+================================================== */
+
+document.getElementById(
+    "pairName"
+).innerText =
+    selectedSymbol +
+    " / USDT";
+
+
+document.title =
+    selectedSymbol +
+    "/USDT Trading Demo";
+
+
+document.getElementById(
+    "tradingNav"
+).href =
+    "trading.html?symbol=" +
+    encodeURIComponent(
+        selectedSymbol
+    );
+
+
+/* ==================================================
+   REAL K-LINE CHART
+================================================== */
+
+const chartContainer =
+    document.getElementById(
+        "klineChart"
+    );
+
+const chartLoading =
+    document.getElementById(
+        "chartLoading"
+    );
+
+let priceChart =
+    null;
+
+let candleSeries =
+    null;
+
+let volumeSeries =
+    null;
+
+let candleData =
+    [];
+
+let lastCandle =
+    null;
+
+const klineIntervals = {
+    "1m": {
+        binance: "1m",
+        seconds: 60,
+        fallbackDays: 1
+    },
+
+    "5m": {
+        binance: "5m",
+        seconds: 300,
+        fallbackDays: 1
+    },
+
+    "15m": {
+        binance: "15m",
+        seconds: 900,
+        fallbackDays: 7
+    },
+
+    "30m": {
+        binance: "30m",
+        seconds: 1800,
+        fallbackDays: 7
+    },
+
+    "1h": {
+        binance: "1h",
+        seconds: 3600,
+        fallbackDays: 30
+    },
+
+    "4h": {
+        binance: "4h",
+        seconds: 14400,
+        fallbackDays: 90
+    },
+
+    "1d": {
+        binance: "1d",
+        seconds: 86400,
+        fallbackDays: 365
+    }
+};
+
+let selectedKlineInterval =
+    localStorage.getItem(
+        "klineInterval"
+    ) || "1m";
+
+if (
+    !klineIntervals[
+        selectedKlineInterval
+    ]
+) {
+    selectedKlineInterval =
+        "1m";
+}
+
+function getCurrentKlineConfig() {
+
+    return klineIntervals[
+        selectedKlineInterval
+    ];
+
+}
+
+function intervalDisplayName() {
+
+    const labels = {
+        "1m": "1",
+        "5m": "5",
+        "15m": "15",
+        "30m": "30",
+        "1h": "60",
+        "4h": "240",
+        "1d": "1D"
+    };
+
+    return labels[
+        selectedKlineInterval
+    ] || selectedKlineInterval;
+
+}
+
+function updateChartHeader(candle) {
+
+    document.getElementById(
+        "chartSymbolLine"
+    ).innerText =
+        selectedSymbol +
+        "USDT · " +
+        intervalDisplayName() +
+        " · Binance";
+
+    document.getElementById(
+        "volumeSymbol"
+    ).innerText =
+        selectedSymbol;
+
+    if (!candle) {
+        return;
+    }
+
+    document.getElementById("ohlcOpen").innerText =
+        formatPrice(candle.open).replace("$", "");
+
+    document.getElementById("ohlcHigh").innerText =
+        formatPrice(candle.high).replace("$", "");
+
+    document.getElementById("ohlcLow").innerText =
+        formatPrice(candle.low).replace("$", "");
+
+    document.getElementById("ohlcClose").innerText =
+        formatPrice(candle.close).replace("$", "");
+
+}
+
+function updateKlineButtons() {
+
+    document
+        .querySelectorAll(
+            ".kline-timeframes button"
+        )
+        .forEach(
+            function (button) {
+
+                button.classList.toggle(
+                    "active",
+                    button.dataset.interval ===
+                        selectedKlineInterval
+                );
+
+            }
+        );
+
+}
+
+async function selectKlineInterval(
+    interval
+) {
+
+    if (
+        !klineIntervals[
+            interval
+        ]
+    ) {
+        return;
+    }
+
+    selectedKlineInterval =
+        interval;
+
+    localStorage.setItem(
+        "klineInterval",
+        selectedKlineInterval
+    );
+
+    updateKlineButtons();
+    updateChartHeader(null);
+
+    chartLoading.style.display =
+        "flex";
+
+    chartLoading.innerText =
+        "Loading " +
+        interval.toUpperCase() +
+        " K-line...";
+
+    candleData = [];
+    lastCandle = null;
+
+    if (
+        candleSeries
+    ) {
+        candleSeries.setData([]);
+    }
+
+    if (
+        volumeSeries
+    ) {
+        volumeSeries.setData([]);
+    }
+
+    await loadKlineData();
+
+}
+
+function chartPricePrecision(
+    price
+) {
+
+    const n =
+        Math.abs(
+            Number(price)
+        );
+
+    if (n >= 1000) {
+        return {
+            precision: 2,
+            minMove: 0.01
+        };
+    }
+
+    if (n >= 1) {
+        return {
+            precision: 4,
+            minMove: 0.0001
+        };
+    }
+
+    if (n >= 0.01) {
+        return {
+            precision: 6,
+            minMove: 0.000001
+        };
+    }
+
+    return {
+        precision: 10,
+        minMove: 0.0000000001
+    };
+}
+
+function createKlineChart() {
+
+    if (
+        typeof LightweightCharts ===
+        "undefined"
+    ) {
+
+        chartLoading.innerText =
+            "Chart library unavailable";
+
+        return;
+    }
+
+    priceChart =
+        LightweightCharts.createChart(
+            chartContainer,
+            {
+                width:
+                    chartContainer.clientWidth,
+
+                height:
+                    chartContainer.clientHeight,
+
+                layout: {
+                    background: {
+                        type:
+                            "solid",
+
+                        color:
+                            "#0c1219"
+                    },
+
+                    textColor:
+                        "#8d9aab"
+                },
+
+                grid: {
+                    vertLines: {
+                        color:
+                            "#18222d"
+                    },
+
+                    horzLines: {
+                        color:
+                            "#18222d"
+                    }
+                },
+
+                rightPriceScale: {
+                    borderColor:
+                        "#263240",
+
+                    scaleMargins: {
+                        top:
+                            0.08,
+
+                        bottom:
+                            0.08
+                    }
+                },
+
+                timeScale: {
+                    borderColor:
+                        "#263240",
+
+                    timeVisible:
+                        true,
+
+                    secondsVisible:
+                        false,
+
+                    barSpacing:
+                        6,
+
+                    minBarSpacing:
+                        2,
+
+                    rightOffset:
+                        8
+                },
+
+                crosshair: {
+                    mode:
+                        LightweightCharts
+                            .CrosshairMode
+                            .Normal
+                },
+
+                handleScroll: {
+                    mouseWheel:
+                        true,
+
+                    pressedMouseMove:
+                        true,
+
+                    horzTouchDrag:
+                        true,
+
+                    vertTouchDrag:
+                        true
+                },
+
+                handleScale: {
+                    axisPressedMouseMove:
+                        true,
+
+                    mouseWheel:
+                        true,
+
+                    pinch:
+                        true
+                }
+            }
+        );
+
+    candleSeries =
+        priceChart.addCandlestickSeries({
+            upColor:
+                "#24d79a",
+
+            downColor:
+                "#f25b68",
+
+            borderUpColor:
+                "#24d79a",
+
+            borderDownColor:
+                "#f25b68",
+
+            wickUpColor:
+                "#24d79a",
+
+            wickDownColor:
+                "#f25b68",
+
+            priceLineVisible:
+                true,
+
+            lastValueVisible:
+                true
+        });
+
+
+    volumeSeries =
+        priceChart.addHistogramSeries({
+            priceFormat: {
+                type:
+                    "volume"
+            },
+
+            priceScaleId:
+                "",
+
+            lastValueVisible:
+                false,
+
+            priceLineVisible:
+                false
+        });
+
+    priceChart
+        .priceScale("")
+        .applyOptions({
+            scaleMargins: {
+                top: 0.78,
+                bottom: 0
+            }
+        });
+
+    candleSeries
+        .priceScale()
+        .applyOptions({
+            scaleMargins: {
+                top: 0.08,
+                bottom: 0.25
+            }
+        });
+
+    const observer =
+        new ResizeObserver(
+            function () {
+
+                if (
+                    !priceChart
+                ) {
+                    return;
+                }
+
+                priceChart.applyOptions({
+                    width:
+                        chartContainer.clientWidth,
+
+                    height:
+                        chartContainer.clientHeight
+                });
+
+            }
+        );
+
+    observer.observe(
+        chartContainer
+    );
+
+}
+
+function applyChartPriceFormat(
+    referencePrice
+) {
+
+    if (
+        !candleSeries
+    ) {
+        return;
+    }
+
+    const format =
+        chartPricePrecision(
+            referencePrice
+        );
+
+    candleSeries.applyOptions({
+        priceFormat: {
+            type:
+                "price",
+
+            precision:
+                format.precision,
+
+            minMove:
+                format.minMove
+        }
+    });
+
+}
+
+async function loadBinanceKlines() {
+
+    const market =
+        selectedSymbol +
+        "USDT";
+
+    const query =
+        "?symbol=" +
+        encodeURIComponent(
+            market
+        ) +
+        "&interval=" +
+        encodeURIComponent(
+            getCurrentKlineConfig()
+                .binance
+        ) +
+        "&limit=180";
+
+    const endpoints = [
+        "https://data-api.binance.vision/api/v3/klines",
+        "https://api.binance.com/api/v3/klines",
+        "https://api1.binance.com/api/v3/klines"
+    ];
+
+    let lastError = null;
+
+    for (const endpoint of endpoints) {
+
+        try {
+
+            const response =
+                await fetch(
+                    endpoint + query,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+            if (!response.ok) {
+                continue;
+            }
+
+            const raw =
+                await response.json();
+
+            if (
+                !Array.isArray(raw) ||
+                !raw.length
+            ) {
+                continue;
+            }
+
+            return raw.map(
+                function (item) {
+
+                    return {
+                        time:
+                            Math.floor(
+                                Number(item[0]) /
+                                1000
+                            ),
+
+                        open:
+                            Number(item[1]),
+
+                        high:
+                            Number(item[2]),
+
+                        low:
+                            Number(item[3]),
+
+                        close:
+                            Number(item[4]),
+
+                        volume:
+                            Number(item[5]) || 0
+                    };
+
+                }
+            );
+
+        } catch (error) {
+            lastError = error;
+        }
+
+    }
+
+    throw lastError ||
+        new Error(
+            "Binance K-line unavailable"
+        );
+
+}
+
+async function loadCoinGeckoOhlc() {
+
+    const config =
+        getCurrentKlineConfig();
+
+    const url =
+        "https://api.coingecko.com/api/v3/coins/" +
+        encodeURIComponent(
+            coinGeckoId
+        ) +
+        "/market_chart" +
+        "?vs_currency=usd" +
+        "&days=" +
+        encodeURIComponent(
+            config.fallbackDays
+        );
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache:
+                    "no-store"
+            }
+        );
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            "CoinGecko chart unavailable"
+        );
+
+    }
+
+    const data =
+        await response.json();
+
+    const prices =
+        Array.isArray(
+            data.prices
+        )
+            ? data.prices
+            : [];
+
+    const totalVolumes =
+        Array.isArray(
+            data.total_volumes
+        )
+            ? data.total_volumes
+            : [];
+
+    if (
+        !prices.length
+    ) {
+
+        throw new Error(
+            "No CoinGecko chart data"
+        );
+
+    }
+
+    const bucketSeconds =
+        config.seconds;
+
+    const grouped =
+        new Map();
+
+    prices.forEach(
+        function (item) {
+
+            if (
+                !Array.isArray(item) ||
+                item.length < 2
+            ) {
+                return;
+            }
+
+            const timestamp =
+                Math.floor(
+                    Number(item[0]) /
+                    1000
+                );
+
+            const price =
+                Number(item[1]);
+
+            if (
+                !Number.isFinite(timestamp) ||
+                !Number.isFinite(price) ||
+                price <= 0
+            ) {
+                return;
+            }
+
+            const bucket =
+                Math.floor(
+                    timestamp /
+                    bucketSeconds
+                ) *
+                bucketSeconds;
+
+            if (
+                !grouped.has(bucket)
+            ) {
+
+                grouped.set(
+                    bucket,
+                    {
+                        time:
+                            bucket,
+
+                        open:
+                            price,
+
+                        high:
+                            price,
+
+                        low:
+                            price,
+
+                        close:
+                            price,
+
+                        volume:
+                            0
+                    }
+                );
+
+            } else {
+
+                const candle =
+                    grouped.get(
+                        bucket
+                    );
+
+                candle.high =
+                    Math.max(
+                        candle.high,
+                        price
+                    );
+
+                candle.low =
+                    Math.min(
+                        candle.low,
+                        price
+                    );
+
+                candle.close =
+                    price;
+
+            }
+
+        }
+    );
+
+    totalVolumes.forEach(
+        function (item) {
+
+            if (
+                !Array.isArray(item) ||
+                item.length < 2
+            ) {
+                return;
+            }
+
+            const timestamp =
+                Math.floor(
+                    Number(item[0]) /
+                    1000
+                );
+
+            const volume =
+                Number(item[1]);
+
+            if (
+                !Number.isFinite(timestamp) ||
+                !Number.isFinite(volume)
+            ) {
+                return;
+            }
+
+            const bucket =
+                Math.floor(
+                    timestamp /
+                    bucketSeconds
+                ) *
+                bucketSeconds;
+
+            if (
+                grouped.has(bucket)
+            ) {
+                grouped.get(bucket)
+                    .volume =
+                    volume;
+            }
+
+        }
+    );
+
+    const candles =
+        Array.from(
+            grouped.values()
+        )
+        .sort(
+            (a, b) =>
+                a.time -
+                b.time
+        )
+        .slice(
+            -180
+        );
+
+    if (
+        !candles.length
+    ) {
+
+        throw new Error(
+            "No fallback candles"
+        );
+
+    }
+
+    return candles;
+
+}
+
+async function loadKlineData() {
+
+    try {
+
+        candleData =
+            await loadBinanceKlines();
+
+    } catch (error) {
+
+        try {
+
+            candleData =
+                await loadCoinGeckoOhlc();
+
+        } catch (fallbackError) {
+
+            chartLoading.innerText =
+                "K-line data unavailable";
+
+            return;
+
+        }
+
+    }
+
+    if (
+        !candleData.length ||
+        !candleSeries
+    ) {
+        return;
+    }
+
+    lastCandle =
+        {
+            ...candleData[
+                candleData.length - 1
+            ]
+        };
+
+    applyChartPriceFormat(
+        lastCandle.close
+    );
+
+    candleSeries.setData(
+        candleData
+    );
+
+    if (
+        volumeSeries
+    ) {
+
+        volumeSeries.setData(
+            candleData.map(
+                function (candle) {
+
+                    return {
+                        time:
+                            candle.time,
+
+                        value:
+                            Number(
+                                candle.volume || 0
+                            ),
+
+                        color:
+                            candle.close >= candle.open
+                                ? "rgba(36,215,154,.55)"
+                                : "rgba(242,91,104,.55)"
+                    };
+
+                }
+            )
+        );
+
+    }
+
+    updateChartHeader(
+        lastCandle
+    );
+
+    priceChart
+        .timeScale()
+        .fitContent();
+
+    chartLoading.style.display =
+        "none";
+
+}
+
+function updateLiveCandle(
+    livePrice
+) {
+
+    if (
+        !candleSeries ||
+        !Number.isFinite(
+            Number(livePrice)
+        ) ||
+        Number(livePrice) <= 0
+    ) {
+
+        return;
+
+    }
+
+    const price =
+        Number(livePrice);
+
+    applyChartPriceFormat(
+        price
+    );
+
+    const now =
+        Math.floor(
+            Date.now() /
+            1000
+        );
+
+    const intervalSeconds =
+        getCurrentKlineConfig()
+            .seconds;
+
+    const candleTime =
+        Math.floor(
+            now /
+            intervalSeconds
+        ) *
+        intervalSeconds;
+
+    if (
+        !lastCandle ||
+        lastCandle.time <
+        candleTime
+    ) {
+
+        const openPrice =
+            lastCandle
+                ? lastCandle.close
+                : price;
+
+        lastCandle = {
+            time:
+                candleTime,
+
+            open:
+                openPrice,
+
+            high:
+                Math.max(
+                    openPrice,
+                    price
+                ),
+
+            low:
+                Math.min(
+                    openPrice,
+                    price
+                ),
+
+            close:
+                price,
+
+            volume:
+                0
+        };
+
+    } else {
+
+        lastCandle = {
+            ...lastCandle,
+
+            high:
+                Math.max(
+                    lastCandle.high,
+                    price
+                ),
+
+            low:
+                Math.min(
+                    lastCandle.low,
+                    price
+                ),
+
+            close:
+                price
+        };
+
+    }
+
+    candleSeries.update(
+        lastCandle
+    );
+
+    updateChartHeader(
+        lastCandle
+    );
+
+}
+
+createKlineChart();
+updateKlineButtons();
+loadKlineData();
+
+/* ==================================================
+   FAVORITES
+================================================== */
+
+function getFavorites() {
+
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    "marketFavorites"
+                ) ||
+                "[]"
+            );
+
+
+        return Array.isArray(saved)
+            ? saved
+            : [];
+
+    } catch (error) {
+
+        return [];
+
+    }
+
+}
+
+
+function updateFavoriteButton() {
+
+    const favorites =
+        getFavorites();
+
+
+    const button =
+        document.getElementById(
+            "favoriteBtn"
+        );
+
+
+    const active =
+        favorites.includes(
+            coinGeckoId
+        );
+
+
+    button.innerText =
+        active
+            ? "★"
+            : "☆";
+
+
+    button.classList.toggle(
+        "active",
+        active
+    );
+
+
+    button.title =
+        active
+            ? "Remove from favourites"
+            : "Add to favourites";
+
+}
+
+
+function toggleFavorite() {
+
+    let favorites =
+        getFavorites();
+
+
+    if (
+        favorites.includes(
+            coinGeckoId
+        )
+    ) {
+
+        favorites =
+            favorites.filter(
+                id =>
+                    id !==
+                    coinGeckoId
+            );
+
+    } else {
+
+        favorites.push(
+            coinGeckoId
+        );
+
+    }
+
+
+    localStorage.setItem(
+        "marketFavorites",
+        JSON.stringify(
+            favorites
+        )
+    );
+
+
+    updateFavoriteButton();
+
+}
+
+
+updateFavoriteButton();
+
+
+/* ==================================================
+   DEMO BALANCE
+================================================== */
+
+let balance =
+    Number(
+        localStorage.getItem(
+            "demoBalance"
+        )
+    );
+
+
+if (
+    !Number.isFinite(balance)
+) {
+
+    balance =
+        10000;
+
+}
+
+
+let history = [];
+
+
+try {
+
+    history =
+        JSON.parse(
+            localStorage.getItem(
+                "demoHistory"
+            ) ||
+            "[]"
+        );
+
+
+    if (
+        !Array.isArray(history)
+    ) {
+
+        history =
+            [];
+
+    }
+
+} catch (error) {
+
+    history =
+        [];
+
+}
+
+
+function updateBalance() {
+
+    document.getElementById(
+        "balance"
+    ).innerText =
+        balance.toFixed(2);
+
+
+    localStorage.setItem(
+        "demoBalance",
+        balance.toFixed(2)
+    );
+
+}
+
+
+updateBalance();
+
+
+/* ==================================================
+   DURATION
+================================================== */
+
+let selectedDuration =
+    30;
+
+
+function toggleDurationMenu() {
+
+    document.getElementById(
+        "durationWrap"
+    ).classList.toggle(
+        "open"
+    );
+
+}
+
+
+function selectDuration(seconds) {
+
+    selectedDuration =
+        seconds;
+
+
+    document.getElementById(
+        "durationText"
+    ).innerText =
+        seconds +
+        " Seconds";
+
+
+    document
+        .querySelectorAll(
+            ".duration-option"
+        )
+        .forEach(
+            option => {
+
+                const value =
+                    Number(
+                        option.dataset
+                            .seconds
+                    );
+
+
+                const selected =
+                    value ===
+                    seconds;
+
+
+                option.classList.toggle(
+                    "selected",
+                    selected
+                );
+
+
+                option.children[1]
+                    .innerText =
+                    selected
+                        ? "✓"
+                        : "";
+
+            }
+        );
+
+
+    document.getElementById(
+        "durationWrap"
+    ).classList.remove(
+        "open"
+    );
+
+}
+
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        const wrap =
+            document.getElementById(
+                "durationWrap"
+            );
+
+
+        if (
+            !wrap.contains(
+                event.target
+            )
+        ) {
+
+            wrap.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   PAYOUT
+================================================== */
+
+function updatePotentialPayout() {
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+
+    const profit =
+        Number.isFinite(amount) &&
+        amount > 0
+            ? amount * 0.8
+            : 0;
+
+
+    document.getElementById(
+        "potentialPayout"
+    ).innerText =
+        "+" +
+        profit.toFixed(2) +
+        " USDT";
+
+}
+
+
+function setAmount(value) {
+
+    document.getElementById(
+        "amount"
+    ).value =
+        value;
+
+
+    updatePotentialPayout();
+
+}
+
+
+updatePotentialPayout();
+
+
+/* ==================================================
+   24H MARKET STATS
+================================================== */
+
+function formatMarketVolume(
+    value
+) {
+
+    const n =
+        Number(value);
+
+    if (
+        !Number.isFinite(n) ||
+        n < 0
+    ) {
+        return "--";
+    }
+
+    if (n >= 1e12) {
+        return (n / 1e12)
+            .toFixed(2) +
+            "T";
+    }
+
+    if (n >= 1e9) {
+        return (n / 1e9)
+            .toFixed(2) +
+            "B";
+    }
+
+    if (n >= 1e6) {
+        return (n / 1e6)
+            .toFixed(2) +
+            "M";
+    }
+
+    if (n >= 1e3) {
+        return (n / 1e3)
+            .toFixed(2) +
+            "K";
+    }
+
+    return n.toFixed(2);
+
+}
+
+function update24hStats(
+    high,
+    low,
+    volume,
+    changePercent
+) {
+
+    document.getElementById(
+        "high24h"
+    ).innerText =
+        formatPrice(high)
+            .replace("$", "");
+
+    document.getElementById(
+        "low24h"
+    ).innerText =
+        formatPrice(low)
+            .replace("$", "");
+
+    document.getElementById(
+        "volume24h"
+    ).innerText =
+        formatMarketVolume(
+            volume
+        );
+
+    const changeElement =
+        document.getElementById(
+            "change24h"
+        );
+
+    const change =
+        Number(
+            changePercent
+        );
+
+    if (
+        Number.isFinite(change)
+    ) {
+
+        changeElement.innerText =
+            (change >= 0 ? "+" : "") +
+            change.toFixed(2) +
+            "%";
+
+        changeElement.classList.remove(
+            "green",
+            "red"
+        );
+
+        changeElement.classList.add(
+            change >= 0
+                ? "green"
+                : "red"
+        );
+
+    }
+
+}
+
+async function fetch24hStats() {
+
+    /* Binance first */
+
+    try {
+
+        const symbol =
+            selectedSymbol +
+            "USDT";
+
+        const response =
+            await fetch(
+                "https://api.binance.com/api/v3/ticker/24hr?symbol=" +
+                encodeURIComponent(
+                    symbol
+                ),
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+        if (
+            response.ok
+        ) {
+
+            const data =
+                await response.json();
+
+            const high =
+                Number(
+                    data.highPrice
+                );
+
+            const low =
+                Number(
+                    data.lowPrice
+                );
+
+            const volume =
+                Number(
+                    data.quoteVolume
+                );
+
+            const changePercent =
+                Number(
+                    data.priceChangePercent
+                );
+
+            if (
+                Number.isFinite(high) &&
+                Number.isFinite(low) &&
+                Number.isFinite(volume) &&
+                high > 0 &&
+                low > 0
+            ) {
+
+                update24hStats(
+                    high,
+                    low,
+                    volume,
+                    changePercent
+                );
+
+                return true;
+
+            }
+
+        }
+
+    } catch (error) {}
+
+
+    /* CoinGecko fallback */
+
+    try {
+
+        const url =
+            "https://api.coingecko.com/api/v3/coins/markets" +
+            "?vs_currency=usd" +
+            "&ids=" +
+            encodeURIComponent(
+                coinGeckoId
+            );
+
+        const response =
+            await fetch(
+                url,
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+        if (
+            !response.ok
+        ) {
+            return false;
+        }
+
+        const data =
+            await response.json();
+
+        if (
+            !Array.isArray(data) ||
+            !data.length
+        ) {
+            return false;
+        }
+
+        const coin =
+            data[0];
+
+        const high =
+            Number(
+                coin.high_24h
+            );
+
+        const low =
+            Number(
+                coin.low_24h
+            );
+
+        const volume =
+            Number(
+                coin.total_volume
+            );
+
+        const changePercent =
+            Number(
+                coin.price_change_percentage_24h
+            );
+
+        if (
+            Number.isFinite(high) &&
+            Number.isFinite(low) &&
+            Number.isFinite(volume)
+        ) {
+
+            update24hStats(
+                high,
+                low,
+                volume,
+                changePercent
+            );
+
+            return true;
+
+        }
+
+    } catch (error) {}
+
+    return false;
+
+}
+
+
+async function fetchMarkPrice() {
+
+    const markElement =
+        document.getElementById(
+            "markPrice"
+        );
+
+    try {
+
+        const symbol =
+            selectedSymbol +
+            "USDT";
+
+        const response =
+            await fetch(
+                "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=" +
+                encodeURIComponent(
+                    symbol
+                ),
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+        if (
+            response.ok
+        ) {
+
+            const data =
+                await response.json();
+
+            const mark =
+                Number(
+                    data.markPrice
+                );
+
+            if (
+                Number.isFinite(mark) &&
+                mark > 0
+            ) {
+
+                markElement.innerText =
+                    formatPrice(mark)
+                        .replace("$", "");
+
+                markElement.dataset.fallback =
+                    "0";
+
+                return;
+
+            }
+
+        }
+
+    } catch (error) {}
+
+    if (
+        currentPrice > 0
+    ) {
+
+        markElement.innerText =
+            formatPrice(
+                currentPrice
+            ).replace("$", "");
+
+        markElement.dataset.fallback =
+            "1";
+
+    }
+
+}
+
+
+/* ==================================================
+   PRICE VARIABLES
+================================================== */
+
+let currentPrice =
+    0;
+
+
+let previousPrice =
+    0;
+
+
+let lastPriceUpdate =
+    0;
+
+
+let binanceSocket =
+    null;
+
+
+let krakenSocket =
+    null;
+
+
+let usingFallback =
+    false;
+
+
+let fallbackInterval =
+    null;
+
+
+/* ==================================================
+   PRICE FORMAT
+================================================== */
+
+function formatPrice(price) {
+
+    const n =
+        Number(price);
+
+
+    if (
+        !Number.isFinite(n)
+    ) {
+
+        return "--";
+
+    }
+
+
+    if (n >= 1000) {
+
+        return "$" +
+            n.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        2
+                }
+            );
+
+    }
+
+
+    if (n >= 1) {
+
+        return "$" +
+            n.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        6
+                }
+            );
+
+    }
+
+
+    if (n >= 0.01) {
+
+        return "$" +
+            n.toFixed(6);
+
+    }
+
+
+    return "$" +
+        n.toFixed(10);
+
+}
+
+
+/* ==================================================
+   UPDATE PRICE
+================================================== */
+
+function updatePrice(price) {
+
+    price =
+        Number(price);
+
+
+    if (
+        !Number.isFinite(price) ||
+        price <= 0
+    ) {
+
+        return;
+
+    }
+
+
+    previousPrice =
+        currentPrice;
+
+
+    currentPrice =
+        price;
+
+
+    updateLiveCandle(
+        currentPrice
+    );
+
+
+    lastPriceUpdate =
+        Date.now();
+
+
+    const element =
+        document.getElementById(
+            "price"
+        );
+
+
+    element.innerText =
+        formatPrice(
+            currentPrice
+        ).replace("$", "");
+
+    const markElement =
+        document.getElementById(
+            "markPrice"
+        );
+
+    if (
+        markElement &&
+        (
+            markElement.innerText === "--" ||
+            markElement.dataset.fallback === "1"
+        )
+    ) {
+
+        markElement.innerText =
+            formatPrice(
+                currentPrice
+            ).replace("$", "");
+
+        markElement.dataset.fallback =
+            "1";
+
+    }
+
+
+    element.classList.remove(
+        "green",
+        "red"
+    );
+
+
+    if (
+        previousPrice > 0
+    ) {
+
+        if (
+            currentPrice >
+            previousPrice
+        ) {
+
+            element.classList.add(
+                "green"
+            );
+
+        }
+
+
+        if (
+            currentPrice <
+            previousPrice
+        ) {
+
+            element.classList.add(
+                "red"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ==================================================
+   CONNECTION STATUS
+================================================== */
+
+function setStatus(
+    text,
+    type
+) {
+
+    const dot =
+        document.getElementById(
+            "connectionDot"
+        );
+
+
+    const label =
+        document.getElementById(
+            "connectionText"
+        );
+
+
+    dot.className =
+        "status-dot";
+
+
+    if (type) {
+
+        dot.classList.add(
+            type
+        );
+
+    }
+
+
+    label.innerText =
+        text;
+
+}
+
+
+/* ==================================================
+   BINANCE REALTIME
+================================================== */
+
+function connectBinance() {
+
+    try {
+
+        const stream =
+            selectedSymbol
+                .toLowerCase() +
+            "usdt";
+
+
+        binanceSocket =
+            new WebSocket(
+
+                "wss://stream.binance.com:9443/ws/" +
+                stream +
+                "@trade"
+
+            );
+
+
+        const timeout =
+            setTimeout(
+                function () {
+
+                    if (
+                        !currentPrice
+                    ) {
+
+                        try {
+
+                            binanceSocket
+                                .close();
+
+                        } catch (error) {}
+
+
+                        startFallback();
+
+                    }
+
+                },
+                6000
+            );
+
+
+        binanceSocket.onopen =
+            function () {
+
+                setStatus(
+                    "Connecting live price...",
+                    "online"
+                );
+
+            };
+
+
+        binanceSocket.onmessage =
+            function (event) {
+
+                try {
+
+                    const data =
+                        JSON.parse(
+                            event.data
+                        );
+
+
+                    const price =
+                        Number(
+                            data.p
+                        );
+
+
+                    if (
+                        Number.isFinite(
+                            price
+                        ) &&
+                        price > 0
+                    ) {
+
+                        clearTimeout(
+                            timeout
+                        );
+
+
+                        updatePrice(
+                            price
+                        );
+
+
+                        setStatus(
+                            "Live",
+                            "online"
+                        );
+
+                    }
+
+                } catch (error) {}
+
+            };
+
+
+        binanceSocket.onerror =
+            function () {
+
+                clearTimeout(
+                    timeout
+                );
+
+
+                startFallback();
+
+            };
+
+
+        binanceSocket.onclose =
+            function () {
+
+                if (
+                    !usingFallback
+                ) {
+
+                    setTimeout(
+                        connectBinance,
+                        4000
+                    );
+
+                }
+
+            };
+
+    } catch (error) {
+
+        startFallback();
+
+    }
+
+}
+
+
+/* ==================================================
+   KRAKEN FALLBACK
+================================================== */
+
+function connectKraken() {
+
+    try {
+
+        krakenSocket =
+            new WebSocket(
+                "wss://ws.kraken.com/v2"
+            );
+
+
+        krakenSocket.onopen =
+            function () {
+
+                krakenSocket.send(
+
+                    JSON.stringify({
+
+                        method:
+                            "subscribe",
+
+                        params: {
+
+                            channel:
+                                "ticker",
+
+                            symbol: [
+
+                                selectedSymbol +
+                                "/USD"
+
+                            ]
+
+                        }
+
+                    })
+
+                );
+
+            };
+
+
+        krakenSocket.onmessage =
+            function (event) {
+
+                try {
+
+                    const message =
+                        JSON.parse(
+                            event.data
+                        );
+
+
+                    if (
+                        message.channel ===
+                            "ticker" &&
+
+                        message.data &&
+
+                        message.data.length
+                    ) {
+
+                        const price =
+                            Number(
+                                message
+                                    .data[0]
+                                    .last
+                            );
+
+
+                        if (
+                            Number.isFinite(
+                                price
+                            ) &&
+                            price > 0
+                        ) {
+
+                            updatePrice(
+                                price
+                            );
+
+
+                            setStatus(
+                                "Fallback Live",
+                                "online"
+                            );
+
+                        }
+
+                    }
+
+                } catch (error) {}
+
+            };
+
+    } catch (error) {}
+
+}
+
+
+/* ==================================================
+   COINGECKO FALLBACK
+================================================== */
+
+async function fetchCoinGeckoPrice() {
+
+    try {
+
+        const controller =
+            new AbortController();
+
+
+        const timeout =
+            setTimeout(
+                function () {
+
+                    controller.abort();
+
+                },
+                7000
+            );
+
+
+        const url =
+            "https://api.coingecko.com/api/v3/simple/price" +
+            "?ids=" +
+            encodeURIComponent(
+                coinGeckoId
+            ) +
+            "&vs_currencies=usd";
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    cache:
+                        "no-store",
+
+                    signal:
+                        controller.signal
+                }
+            );
+
+
+        clearTimeout(
+            timeout
+        );
+
+
+        if (
+            !response.ok
+        ) {
+
+            return false;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const price =
+            Number(
+                data[
+                    coinGeckoId
+                ]?.usd
+            );
+
+
+        if (
+            Number.isFinite(
+                price
+            ) &&
+            price > 0
+        ) {
+
+            updatePrice(
+                price
+            );
+
+
+            setStatus(
+                "Reference Live",
+                "online"
+            );
+
+
+            return true;
+
+        }
+
+    } catch (error) {}
+
+
+    return false;
+
+}
+
+
+/* ==================================================
+   START FALLBACK
+================================================== */
+
+function startFallback() {
+
+    if (
+        usingFallback
+    ) {
+
+        return;
+
+    }
+
+
+    usingFallback =
+        true;
+
+
+    setStatus(
+        "Fallback price",
+        "online"
+    );
+
+
+    connectKraken();
+
+
+    fetchCoinGeckoPrice();
+
+
+    fallbackInterval =
+        setInterval(
+            function () {
+
+                if (
+                    Date.now() -
+                    lastPriceUpdate >
+                    9000
+                ) {
+
+                    fetchCoinGeckoPrice();
+
+                }
+
+            },
+            6000
+        );
+
+}
+
+
+/* ==================================================
+   ENSURE FRESH PRICE
+================================================== */
+
+async function ensureFreshPrice() {
+
+    if (
+        currentPrice > 0 &&
+        Date.now() -
+        lastPriceUpdate <
+        10000
+    ) {
+
+        return currentPrice;
+
+    }
+
+
+    await fetchCoinGeckoPrice();
+
+
+    return currentPrice;
+
+}
+
+
+/* ==================================================
+   ACTIVE ORDER
+================================================== */
+
+let activeOrder =
+    null;
+
+
+let activeTimer =
+    null;
+
+
+/* ==================================================
+   PLACE ORDER
+================================================== */
+
+async function placeOrder(
+    direction
+) {
+
+    if (
+        activeOrder
+    ) {
+
+        alert(
+            "A demo order is already active."
+        );
+
+
+        return;
+
+    }
+
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        alert(
+            "Please enter a valid amount."
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        amount >
+        balance
+    ) {
+
+        alert(
+            "Insufficient demo balance."
+        );
+
+
+        return;
+
+    }
+
+
+    const entry =
+        await ensureFreshPrice();
+
+
+    if (
+        !entry ||
+        entry <= 0
+    ) {
+
+        alert(
+            "Live price is not available yet. Please try again."
+        );
+
+
+        return;
+
+    }
+
+
+    balance -=
+        amount;
+
+
+    updateBalance();
+
+
+    activeOrder = {
+
+        symbol:
+            selectedSymbol,
+
+        direction:
+            direction,
+
+        amount:
+            amount,
+
+        entry:
+            entry,
+
+        duration:
+            selectedDuration,
+
+        seconds:
+            selectedDuration,
+
+        startedAt:
+            Date.now()
+
+    };
+
+
+    showActiveOrder();
+
+
+    setTradeButtons(
+        true
+    );
+
+
+    activeTimer =
+        setInterval(
+            function () {
+
+                if (
+                    !activeOrder
+                ) {
+
+                    clearInterval(
+                        activeTimer
+                    );
+
+                    return;
+
+                }
+
+
+                activeOrder.seconds--;
+
+
+                document.getElementById(
+                    "countdown"
+                ).innerText =
+                    activeOrder.seconds;
+
+
+                if (
+                    activeOrder.seconds <=
+                    0
+                ) {
+
+                    clearInterval(
+                        activeTimer
+                    );
+
+
+                    settleOrder();
+
+                }
+
+            },
+            1000
+        );
+
+}
+
+
+/* ==================================================
+   ACTIVE ORDER DISPLAY
+================================================== */
+
+function showActiveOrder() {
+
+    document.getElementById(
+        "orderBox"
+    ).classList.add(
+        "active"
+    );
+
+
+    document.getElementById(
+        "activePair"
+    ).innerText =
+        activeOrder.symbol +
+        " / USDT";
+
+
+    document.getElementById(
+        "activeDirection"
+    ).innerText =
+        activeOrder.direction;
+
+
+    document.getElementById(
+        "activeAmount"
+    ).innerText =
+        activeOrder.amount
+            .toFixed(2) +
+        " USDT";
+
+
+    document.getElementById(
+        "activeEntry"
+    ).innerText =
+        formatPrice(
+            activeOrder.entry
+        );
+
+
+    document.getElementById(
+        "activeDuration"
+    ).innerText =
+        activeOrder.duration +
+        " Seconds";
+
+
+    document.getElementById(
+        "countdown"
+    ).innerText =
+        activeOrder.seconds;
+
+}
+
+
+function setTradeButtons(
+    disabled
+) {
+
+    document.getElementById(
+        "upBtn"
+    ).disabled =
+        disabled;
+
+
+    document.getElementById(
+        "downBtn"
+    ).disabled =
+        disabled;
+
+}
+
+
+/* ==================================================
+   SETTLEMENT
+================================================== */
+
+async function settleOrder() {
+
+    if (
+        !activeOrder
+    ) {
+
+        return;
+
+    }
+
+
+    await ensureFreshPrice();
+
+
+    const exit =
+        currentPrice;
+
+
+    if (
+        !exit ||
+        exit <= 0
+    ) {
+
+        setTimeout(
+            settleOrder,
+            3000
+        );
+
+
+        return;
+
+    }
+
+
+    let result =
+        "DRAW";
+
+
+    if (
+        activeOrder.direction ===
+        "UP"
+    ) {
+
+        if (
+            exit >
+            activeOrder.entry
+        ) {
+
+            result =
+                "WIN";
+
+        } else if (
+            exit <
+            activeOrder.entry
+        ) {
+
+            result =
+                "LOSS";
+
+        }
+
+    } else {
+
+        if (
+            exit <
+            activeOrder.entry
+        ) {
+
+            result =
+                "WIN";
+
+        } else if (
+            exit >
+            activeOrder.entry
+        ) {
+
+            result =
+                "LOSS";
+
+        }
+
+    }
+
+
+    let pnl =
+        0;
+
+
+    if (
+        result ===
+        "WIN"
+    ) {
+
+        pnl =
+            activeOrder.amount *
+            0.8;
+
+
+        balance +=
+            activeOrder.amount +
+            pnl;
+
+    }
+
+
+    if (
+        result ===
+        "DRAW"
+    ) {
+
+        balance +=
+            activeOrder.amount;
+
+    }
+
+
+    if (
+        result ===
+        "LOSS"
+    ) {
+
+        pnl =
+            -activeOrder.amount;
+
+    }
+
+
+    updateBalance();
+
+
+    const item = {
+
+        time:
+            new Date()
+                .toLocaleString(),
+
+        symbol:
+            activeOrder.symbol,
+
+        side:
+            activeOrder.direction,
+
+        duration:
+            activeOrder.duration,
+
+        amount:
+            activeOrder.amount,
+
+        entry:
+            activeOrder.entry,
+
+        exit:
+            exit,
+
+        result:
+            result,
+
+        pnl:
+            pnl
+
+    };
+
+
+    history.unshift(
+        item
+    );
+
+
+    if (
+        history.length >
+        100
+    ) {
+
+        history =
+            history.slice(
+                0,
+                100
+            );
+
+    }
+
+
+    localStorage.setItem(
+        "demoHistory",
+        JSON.stringify(
+            history
+        )
+    );
+
+
+    renderHistory();
+
+
+    document.getElementById(
+        "orderBox"
+    ).classList.remove(
+        "active"
+    );
+
+
+    const resultMessage =
+        result +
+        "\n\n" +
+
+        item.symbol +
+        "/USDT" +
+
+        "\nDuration: " +
+        item.duration +
+        " Seconds" +
+
+        "\nEntry: " +
+        formatPrice(
+            item.entry
+        ) +
+
+        "\nExit: " +
+        formatPrice(
+            item.exit
+        ) +
+
+        "\nP&L: " +
+
+        (
+            item.pnl >= 0
+                ? "+"
+                : ""
+        ) +
+
+        item.pnl.toFixed(2) +
+        " USDT";
+
+
+    activeOrder =
+        null;
+
+
+    setTradeButtons(
+        false
+    );
+
+
+    alert(
+        resultMessage
+    );
+
+}
+
+
+/* ==================================================
+   HISTORY
+================================================== */
+
+function renderHistory() {
+
+    const body =
+        document.getElementById(
+            "historyBody"
+        );
+
+
+    if (
+        !history.length
+    ) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td colspan="8">
+
+                    <div class="empty">
+                        No demo orders yet.
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    body.innerHTML =
+        "";
+
+
+    history
+        .slice(
+            0,
+            20
+        )
+        .forEach(
+            function (item) {
+
+                const resultClass =
+                    item.result ===
+                    "WIN"
+                        ? "win"
+                        :
+                    item.result ===
+                    "LOSS"
+                        ? "loss"
+                        :
+                        "draw";
+
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${item.time || "--"}
+                    </td>
+
+                    <td>
+                        ${(item.symbol || "BTC")} / USDT
+                    </td>
+
+                    <td>
+                        ${item.side || "--"}
+                    </td>
+
+                    <td>
+                        ${item.duration || 30}s
+                    </td>
+
+                    <td>
+                        ${Number(item.amount || 0).toFixed(2)}
+                    </td>
+
+                    <td>
+                        ${formatPrice(item.entry)}
+                    </td>
+
+                    <td>
+                        ${formatPrice(item.exit)}
+                    </td>
+
+                    <td class="${resultClass}">
+                        ${item.result || "--"}
+                    </td>
+
+                `;
+
+
+                body.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+renderHistory();
+
+
+/* ==================================================
+   START
+================================================== */
+
+connectBinance();
+
+fetch24hStats();
+fetchMarkPrice();
+updateChartHeader(null);
+
+setInterval(
+    fetch24hStats,
+    60000
+);
+
+setInterval(
+    fetchMarkPrice,
+    15000
+);
+
+
+setTimeout(
+    function () {
+
+        if (
+            !currentPrice
+        ) {
+
+            startFallback();
+
+        }
+
+    },
+    6500
+);
+
+</script>
+
+</body>
+</html>

@@ -25,6 +25,10 @@ body {
     padding-bottom: 75px;
 }
 
+/* =========================
+   HEADER
+========================= */
+
 .header {
     background: #0d141d;
     padding: 16px;
@@ -35,6 +39,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+}
+
+.pair-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .pair-name {
@@ -43,13 +54,27 @@ body {
 }
 
 .demo-tag {
-    display: inline-block;
-    margin-left: 8px;
     padding: 4px 7px;
     border-radius: 5px;
     background: #243348;
     color: #8fb9ff;
     font-size: 10px;
+}
+
+.favorite-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #2b3948;
+    border-radius: 8px;
+    background: #111923;
+    color: #9ba8ba;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.favorite-btn.active {
+    color: #ffd43b;
+    border-color: #665a20;
 }
 
 .price {
@@ -69,6 +94,7 @@ body {
 .sub-info {
     margin-top: 8px;
     display: flex;
+    flex-wrap: wrap;
     gap: 18px;
     font-size: 11px;
     color: #79879b;
@@ -91,6 +117,10 @@ body {
     background: #f25b68;
 }
 
+/* =========================
+   BALANCE
+========================= */
+
 .balance-box {
     margin: 13px;
     padding: 14px;
@@ -110,9 +140,13 @@ body {
     font-weight: 700;
 }
 
+/* =========================
+   CHART
+========================= */
+
 .chart-box {
     margin: 13px;
-    height: 390px;
+    height: 420px;
     border: 1px solid #202b37;
     border-radius: 8px;
     overflow: hidden;
@@ -120,9 +154,13 @@ body {
 }
 
 #tradingview_chart {
-    height: 100%;
     width: 100%;
+    height: 100%;
 }
+
+/* =========================
+   TRADING PANEL
+========================= */
 
 .trade-panel {
     margin: 13px;
@@ -135,7 +173,7 @@ body {
 .panel-title {
     font-size: 16px;
     font-weight: 700;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .label {
@@ -144,25 +182,110 @@ body {
     margin-bottom: 7px;
 }
 
-.duration-box {
-    height: 40px;
+/* =========================
+   DURATION DROPDOWN
+========================= */
+
+.duration-wrap {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.duration-select {
+    width: 100%;
+    height: 43px;
+    padding: 0 12px;
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    justify-content: space-between;
+
     border: 1px solid #293647;
     border-radius: 7px;
     background: #111a24;
-    margin-bottom: 15px;
+    color: white;
+
+    cursor: pointer;
+    user-select: none;
 }
+
+.duration-arrow {
+    color: #79879b;
+    transition: transform .15s;
+}
+
+.duration-wrap.open .duration-arrow {
+    transform: rotate(180deg);
+}
+
+.duration-menu {
+    display: none;
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 49px;
+
+    border: 1px solid #2c3949;
+    border-radius: 7px;
+
+    background: #111923;
+
+    overflow: hidden;
+
+    z-index: 50;
+
+    box-shadow:
+        0 12px 30px
+        rgba(0,0,0,.45);
+}
+
+.duration-wrap.open .duration-menu {
+    display: block;
+}
+
+.duration-option {
+    height: 42px;
+    padding: 0 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: pointer;
+
+    border-bottom:
+        1px solid #1e2935;
+
+    font-size: 13px;
+}
+
+.duration-option:last-child {
+    border-bottom: 0;
+}
+
+.duration-option:hover {
+    background: #172231;
+}
+
+.duration-option.selected {
+    color: #4c9aff;
+}
+
+/* =========================
+   AMOUNT
+========================= */
 
 .amount-input {
     width: 100%;
     height: 42px;
     padding: 0 12px;
+
     border-radius: 7px;
     border: 1px solid #293647;
+
     background: #111a24;
     color: white;
+
     outline: none;
     font-size: 14px;
 }
@@ -176,27 +299,66 @@ body {
 
 .amount-buttons button {
     height: 35px;
+
     border: 1px solid #293647;
     background: #111923;
+
     color: #a5b0bf;
+
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* =========================
+   PAYOUT
+========================= */
+
+.payout-row {
+    margin-top: 13px;
+    padding: 11px 12px;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    background: #0b1219;
+    border-radius: 7px;
+
+    font-size: 12px;
+}
+
+.payout-row span:first-child {
+    color: #768499;
+}
+
+.payout-value {
+    color: #24d79a;
+    font-weight: 700;
+}
+
+/* =========================
+   BUTTONS
+========================= */
 
 .trade-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 9px;
+
     margin-top: 15px;
 }
 
 .trade-buttons button {
-    height: 48px;
+    height: 52px;
+
     border: 0;
     border-radius: 7px;
+
     color: white;
+
     font-size: 15px;
     font-weight: 700;
+
     cursor: pointer;
 }
 
@@ -213,12 +375,19 @@ body {
     cursor: not-allowed;
 }
 
+/* =========================
+   ACTIVE ORDER
+========================= */
+
 .order-box {
     display: none;
+
     margin: 13px;
     padding: 15px;
+
     border: 1px solid #2b3948;
     border-radius: 8px;
+
     background: #101923;
 }
 
@@ -233,8 +402,8 @@ body {
 
 .order-grid {
     display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 11px;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
 }
 
 .order-item {
@@ -260,18 +429,27 @@ body {
     color: #3388ff;
 }
 
+/* =========================
+   HISTORY
+========================= */
+
 .history {
     margin: 13px;
+
     border: 1px solid #202b38;
     border-radius: 8px;
+
     overflow: hidden;
+
     background: #0e161f;
 }
 
 .history-title {
     padding: 14px;
     font-weight: 700;
-    border-bottom: 1px solid #202b38;
+
+    border-bottom:
+        1px solid #202b38;
 }
 
 .history-scroll {
@@ -280,17 +458,23 @@ body {
 
 .history table {
     width: 100%;
-    min-width: 760px;
+    min-width: 850px;
     border-collapse: collapse;
 }
 
 .history th,
 .history td {
     height: 40px;
+
     padding: 0 10px;
+
     text-align: right;
+
     font-size: 11px;
-    border-bottom: 1px solid #19232e;
+
+    border-bottom:
+        1px solid #19232e;
+
     white-space: nowrap;
 }
 
@@ -318,47 +502,78 @@ body {
 
 .empty {
     padding: 25px;
+
     text-align: center;
+
     color: #748196;
+
     font-size: 12px;
 }
 
+/* =========================
+   NOTICE
+========================= */
+
 .notice {
     margin: 13px;
+
     padding: 11px 13px;
+
     border: 1px solid #202b38;
     border-radius: 7px;
+
     background: #0d151e;
+
     color: #6f7d91;
+
     font-size: 10px;
     line-height: 1.5;
 }
 
+/* =========================
+   NAV
+========================= */
+
 .bottom-nav {
     position: fixed;
+
     left: 0;
     right: 0;
     bottom: 0;
+
     height: 64px;
+
     display: grid;
     grid-template-columns: repeat(4,1fr);
+
     background: #0d141d;
-    border-top: 1px solid #25303c;
+
+    border-top:
+        1px solid #25303c;
+
     z-index: 999;
 }
 
 .bottom-nav a {
     display: flex;
+
     justify-content: center;
     align-items: center;
+
     color: #7e8a9e;
+
     text-decoration: none;
+
     font-size: 12px;
 }
 
 .bottom-nav a.active {
     color: #3388ff;
 }
+
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media (min-width: 900px) {
 
@@ -368,7 +583,7 @@ body {
     }
 
     .chart-box {
-        height: 470px;
+        height: 500px;
     }
 
 }
@@ -376,7 +591,7 @@ body {
 @media (max-width: 600px) {
 
     .chart-box {
-        height: 350px;
+        height: 365px;
         margin: 10px;
     }
 
@@ -385,8 +600,18 @@ body {
     .order-box,
     .history,
     .notice {
+
         margin-left: 10px;
         margin-right: 10px;
+    }
+
+    .order-grid {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .pair-name {
+        font-size: 20px;
     }
 
 }
@@ -396,21 +621,38 @@ body {
 
 <body>
 
+
 <header class="header">
 
     <div class="header-top">
 
-        <div>
-            <span id="pairName" class="pair-name">
+        <div class="pair-area">
+
+            <span
+                id="pairName"
+                class="pair-name"
+            >
                 BTC / USDT
             </span>
 
             <span class="demo-tag">
                 DEMO
             </span>
+
         </div>
 
+
+        <button
+            id="favoriteBtn"
+            class="favorite-btn"
+            onclick="toggleFavorite()"
+            title="Add to favourites"
+        >
+            ☆
+        </button>
+
     </div>
+
 
     <div
         id="price"
@@ -419,18 +661,24 @@ body {
         Loading...
     </div>
 
+
     <div class="sub-info">
 
         <div>
+
             <span
                 id="connectionDot"
                 class="status-dot"
             ></span>
 
-            <span id="connectionText">
+            <span
+                id="connectionText"
+            >
                 Connecting...
             </span>
+
         </div>
+
 
         <div>
             Demo Settlement Price
@@ -448,10 +696,13 @@ body {
     </div>
 
     <div class="balance">
+
         <span id="balance">
             10000.00
         </span>
+
         USDT
+
     </div>
 
 </section>
@@ -470,17 +721,93 @@ body {
         Second Contract
     </div>
 
+
     <div class="label">
         Duration
     </div>
 
-    <div class="duration-box">
-        30 Seconds
+
+    <div
+        id="durationWrap"
+        class="duration-wrap"
+    >
+
+        <div
+            class="duration-select"
+            onclick="toggleDurationMenu()"
+        >
+
+            <span id="durationText">
+                30 Seconds
+            </span>
+
+            <span class="duration-arrow">
+                ▼
+            </span>
+
+        </div>
+
+
+        <div class="duration-menu">
+
+            <div
+                class="duration-option selected"
+                data-seconds="30"
+                onclick="selectDuration(30)"
+            >
+                <span>30 Seconds</span>
+                <span>✓</span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="60"
+                onclick="selectDuration(60)"
+            >
+                <span>60 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="120"
+                onclick="selectDuration(120)"
+            >
+                <span>120 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="180"
+                onclick="selectDuration(180)"
+            >
+                <span>180 Seconds</span>
+                <span></span>
+            </div>
+
+
+            <div
+                class="duration-option"
+                data-seconds="240"
+                onclick="selectDuration(240)"
+            >
+                <span>240 Seconds</span>
+                <span></span>
+            </div>
+
+        </div>
+
     </div>
+
 
     <div class="label">
         Amount (USDT)
     </div>
+
 
     <input
         id="amount"
@@ -489,7 +816,9 @@ body {
         min="1"
         step="1"
         value="100"
+        oninput="updatePotentialPayout()"
     >
+
 
     <div class="amount-buttons">
 
@@ -511,6 +840,23 @@ body {
 
     </div>
 
+
+    <div class="payout-row">
+
+        <span>
+            Potential Profit
+        </span>
+
+        <span
+            id="potentialPayout"
+            class="payout-value"
+        >
+            +80.00 USDT
+        </span>
+
+    </div>
+
+
     <div class="trade-buttons">
 
         <button
@@ -518,15 +864,20 @@ body {
             class="up-btn"
             onclick="placeOrder('UP')"
         >
-            UP
+            ↑ UP
+            <br>
+            +80%
         </button>
+
 
         <button
             id="downBtn"
             class="down-btn"
             onclick="placeOrder('DOWN')"
         >
-            DOWN
+            ↓ DOWN
+            <br>
+            +80%
         </button>
 
     </div>
@@ -543,66 +894,102 @@ body {
         Active Demo Order
     </div>
 
+
     <div class="order-grid">
 
         <div class="order-item">
+
             <div class="order-item-label">
                 Pair
             </div>
+
             <div
                 id="activePair"
                 class="order-item-value"
             >
                 --
             </div>
+
         </div>
 
+
         <div class="order-item">
+
             <div class="order-item-label">
                 Direction
             </div>
+
             <div
                 id="activeDirection"
                 class="order-item-value"
             >
                 --
             </div>
+
         </div>
 
+
         <div class="order-item">
+
             <div class="order-item-label">
                 Amount
             </div>
+
             <div
                 id="activeAmount"
                 class="order-item-value"
             >
                 --
             </div>
+
         </div>
 
+
         <div class="order-item">
+
             <div class="order-item-label">
                 Entry
             </div>
+
             <div
                 id="activeEntry"
                 class="order-item-value"
             >
                 --
             </div>
+
         </div>
 
+
         <div class="order-item">
+
+            <div class="order-item-label">
+                Duration
+            </div>
+
+            <div
+                id="activeDuration"
+                class="order-item-value"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="order-item">
+
             <div class="order-item-label">
                 Time Left
             </div>
+
             <div
                 id="countdown"
                 class="countdown"
             >
-                30
+                --
             </div>
+
         </div>
 
     </div>
@@ -616,23 +1003,39 @@ body {
         Demo Order History
     </div>
 
+
     <div class="history-scroll">
 
         <table>
 
             <thead>
+
                 <tr>
+
                     <th>Time</th>
+
                     <th>Pair</th>
+
                     <th>Side</th>
+
+                    <th>Duration</th>
+
                     <th>Amount</th>
+
                     <th>Entry</th>
+
                     <th>Exit</th>
+
                     <th>Result</th>
+
                 </tr>
+
             </thead>
 
-            <tbody id="historyBody"></tbody>
+
+            <tbody
+                id="historyBody"
+            ></tbody>
 
         </table>
 
@@ -642,8 +1045,13 @@ body {
 
 
 <div class="notice">
-    DEMO ONLY — No real-money trading, deposits or withdrawals.
-    Prices are market references and may differ between data providers.
+
+    DEMO ONLY — No real-money trading,
+    deposits or withdrawals.
+
+    Prices are market references and may
+    differ slightly between data providers.
+
 </div>
 
 
@@ -653,6 +1061,7 @@ body {
         Markets
     </a>
 
+
     <a
         id="tradingNav"
         class="active"
@@ -661,9 +1070,11 @@ body {
         Trading
     </a>
 
+
     <a href="assets.html">
         Assets
     </a>
+
 
     <a href="#">
         Profile
@@ -672,51 +1083,177 @@ body {
 </nav>
 
 
-<script src="https://s3.tradingview.com/tv.js"></script>
+<script
+    src="https://s3.tradingview.com/tv.js">
+</script>
+
 
 <script>
 
-/* =========================
-   SYMBOL CONFIG
-========================= */
+/* ==================================================
+   30 COIN CONFIG
+================================================== */
 
-const symbolMap = {
+const coinConfig = {
 
-    BTC: "bitcoin",
-    ETH: "ethereum",
-    BNB: "binancecoin",
-    SOL: "solana",
-    XRP: "ripple",
-    DOGE: "dogecoin",
-    ADA: "cardano",
-    TRX: "tron",
-    AVAX: "avalanche-2",
-    LINK: "chainlink",
-    DOT: "polkadot",
-    BCH: "bitcoin-cash",
-    LTC: "litecoin",
-    UNI: "uniswap",
-    XLM: "stellar",
-    TON: "the-open-network",
-    SHIB: "shiba-inu",
-    HBAR: "hedera-hashgraph",
-    SUI: "sui",
-    APT: "aptos",
-    NEAR: "near",
-    ICP: "internet-computer",
-    ETC: "ethereum-classic",
-    FIL: "filecoin",
-    ATOM: "cosmos",
-    ARB: "arbitrum",
-    OP: "optimism",
-    AAVE: "aave",
-    PEPE: "pepe",
-    POL: "matic-network"
+    BTC: {
+        id: "bitcoin",
+        tv: "BINANCE:BTCUSDT"
+    },
+
+    ETH: {
+        id: "ethereum",
+        tv: "BINANCE:ETHUSDT"
+    },
+
+    BNB: {
+        id: "binancecoin",
+        tv: "BINANCE:BNBUSDT"
+    },
+
+    SOL: {
+        id: "solana",
+        tv: "BINANCE:SOLUSDT"
+    },
+
+    XRP: {
+        id: "ripple",
+        tv: "BINANCE:XRPUSDT"
+    },
+
+    DOGE: {
+        id: "dogecoin",
+        tv: "BINANCE:DOGEUSDT"
+    },
+
+    ADA: {
+        id: "cardano",
+        tv: "BINANCE:ADAUSDT"
+    },
+
+    TRX: {
+        id: "tron",
+        tv: "BINANCE:TRXUSDT"
+    },
+
+    AVAX: {
+        id: "avalanche-2",
+        tv: "BINANCE:AVAXUSDT"
+    },
+
+    LINK: {
+        id: "chainlink",
+        tv: "BINANCE:LINKUSDT"
+    },
+
+    DOT: {
+        id: "polkadot",
+        tv: "BINANCE:DOTUSDT"
+    },
+
+    BCH: {
+        id: "bitcoin-cash",
+        tv: "BINANCE:BCHUSDT"
+    },
+
+    LTC: {
+        id: "litecoin",
+        tv: "BINANCE:LTCUSDT"
+    },
+
+    UNI: {
+        id: "uniswap",
+        tv: "BINANCE:UNIUSDT"
+    },
+
+    XLM: {
+        id: "stellar",
+        tv: "BINANCE:XLMUSDT"
+    },
+
+    TON: {
+        id: "the-open-network",
+        tv: "BINANCE:TONUSDT"
+    },
+
+    SHIB: {
+        id: "shiba-inu",
+        tv: "BINANCE:SHIBUSDT"
+    },
+
+    HBAR: {
+        id: "hedera-hashgraph",
+        tv: "BINANCE:HBARUSDT"
+    },
+
+    SUI: {
+        id: "sui",
+        tv: "BINANCE:SUIUSDT"
+    },
+
+    APT: {
+        id: "aptos",
+        tv: "BINANCE:APTUSDT"
+    },
+
+    NEAR: {
+        id: "near",
+        tv: "BINANCE:NEARUSDT"
+    },
+
+    ICP: {
+        id: "internet-computer",
+        tv: "BINANCE:ICPUSDT"
+    },
+
+    ETC: {
+        id: "ethereum-classic",
+        tv: "BINANCE:ETCUSDT"
+    },
+
+    FIL: {
+        id: "filecoin",
+        tv: "BINANCE:FILUSDT"
+    },
+
+    ATOM: {
+        id: "cosmos",
+        tv: "BINANCE:ATOMUSDT"
+    },
+
+    ARB: {
+        id: "arbitrum",
+        tv: "BINANCE:ARBUSDT"
+    },
+
+    OP: {
+        id: "optimism",
+        tv: "BINANCE:OPUSDT"
+    },
+
+    AAVE: {
+        id: "aave",
+        tv: "BINANCE:AAVEUSDT"
+    },
+
+    PEPE: {
+        id: "pepe",
+        tv: "BINANCE:PEPEUSDT"
+    },
+
+    POL: {
+        id: "matic-network",
+        tv: "BINANCE:POLUSDT"
+    }
 
 };
 
 
-const params =
+/* ==================================================
+   SELECTED SYMBOL
+================================================== */
+
+const urlParams =
     new URLSearchParams(
         window.location.search
     );
@@ -724,23 +1261,30 @@ const params =
 
 let selectedSymbol =
     (
-        params.get("symbol") ||
+        urlParams.get("symbol") ||
         "BTC"
     ).toUpperCase();
 
 
-if (!symbolMap[selectedSymbol]) {
-    selectedSymbol = "BTC";
+if (!coinConfig[selectedSymbol]) {
+
+    selectedSymbol =
+        "BTC";
+
 }
 
 
+const selectedCoin =
+    coinConfig[selectedSymbol];
+
+
 const coinGeckoId =
-    symbolMap[selectedSymbol];
+    selectedCoin.id;
 
 
-/* =========================
-   PAGE TEXT
-========================= */
+/* ==================================================
+   PAGE INFO
+================================================== */
 
 document.getElementById(
     "pairName"
@@ -763,9 +1307,9 @@ document.getElementById(
     );
 
 
-/* =========================
-   TRADINGVIEW
-========================= */
+/* ==================================================
+   TRADINGVIEW CHART
+================================================== */
 
 function loadTradingView() {
 
@@ -773,7 +1317,14 @@ function loadTradingView() {
         typeof TradingView ===
         "undefined"
     ) {
+
+        document.getElementById(
+            "tradingview_chart"
+        ).innerHTML =
+            "Chart unavailable";
+
         return;
+
     }
 
 
@@ -782,19 +1333,25 @@ function loadTradingView() {
         autosize: true,
 
         symbol:
-            "BINANCE:" +
-            selectedSymbol +
-            "USDT",
+            selectedCoin.tv,
 
-        interval: "1",
+        interval:
+            "1",
 
-        timezone: "Etc/UTC",
+        timezone:
+            "Etc/UTC",
 
-        theme: "dark",
+        theme:
+            "dark",
 
-        style: "1",
+        style:
+            "1",
 
-        locale: "en",
+        locale:
+            "en",
+
+        toolbar_bg:
+            "#0c1219",
 
         enable_publishing:
             false,
@@ -803,6 +1360,12 @@ function loadTradingView() {
             false,
 
         hide_side_toolbar:
+            false,
+
+        withdateranges:
+            true,
+
+        save_image:
             false,
 
         container_id:
@@ -816,9 +1379,121 @@ function loadTradingView() {
 loadTradingView();
 
 
-/* =========================
-   DEMO ACCOUNT
-========================= */
+/* ==================================================
+   FAVORITES
+================================================== */
+
+function getFavorites() {
+
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    "marketFavorites"
+                ) ||
+                "[]"
+            );
+
+
+        return Array.isArray(saved)
+            ? saved
+            : [];
+
+    } catch (error) {
+
+        return [];
+
+    }
+
+}
+
+
+function updateFavoriteButton() {
+
+    const favorites =
+        getFavorites();
+
+
+    const button =
+        document.getElementById(
+            "favoriteBtn"
+        );
+
+
+    const active =
+        favorites.includes(
+            coinGeckoId
+        );
+
+
+    button.innerText =
+        active
+            ? "★"
+            : "☆";
+
+
+    button.classList.toggle(
+        "active",
+        active
+    );
+
+
+    button.title =
+        active
+            ? "Remove from favourites"
+            : "Add to favourites";
+
+}
+
+
+function toggleFavorite() {
+
+    let favorites =
+        getFavorites();
+
+
+    if (
+        favorites.includes(
+            coinGeckoId
+        )
+    ) {
+
+        favorites =
+            favorites.filter(
+                id =>
+                    id !==
+                    coinGeckoId
+            );
+
+    } else {
+
+        favorites.push(
+            coinGeckoId
+        );
+
+    }
+
+
+    localStorage.setItem(
+        "marketFavorites",
+        JSON.stringify(
+            favorites
+        )
+    );
+
+
+    updateFavoriteButton();
+
+}
+
+
+updateFavoriteButton();
+
+
+/* ==================================================
+   DEMO BALANCE
+================================================== */
 
 let balance =
     Number(
@@ -831,17 +1506,42 @@ let balance =
 if (
     !Number.isFinite(balance)
 ) {
-    balance = 10000;
+
+    balance =
+        10000;
+
 }
 
 
-let history =
-    JSON.parse(
-        localStorage.getItem(
-            "demoHistory"
-        ) ||
-        "[]"
-    );
+let history = [];
+
+
+try {
+
+    history =
+        JSON.parse(
+            localStorage.getItem(
+                "demoHistory"
+            ) ||
+            "[]"
+        );
+
+
+    if (
+        !Array.isArray(history)
+    ) {
+
+        history =
+            [];
+
+    }
+
+} catch (error) {
+
+    history =
+        [];
+
+}
 
 
 function updateBalance() {
@@ -863,28 +1563,190 @@ function updateBalance() {
 updateBalance();
 
 
-/* =========================
-   PRICE STATE
-========================= */
+/* ==================================================
+   DURATION
+================================================== */
 
-let currentPrice = 0;
-
-let previousPrice = 0;
-
-let lastPriceUpdate = 0;
-
-let binanceSocket = null;
-
-let krakenSocket = null;
-
-let fallbackTimer = null;
-
-let usingFallback = false;
+let selectedDuration =
+    30;
 
 
-/* =========================
-   PRICE DISPLAY
-========================= */
+function toggleDurationMenu() {
+
+    document.getElementById(
+        "durationWrap"
+    ).classList.toggle(
+        "open"
+    );
+
+}
+
+
+function selectDuration(seconds) {
+
+    selectedDuration =
+        seconds;
+
+
+    document.getElementById(
+        "durationText"
+    ).innerText =
+        seconds +
+        " Seconds";
+
+
+    document
+        .querySelectorAll(
+            ".duration-option"
+        )
+        .forEach(
+            option => {
+
+                const value =
+                    Number(
+                        option.dataset
+                            .seconds
+                    );
+
+
+                const selected =
+                    value ===
+                    seconds;
+
+
+                option.classList.toggle(
+                    "selected",
+                    selected
+                );
+
+
+                option.children[1]
+                    .innerText =
+                    selected
+                        ? "✓"
+                        : "";
+
+            }
+        );
+
+
+    document.getElementById(
+        "durationWrap"
+    ).classList.remove(
+        "open"
+    );
+
+}
+
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        const wrap =
+            document.getElementById(
+                "durationWrap"
+            );
+
+
+        if (
+            !wrap.contains(
+                event.target
+            )
+        ) {
+
+            wrap.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   PAYOUT
+================================================== */
+
+function updatePotentialPayout() {
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+
+    const profit =
+        Number.isFinite(amount) &&
+        amount > 0
+            ? amount * 0.8
+            : 0;
+
+
+    document.getElementById(
+        "potentialPayout"
+    ).innerText =
+        "+" +
+        profit.toFixed(2) +
+        " USDT";
+
+}
+
+
+function setAmount(value) {
+
+    document.getElementById(
+        "amount"
+    ).value =
+        value;
+
+
+    updatePotentialPayout();
+
+}
+
+
+updatePotentialPayout();
+
+
+/* ==================================================
+   PRICE VARIABLES
+================================================== */
+
+let currentPrice =
+    0;
+
+
+let previousPrice =
+    0;
+
+
+let lastPriceUpdate =
+    0;
+
+
+let binanceSocket =
+    null;
+
+
+let krakenSocket =
+    null;
+
+
+let usingFallback =
+    false;
+
+
+let fallbackInterval =
+    null;
+
+
+/* ==================================================
+   PRICE FORMAT
+================================================== */
 
 function formatPrice(price) {
 
@@ -895,7 +1757,9 @@ function formatPrice(price) {
     if (
         !Number.isFinite(n)
     ) {
+
         return "--";
+
     }
 
 
@@ -905,10 +1769,14 @@ function formatPrice(price) {
             n.toLocaleString(
                 undefined,
                 {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        2
                 }
             );
+
     }
 
 
@@ -918,10 +1786,14 @@ function formatPrice(price) {
             n.toLocaleString(
                 undefined,
                 {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 6
+                    minimumFractionDigits:
+                        2,
+
+                    maximumFractionDigits:
+                        6
                 }
             );
+
     }
 
 
@@ -929,14 +1801,19 @@ function formatPrice(price) {
 
         return "$" +
             n.toFixed(6);
+
     }
 
 
     return "$" +
-        n.toFixed(8);
+        n.toFixed(10);
 
 }
 
+
+/* ==================================================
+   UPDATE PRICE
+================================================== */
 
 function updatePrice(price) {
 
@@ -948,7 +1825,9 @@ function updatePrice(price) {
         !Number.isFinite(price) ||
         price <= 0
     ) {
+
         return;
+
     }
 
 
@@ -964,17 +1843,19 @@ function updatePrice(price) {
         Date.now();
 
 
-    const priceEl =
+    const element =
         document.getElementById(
             "price"
         );
 
 
-    priceEl.innerText =
-        formatPrice(price);
+    element.innerText =
+        formatPrice(
+            currentPrice
+        );
 
 
-    priceEl.classList.remove(
+    element.classList.remove(
         "green",
         "red"
     );
@@ -989,25 +1870,32 @@ function updatePrice(price) {
             previousPrice
         ) {
 
-            priceEl.classList
-                .add("green");
+            element.classList.add(
+                "green"
+            );
 
-        } else if (
+        }
+
+
+        if (
             currentPrice <
             previousPrice
         ) {
 
-            priceEl.classList
-                .add("red");
+            element.classList.add(
+                "red"
+            );
+
         }
+
     }
 
 }
 
 
-/* =========================
-   STATUS
-========================= */
+/* ==================================================
+   CONNECTION STATUS
+================================================== */
 
 function setStatus(
     text,
@@ -1020,7 +1908,7 @@ function setStatus(
         );
 
 
-    const textEl =
+    const label =
         document.getElementById(
             "connectionText"
         );
@@ -1031,25 +1919,29 @@ function setStatus(
 
 
     if (type) {
-        dot.classList.add(type);
+
+        dot.classList.add(
+            type
+        );
+
     }
 
 
-    textEl.innerText =
+    label.innerText =
         text;
 
 }
 
 
-/* =========================
-   BINANCE WEBSOCKET
-========================= */
+/* ==================================================
+   BINANCE REALTIME
+================================================== */
 
 function connectBinance() {
 
     try {
 
-        const streamSymbol =
+        const stream =
             selectedSymbol
                 .toLowerCase() +
             "usdt";
@@ -1059,7 +1951,7 @@ function connectBinance() {
             new WebSocket(
 
                 "wss://stream.binance.com:9443/ws/" +
-                streamSymbol +
+                stream +
                 "@trade"
 
             );
@@ -1074,14 +1966,19 @@ function connectBinance() {
                     ) {
 
                         try {
-                            binanceSocket.close();
-                        } catch (e) {}
+
+                            binanceSocket
+                                .close();
+
+                        } catch (error) {}
+
 
                         startFallback();
+
                     }
 
                 },
-                5000
+                6000
             );
 
 
@@ -1108,11 +2005,15 @@ function connectBinance() {
 
 
                     const price =
-                        Number(data.p);
+                        Number(
+                            data.p
+                        );
 
 
                     if (
-                        Number.isFinite(price) &&
+                        Number.isFinite(
+                            price
+                        ) &&
                         price > 0
                     ) {
 
@@ -1121,14 +2022,14 @@ function connectBinance() {
                         );
 
 
-                        setStatus(
-                            "Live",
-                            "online"
+                        updatePrice(
+                            price
                         );
 
 
-                        updatePrice(
-                            price
+                        setStatus(
+                            "Live",
+                            "online"
                         );
 
                     }
@@ -1145,6 +2046,7 @@ function connectBinance() {
                     timeout
                 );
 
+
                 startFallback();
 
             };
@@ -1159,12 +2061,12 @@ function connectBinance() {
 
                     setTimeout(
                         connectBinance,
-                        3000
+                        4000
                     );
+
                 }
 
             };
-
 
     } catch (error) {
 
@@ -1175,56 +2077,9 @@ function connectBinance() {
 }
 
 
-/* =========================
-   FALLBACK
-========================= */
-
-function startFallback() {
-
-    if (usingFallback) {
-        return;
-    }
-
-
-    usingFallback = true;
-
-
-    setStatus(
-        "Fallback price",
-        "online"
-    );
-
-
-    connectKraken();
-
-
-    fallbackTimer =
-        setInterval(
-            function () {
-
-                if (
-                    Date.now() -
-                    lastPriceUpdate >
-                    8000
-                ) {
-
-                    fetchCoinGeckoPrice();
-
-                }
-
-            },
-            5000
-        );
-
-
-    fetchCoinGeckoPrice();
-
-}
-
-
-/* =========================
+/* ==================================================
    KRAKEN FALLBACK
-========================= */
+================================================== */
 
 function connectKraken() {
 
@@ -1252,8 +2107,10 @@ function connectKraken() {
                                 "ticker",
 
                             symbol: [
+
                                 selectedSymbol +
                                 "/USD"
+
                             ]
 
                         }
@@ -1270,22 +2127,25 @@ function connectKraken() {
 
                 try {
 
-                    const msg =
+                    const message =
                         JSON.parse(
                             event.data
                         );
 
 
                     if (
-                        msg.channel ===
+                        message.channel ===
                             "ticker" &&
-                        msg.data &&
-                        msg.data.length
+
+                        message.data &&
+
+                        message.data.length
                     ) {
 
                         const price =
                             Number(
-                                msg.data[0]
+                                message
+                                    .data[0]
                                     .last
                             );
 
@@ -1297,14 +2157,14 @@ function connectKraken() {
                             price > 0
                         ) {
 
-                            setStatus(
-                                "Fallback Live",
-                                "online"
+                            updatePrice(
+                                price
                             );
 
 
-                            updatePrice(
-                                price
+                            setStatus(
+                                "Fallback Live",
+                                "online"
                             );
 
                         }
@@ -1315,19 +2175,33 @@ function connectKraken() {
 
             };
 
-
     } catch (error) {}
 
 }
 
 
-/* =========================
+/* ==================================================
    COINGECKO FALLBACK
-========================= */
+================================================== */
 
 async function fetchCoinGeckoPrice() {
 
     try {
+
+        const controller =
+            new AbortController();
+
+
+        const timeout =
+            setTimeout(
+                function () {
+
+                    controller.abort();
+
+                },
+                7000
+            );
+
 
         const url =
             "https://api.coingecko.com/api/v3/simple/price" +
@@ -1343,13 +2217,25 @@ async function fetchCoinGeckoPrice() {
                 url,
                 {
                     cache:
-                        "no-store"
+                        "no-store",
+
+                    signal:
+                        controller.signal
                 }
             );
 
 
-        if (!response.ok) {
-            return;
+        clearTimeout(
+            timeout
+        );
+
+
+        if (
+            !response.ok
+        ) {
+
+            return false;
+
         }
 
 
@@ -1366,9 +2252,16 @@ async function fetchCoinGeckoPrice() {
 
 
         if (
-            Number.isFinite(price) &&
+            Number.isFinite(
+                price
+            ) &&
             price > 0
         ) {
+
+            updatePrice(
+                price
+            );
+
 
             setStatus(
                 "Reference Live",
@@ -1376,20 +2269,73 @@ async function fetchCoinGeckoPrice() {
             );
 
 
-            updatePrice(
-                price
-            );
+            return true;
 
         }
 
     } catch (error) {}
 
+
+    return false;
+
 }
 
 
-/* =========================
-   SAFETY FRESH PRICE
-========================= */
+/* ==================================================
+   START FALLBACK
+================================================== */
+
+function startFallback() {
+
+    if (
+        usingFallback
+    ) {
+
+        return;
+
+    }
+
+
+    usingFallback =
+        true;
+
+
+    setStatus(
+        "Fallback price",
+        "online"
+    );
+
+
+    connectKraken();
+
+
+    fetchCoinGeckoPrice();
+
+
+    fallbackInterval =
+        setInterval(
+            function () {
+
+                if (
+                    Date.now() -
+                    lastPriceUpdate >
+                    9000
+                ) {
+
+                    fetchCoinGeckoPrice();
+
+                }
+
+            },
+            6000
+        );
+
+}
+
+
+/* ==================================================
+   ENSURE FRESH PRICE
+================================================== */
 
 async function ensureFreshPrice() {
 
@@ -1413,46 +2359,37 @@ async function ensureFreshPrice() {
 }
 
 
-/* =========================
-   AMOUNT
-========================= */
-
-function setAmount(value) {
-
-    document.getElementById(
-        "amount"
-    ).value =
-        value;
-
-}
-
-
-/* =========================
+/* ==================================================
    ACTIVE ORDER
-========================= */
+================================================== */
 
 let activeOrder =
     null;
+
 
 let activeTimer =
     null;
 
 
-/* =========================
+/* ==================================================
    PLACE ORDER
-========================= */
+================================================== */
 
 async function placeOrder(
     direction
 ) {
 
-    if (activeOrder) {
+    if (
+        activeOrder
+    ) {
 
         alert(
             "A demo order is already active."
         );
 
+
         return;
+
     }
 
 
@@ -1473,7 +2410,9 @@ async function placeOrder(
             "Please enter a valid amount."
         );
 
+
         return;
+
     }
 
 
@@ -1486,7 +2425,9 @@ async function placeOrder(
             "Insufficient demo balance."
         );
 
+
         return;
+
     }
 
 
@@ -1503,11 +2444,15 @@ async function placeOrder(
             "Live price is not available yet. Please try again."
         );
 
+
         return;
+
     }
 
 
-    balance -= amount;
+    balance -=
+        amount;
+
 
     updateBalance();
 
@@ -1526,8 +2471,11 @@ async function placeOrder(
         entry:
             entry,
 
+        duration:
+            selectedDuration,
+
         seconds:
-            30,
+            selectedDuration,
 
         startedAt:
             Date.now()
@@ -1546,6 +2494,19 @@ async function placeOrder(
     activeTimer =
         setInterval(
             function () {
+
+                if (
+                    !activeOrder
+                ) {
+
+                    clearInterval(
+                        activeTimer
+                    );
+
+                    return;
+
+                }
+
 
                 activeOrder.seconds--;
 
@@ -1577,9 +2538,9 @@ async function placeOrder(
 }
 
 
-/* =========================
-   ACTIVE ORDER UI
-========================= */
+/* ==================================================
+   ACTIVE ORDER DISPLAY
+================================================== */
 
 function showActiveOrder() {
 
@@ -1620,6 +2581,13 @@ function showActiveOrder() {
 
 
     document.getElementById(
+        "activeDuration"
+    ).innerText =
+        activeOrder.duration +
+        " Seconds";
+
+
+    document.getElementById(
         "countdown"
     ).innerText =
         activeOrder.seconds;
@@ -1645,14 +2613,18 @@ function setTradeButtons(
 }
 
 
-/* =========================
-   SETTLE ORDER
-========================= */
+/* ==================================================
+   SETTLEMENT
+================================================== */
 
 async function settleOrder() {
 
-    if (!activeOrder) {
+    if (
+        !activeOrder
+    ) {
+
         return;
+
     }
 
 
@@ -1668,42 +2640,14 @@ async function settleOrder() {
         exit <= 0
     ) {
 
-        activeOrder.seconds =
-            3;
-
-
-        activeTimer =
-            setInterval(
-                function () {
-
-                    activeOrder.seconds--;
-
-
-                    document.getElementById(
-                        "countdown"
-                    ).innerText =
-                        activeOrder.seconds;
-
-
-                    if (
-                        activeOrder.seconds <=
-                        0
-                    ) {
-
-                        clearInterval(
-                            activeTimer
-                        );
-
-                        settleOrder();
-
-                    }
-
-                },
-                1000
-            );
+        setTimeout(
+            settleOrder,
+            3000
+        );
 
 
         return;
+
     }
 
 
@@ -1731,6 +2675,7 @@ async function settleOrder() {
 
             result =
                 "LOSS";
+
         }
 
     } else {
@@ -1750,6 +2695,7 @@ async function settleOrder() {
 
             result =
                 "LOSS";
+
         }
 
     }
@@ -1773,7 +2719,10 @@ async function settleOrder() {
             activeOrder.amount +
             pnl;
 
-    } else if (
+    }
+
+
+    if (
         result ===
         "DRAW"
     ) {
@@ -1781,7 +2730,13 @@ async function settleOrder() {
         balance +=
             activeOrder.amount;
 
-    } else {
+    }
+
+
+    if (
+        result ===
+        "LOSS"
+    ) {
 
         pnl =
             -activeOrder.amount;
@@ -1803,6 +2758,9 @@ async function settleOrder() {
 
         side:
             activeOrder.direction,
+
+        duration:
+            activeOrder.duration,
 
         amount:
             activeOrder.amount,
@@ -1859,28 +2817,37 @@ async function settleOrder() {
     );
 
 
-    alert(
+    const resultMessage =
         result +
         "\n\n" +
-        selectedSymbol +
-        "/USDT\n" +
-        "Entry: " +
+
+        item.symbol +
+        "/USDT" +
+
+        "\nDuration: " +
+        item.duration +
+        " Seconds" +
+
+        "\nEntry: " +
         formatPrice(
             item.entry
         ) +
+
         "\nExit: " +
         formatPrice(
             item.exit
         ) +
+
         "\nP&L: " +
+
         (
             item.pnl >= 0
                 ? "+"
                 : ""
         ) +
+
         item.pnl.toFixed(2) +
-        " USDT"
-    );
+        " USDT";
 
 
     activeOrder =
@@ -1891,12 +2858,17 @@ async function settleOrder() {
         false
     );
 
+
+    alert(
+        resultMessage
+    );
+
 }
 
 
-/* =========================
+/* ==================================================
    HISTORY
-========================= */
+================================================== */
 
 function renderHistory() {
 
@@ -1910,22 +2882,30 @@ function renderHistory() {
         !history.length
     ) {
 
-        body.innerHTML =
-            `
+        body.innerHTML = `
+
             <tr>
-                <td colspan="7">
+
+                <td colspan="8">
+
                     <div class="empty">
                         No demo orders yet.
                     </div>
+
                 </td>
+
             </tr>
-            `;
+
+        `;
+
 
         return;
+
     }
 
 
-    body.innerHTML = "";
+    body.innerHTML =
+        "";
 
 
     history
@@ -1969,6 +2949,10 @@ function renderHistory() {
                     </td>
 
                     <td>
+                        ${item.duration || 30}s
+                    </td>
+
+                    <td>
                         ${Number(item.amount || 0).toFixed(2)}
                     </td>
 
@@ -2000,9 +2984,9 @@ function renderHistory() {
 renderHistory();
 
 
-/* =========================
-   START PRICE
-========================= */
+/* ==================================================
+   START
+================================================== */
 
 connectBinance();
 
@@ -2019,7 +3003,7 @@ setTimeout(
         }
 
     },
-    5500
+    6500
 );
 
 </script>

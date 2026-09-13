@@ -388,6 +388,118 @@
   }
 
   /* ========================================
+     ADMIN MANUAL DEMO CREDIT SYNC
+  ======================================== */
+
+  async function pollAccountAdjustments(){
+
+    try{
+
+      const uid=getUid();
+
+      const url=
+        SUPABASE_URL+
+        '/rest/v1/account_adjustments'+
+        '?select=id,amount,note,created_at'+
+        '&uid=eq.'+
+        encodeURIComponent(uid)+
+        '&order=id.asc';
+
+      const r=await fetch(
+        url,
+        {
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:
+              'Bearer '+SUPABASE_KEY
+          },
+          cache:'no-store'
+        }
+      );
+
+      if(!r.ok){
+        return;
+      }
+
+      const rows=
+        await r.json();
+
+      if(
+        !Array.isArray(rows) ||
+        !rows.length
+      ){
+        return;
+      }
+
+      const processed=
+        readArray(
+          'processedAccountAdjustmentIds'
+        ).map(String);
+
+      let changed=false;
+
+      for(const row of rows){
+
+        const id=
+          String(row.id);
+
+        if(
+          processed.includes(id)
+        ){
+          continue;
+        }
+
+        const amount=
+          Number(row.amount)||0;
+
+        if(amount>0){
+
+          setBalance(
+            getBalance()+amount
+          );
+
+          window.dispatchEvent(
+            new CustomEvent(
+              'demoAdminCreditApplied',
+              {
+                detail:{
+                  id:row.id,
+                  amount:amount,
+                  note:row.note||'',
+                  balance:getBalance()
+                }
+              }
+            )
+          );
+
+        }
+
+        processed.push(id);
+
+        changed=true;
+      }
+
+      if(changed){
+
+        writeArray(
+          'processedAccountAdjustmentIds',
+          processed,
+          1000
+        );
+
+      }
+
+    }catch(e){
+
+      console.warn(
+        'Admin credit sync failed',
+        e
+      );
+
+    }
+  }
+
+  /* ========================================
      ACTIVE TRADE STORAGE
   ======================================== */
 
@@ -395,11 +507,12 @@
 
     try{
 
-      const x=JSON.parse(
-        localStorage.getItem(
-          'demoActiveTrade'
-        )||'null'
-      );
+      const x=
+        JSON.parse(
+          localStorage.getItem(
+            'demoActiveTrade'
+          )||'null'
+        );
 
       return (
         x &&
@@ -436,7 +549,7 @@
         'demoActiveTradeUpdated',
         {
           detail:{
-            order
+            order:order
           }
         }
       )
@@ -445,7 +558,8 @@
 
   function clearActiveTrade(id){
 
-    const x=getActiveTrade();
+    const x=
+      getActiveTrade();
 
     if(
       !x ||
@@ -499,23 +613,26 @@
       encodeURIComponent(getUid())+
       '&limit=1';
 
-    const r=await fetch(
-      url,
-      {
-        headers:{
-          apikey:SUPABASE_KEY,
-          Authorization:
-            'Bearer '+SUPABASE_KEY
-        },
-        cache:'no-store'
-      }
-    );
+    const r=
+      await fetch(
+        url,
+        {
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:
+              'Bearer '+SUPABASE_KEY
+          },
+
+          cache:'no-store'
+        }
+      );
 
     if(!r.ok){
       return null;
     }
 
-    const rows=await r.json();
+    const rows=
+      await r.json();
 
     return Array.isArray(rows)
       ? rows[0]||null
@@ -523,7 +640,7 @@
   }
 
   /* ========================================
-     FIND ACTIVE PENDING TRADE
+     FIND ACTIVE TRADE
   ======================================== */
 
   async function findOpenTrade(){
@@ -545,23 +662,26 @@
       '&order=id.desc'+
       '&limit=1';
 
-    const r=await fetch(
-      url,
-      {
-        headers:{
-          apikey:SUPABASE_KEY,
-          Authorization:
-            'Bearer '+SUPABASE_KEY
-        },
-        cache:'no-store'
-      }
-    );
+    const r=
+      await fetch(
+        url,
+        {
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:
+              'Bearer '+SUPABASE_KEY
+          },
+
+          cache:'no-store'
+        }
+      );
 
     if(!r.ok){
       return null;
     }
 
-    const rows=await r.json();
+    const rows=
+      await r.json();
 
     return Array.isArray(rows)
       ? rows[0]||null
@@ -578,27 +698,28 @@
       return null;
     }
 
-    const r=await fetch(
-      SUPABASE_URL+
-      '/rest/v1/rpc/'+
-      'settle_expired_trade',
-      {
-        method:'POST',
+    const r=
+      await fetch(
+        SUPABASE_URL+
+        '/rest/v1/rpc/'+
+        'settle_expired_trade',
+        {
+          method:'POST',
 
-        headers:{
-          apikey:SUPABASE_KEY,
-          Authorization:
-            'Bearer '+SUPABASE_KEY,
-          'Content-Type':
-            'application/json'
-        },
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:
+              'Bearer '+SUPABASE_KEY,
+            'Content-Type':
+              'application/json'
+          },
 
-        body:JSON.stringify({
-          p_order_id:Number(id),
-          p_uid:getUid()
-        })
-      }
-    );
+          body:JSON.stringify({
+            p_order_id:Number(id),
+            p_uid:getUid()
+          })
+        }
+      );
 
     if(!r.ok){
 
@@ -608,7 +729,8 @@
 
     }
 
-    const rows=await r.json();
+    const rows=
+      await r.json();
 
     return Array.isArray(rows)
       ? rows[0]||null
@@ -722,7 +844,7 @@
       localStorage.setItem(
         key,
         JSON.stringify({
-          token,
+          token:token,
           time:Date.now()
         })
       );
@@ -737,14 +859,17 @@
         check &&
         check.token===token
       )
-        ? {key,token}
+        ? {
+            key:key,
+            token:token
+          }
         : null;
 
     }catch(_){
 
       return {
-        key,
-        token
+        key:key,
+        token:token
       };
 
     }
@@ -787,7 +912,7 @@
   }
 
   /* ========================================
-     APPLY SETTLED RESULT TO BALANCE
+     PROCESS SETTLED TRADE
   ======================================== */
 
   async function processSettledTrade(row){
@@ -809,11 +934,6 @@
         row.expires_at
       ).getTime();
 
-    /*
-      Admin can choose the result before
-      countdown finishes, but customer
-      balance only settles at expiry.
-    */
     if(
       Number.isFinite(expires) &&
       Date.now()+500<expires
@@ -891,11 +1011,6 @@
 
         }
 
-        /*
-          WIN:
-          return principal
-          + profit
-        */
         credit=
           amount+pnl;
 
@@ -905,21 +1020,12 @@
 
         pnl=0;
 
-        /*
-          DRAW:
-          return principal
-        */
         credit=amount;
 
       }else{
 
-        /*
-          LOSS:
-          principal was already
-          deducted when order
-          was placed.
-        */
         pnl=-amount;
+
         credit=0;
 
       }
@@ -952,9 +1058,9 @@
           'demoTradeSettled',
           {
             detail:{
-              row,
-              pnl,
-              credit,
+              row:row,
+              pnl:pnl,
+              credit:credit,
               balance:
                 getBalance()
             }
@@ -973,14 +1079,6 @@
 
   /* ========================================
      GLOBAL TRADE POLLING
-
-     This runs on every page that loads
-     balance-sync.js.
-
-     Markets / Trading / Assets / Profile
-     can therefore continue checking the
-     order instead of relying only on the
-     Trading page countdown.
   ======================================== */
 
   let tradePolling=false;
@@ -995,7 +1093,8 @@
 
     try{
 
-      const uid=getUid();
+      const uid=
+        getUid();
 
       const fields=
         'id,uid,symbol,side,amount,'+
@@ -1013,17 +1112,19 @@
         '&order=id.desc'+
         '&limit=100';
 
-      let r=await fetch(
-        url,
-        {
-          headers:{
-            apikey:SUPABASE_KEY,
-            Authorization:
-              'Bearer '+SUPABASE_KEY
-          },
-          cache:'no-store'
-        }
-      );
+      let r=
+        await fetch(
+          url,
+          {
+            headers:{
+              apikey:SUPABASE_KEY,
+              Authorization:
+                'Bearer '+SUPABASE_KEY
+            },
+
+            cache:'no-store'
+          }
+        );
 
       if(!r.ok){
         return;
@@ -1042,11 +1143,6 @@
 
       const now=
         Date.now();
-
-      /*
-        Any pending order that has
-        expired is converted to DRAW.
-      */
 
       for(const row of rows){
 
@@ -1086,28 +1182,24 @@
         }
       }
 
-      /*
-        Reload rows after automatic
-        DRAW changes.
-      */
-
       if(changed){
 
-        r=await fetch(
-          url,
-          {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
+        r=
+          await fetch(
+            url,
+            {
+              headers:{
+                apikey:
+                  SUPABASE_KEY,
 
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+                Authorization:
+                  'Bearer '+
+                  SUPABASE_KEY
+              },
 
-            cache:'no-store'
-          }
-        );
+              cache:'no-store'
+            }
+          );
 
         if(r.ok){
 
@@ -1117,16 +1209,12 @@
           if(
             Array.isArray(x)
           ){
-            rows=x;
-          }
 
+            rows=x;
+
+          }
         }
       }
-
-      /*
-        Apply every completed order
-        exactly once.
-      */
 
       for(const row of rows){
 
@@ -1159,11 +1247,17 @@
     poll:
       pollDepositStatus,
 
-    getUid,
+    pollAdminCredits:
+      pollAccountAdjustments,
 
-    setBalance,
+    getUid:
+      getUid,
 
-    getBalance
+    setBalance:
+      setBalance,
+
+    getBalance:
+      getBalance
 
   };
 
@@ -1172,25 +1266,35 @@
     poll:
       pollTradeStatus,
 
-    getUid,
+    getUid:
+      getUid,
 
-    getTrade,
+    getTrade:
+      getTrade,
 
-    findOpenTrade,
+    findOpenTrade:
+      findOpenTrade,
 
-    settleExpiredTrade,
+    settleExpiredTrade:
+      settleExpiredTrade,
 
-    processSettledTrade,
+    processSettledTrade:
+      processSettledTrade,
 
-    getActiveTrade,
+    getActiveTrade:
+      getActiveTrade,
 
-    setActiveTrade,
+    setActiveTrade:
+      setActiveTrade,
 
-    clearActiveTrade,
+    clearActiveTrade:
+      clearActiveTrade,
 
-    getBalance,
+    getBalance:
+      getBalance,
 
-    setBalance
+    setBalance:
+      setBalance
 
   };
 
@@ -1204,11 +1308,18 @@
 
     pollDepositStatus();
 
+    pollAccountAdjustments();
+
     pollTradeStatus();
 
     setInterval(
       pollDepositStatus,
       5000
+    );
+
+    setInterval(
+      pollAccountAdjustments,
+      3000
     );
 
     setInterval(

@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin - Deposit Review</title>
+<style>
+:root{
+  --bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#27313c;
+  --text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;
+  --blue:#4b8cff;--yellow:#d6ad4d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1180px,100%);margin:0 auto;padding:18px 14px 42px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{font-size:20px;font-weight:900}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.login-card{width:min(430px,100%);margin:8vh auto 0}
+.field{margin-top:13px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.field input{width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:11px;padding:0 13px;outline:none}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,140,255,.1)}
+.btn{height:44px;border:0;border-radius:10px;padding:0 14px;font-weight:850}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#151d26;color:#fff;border:1px solid #2d3946}
+.danger{background:rgba(240,91,106,.12);color:#ff8390;border:1px solid rgba(240,91,106,.28)}
+.success{background:rgba(34,201,139,.12);color:#47e0a9;border:1px solid rgba(34,201,139,.28)}
+.full{width:100%;margin-top:16px}
+.msg{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:13px}
+.msg.show{display:block}
+.msg.err{background:rgba(240,91,106,.1);border:1px solid rgba(240,91,106,.25);color:#ff8390}
+.msg.ok{background:rgba(34,201,139,.1);border:1px solid rgba(34,201,139,.25);color:#47e0a9}
+.hidden{display:none!important}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{height:38px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#b7c0ca;padding:0 12px;font-weight:800}
+.filter.active{color:#fff;border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.list{display:grid;gap:12px;margin-top:14px}
+.deposit{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.row-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.amount{font-size:22px;font-weight:900}
+.status{font-size:11px;font-weight:900;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.pending{color:var(--yellow);background:rgba(214,173,77,.10);border:1px solid rgba(214,173,77,.24)}
+.approved{color:var(--green);background:rgba(34,201,139,.10);border:1px solid rgba(34,201,139,.24)}
+.rejected{color:var(--red);background:rgba(240,91,106,.10);border:1px solid rgba(240,91,106,.24)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.item{background:#0a0f14;border:1px solid #202934;border-radius:10px;padding:10px;min-width:0}
+.item .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.item .v{font-size:13px;font-weight:750;margin-top:4px;word-break:break-word}
+.receipt-area{display:grid;grid-template-columns:170px 1fr;gap:12px;margin-top:12px}
+.receipt{height:140px;border:1px solid #26313d;border-radius:11px;background:#090d12;display:grid;place-items:center;overflow:hidden}
+.receipt img{width:100%;height:100%;object-fit:cover;cursor:pointer}
+.receipt-placeholder{font-size:12px;color:var(--muted);text-align:center;padding:10px}
+.actions{display:flex;gap:8px;align-items:flex-end;justify-content:flex-end;flex-wrap:wrap}
+.actions .btn{min-width:105px}
+.note{font-size:11px;color:var(--muted);line-height:1.55}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal img{max-width:95vw;max-height:90vh;border-radius:10px;border:1px solid #394553;background:#fff}
+.close{position:fixed;top:18px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #45515e;background:#111820;color:#fff;font-size:22px}
+.security{font-size:11px;color:var(--muted);line-height:1.55;margin-top:12px}
+@media(max-width:850px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr 1fr}
+  .receipt-area{grid-template-columns:1fr}
+  .receipt{height:210px}
+  .actions{justify-content:stretch}
+  .actions .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="loginView" class="card login-card">
+    <div class="brand">Admin Login</div>
+    <div class="sub">Deposit review dashboard</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" autocomplete="username" required placeholder="Admin email">
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="current-password" required placeholder="Admin password">
+      </div>
+
+      <div id="loginMsg" class="msg"></div>
+      <button id="loginBtn" class="btn primary full" type="submit">Login</button>
+    </form>
+
+    <div class="security">
+      This page uses Supabase Authentication. Do not put your password or a service-role key inside this HTML file.
+    </div>
+  </section>
+
+  <div id="adminView" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="brand">Deposit Review</div>
+        <div id="adminEmail" class="sub"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="refreshBtn" class="btn secondary" type="button">Refresh</button>
+        <button id="logoutBtn" class="btn danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter active" data-filter="pending" type="button">Pending</button>
+          <button class="filter" data-filter="all" type="button">All</button>
+          <button class="filter" data-filter="approved" type="button">Approved</button>
+          <button class="filter" data-filter="rejected" type="button">Rejected</button>
+        </div>
+        <div id="countText" class="sub">0 requests</div>
+      </div>
+
+      <div id="adminMsg" class="msg"></div>
+      <div id="depositList" class="list"></div>
+    </section>
+  </div>
+
+</div>
+
+<div id="imageModal" class="modal">
+  <button id="closeModal" class="close" type="button">×</button>
+  <img id="modalImage" alt="Receipt">
+</div>
+
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+let session=null;
+let currentFilter='pending';
+let receiptObjectUrls=[];
+
+function authHeaders(extra={}){
+  return {
+    apikey:SUPABASE_KEY,
+    Authorization:'Bearer '+session.access_token,
+    ...extra
+  };
+}
+
+function setMsg(id,text,ok=false){
+  const el=document.getElementById(id);
+  if(!text){
+    el.className='msg';
+    el.textContent='';
+    return;
+  }
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function saveSession(data){
+  session={
+    access_token:data.access_token,
+    refresh_token:data.refresh_token,
+    expires_at:Date.now()+(Number(data.expires_in||3600)*1000),
+    user:data.user
+  };
+  sessionStorage.setItem('adminSession',JSON.stringify(session));
+}
+
+function loadSavedSession(){
+  try{
+    const x=JSON.parse(sessionStorage.getItem('adminSession')||'null');
+    if(x?.access_token && x?.refresh_token){
+      session=x;
+      return true;
+    }
+  }catch(_){}
+  return false;
+}
+
+async function refreshSession(){
+  if(!session?.refresh_token) return false;
+
+  try{
+    const r=await fetch(
+      SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',
+      {
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({refresh_token:session.refresh_token})
+      }
+    );
+
+    if(!r.ok) return false;
+    const data=await r.json();
+    saveSession(data);
+    return true;
+  }catch(_){
+    return false;
+  }
+}
+
+async function ensureSession(){
+  if(!session) return false;
+
+  if(session.expires_at && Date.now()>session.expires_at-60000){
+    return await refreshSession();
+  }
+
+  return true;
+}
+
+async function verifyAdmin(){
+  if(!await ensureSession()) return false;
+
+  const uid=session?.user?.id;
+  if(!uid) return false;
+
+  const r=await fetch(
+    SUPABASE_URL+
+    '/rest/v1/admin_users?select=user_id&user_id=eq.'+
+    encodeURIComponent(uid),
+    {headers:authHeaders()}
+  );
+
+  if(r.status===401){
+    if(await refreshSession()) return verifyAdmin();
+    return false;
+  }
+
+  if(!r.ok) return false;
+
+  const rows=await r.json();
+  return Array.isArray(rows)&&rows.length>0;
+}
+
+async function login(email,password){
+  const r=await fetch(
+    SUPABASE_URL+'/auth/v1/token?grant_type=password',
+    {
+      method:'POST',
+      headers:{
+        apikey:SUPABASE_KEY,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({email,password})
+    }
+  );
+
+  const data=await r.json().catch(()=>({}));
+
+  if(!r.ok){
+    throw new Error(data?.msg||data?.error_description||data?.message||'Login failed');
+  }
+
+  saveSession(data);
+
+  const isAdmin=await verifyAdmin();
+  if(!isAdmin){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    throw new Error('This account is not authorized as an administrator.');
+  }
+}
+
+function showAdmin(){
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('adminView').classList.remove('hidden');
+  document.getElementById('adminEmail').textContent=session?.user?.email||'Authenticated admin';
+}
+
+function showLogin(){
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+}
+
+function money(v,d=2){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+
+function esc(v){
+  return String(v??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function statusClass(s){
+  return ['approved','rejected'].includes(s)?s:'pending';
+}
+
+async function getReceiptBlobUrl(path){
+  if(!path) return null;
+  if(!await ensureSession()) return null;
+
+  const clean=String(path).replace(/^\/+/,'');
+  const url=
+    SUPABASE_URL+
+    '/storage/v1/object/authenticated/deposit-receipts/'+
+    clean.split('/').map(encodeURIComponent).join('/');
+
+  let r=await fetch(url,{headers:authHeaders()});
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok) return null;
+
+  const blob=await r.blob();
+  const obj=URL.createObjectURL(blob);
+  receiptObjectUrls.push(obj);
+  return obj;
+}
+
+function clearReceiptUrls(){
+  receiptObjectUrls.forEach(x=>URL.revokeObjectURL(x));
+  receiptObjectUrls=[];
+}
+
+async function loadDeposits(){
+  setMsg('adminMsg','');
+  clearReceiptUrls();
+
+  if(!await ensureSession()){
+    logout();
+    return;
+  }
+
+  const filterPart=
+    currentFilter==='all'
+      ? ''
+      : '&status=eq.'+encodeURIComponent(currentFilter);
+
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/deposit_requests?select=id,uid,amount,status,created_at,reviewed_at,payment_method,reference,receipt_url,myr_amount,exchange_rate'+
+    filterPart+
+    '&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Could not load deposit requests: '+await r.text());
+    return;
+  }
+
+  const rows=await r.json();
+  document.getElementById('countText').textContent=(rows?.length||0)+' request'+((rows?.length||0)===1?'':'s');
+
+  const list=document.getElementById('depositList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML='<div class="empty">No '+esc(currentFilter==='all'?'':currentFilter+' ')+'deposit requests.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const method=x.payment_method||'—';
+    const isMyr=method==='MYR_BANK';
+
+    return `
+      <article class="deposit" data-id="${x.id}">
+        <div class="row-top">
+          <div>
+            <div class="amount">${money(x.amount)} USDT</div>
+            <div class="sub">Request #${x.id} · ${esc(x.uid||'—')} · ${esc(new Date(x.created_at).toLocaleString())}</div>
+          </div>
+          <div class="status ${statusClass(x.status)}">${esc(String(x.status||'pending').toUpperCase())}</div>
+        </div>
+
+        <div class="grid">
+          <div class="item">
+            <div class="k">Payment Method</div>
+            <div class="v">${esc(method)}</div>
+          </div>
+          <div class="item">
+            <div class="k">Reference / TXID</div>
+            <div class="v">${esc(x.reference||'—')}</div>
+          </div>
+          <div class="item">
+            <div class="k">MYR Amount</div>
+            <div class="v">${isMyr && x.myr_amount!=null?'RM '+money(x.myr_amount):'—'}</div>
+          </div>
+          <div class="item">
+            <div class="k">Exchange Rate</div>
+            <div class="v">${isMyr && x.exchange_rate!=null?'1 USDT = RM '+money(x.exchange_rate,6):'—'}</div>
+          </div>
+        </div>
+
+        <div class="receipt-area">
+          <div class="receipt" id="receipt-${x.id}">
+            <div class="receipt-placeholder">${x.receipt_url?'Loading receipt...':'No receipt uploaded'}</div>
+          </div>
+
+          <div class="actions">
+            <div style="flex:1;min-width:180px">
+              <div class="note">
+                ${x.reviewed_at?'Reviewed: '+esc(new Date(x.reviewed_at).toLocaleString()):'Not reviewed yet.'}
+              </div>
+            </div>
+
+            ${
+              x.status==='pending'
+              ? `
+                <button class="btn success" type="button" onclick="reviewDeposit(${x.id},'approved')">Approve</button>
+                <button class="btn danger" type="button" onclick="reviewDeposit(${x.id},'rejected')">Reject</button>
+              `
+              : `
+                <button class="btn secondary" type="button" onclick="reviewDeposit(${x.id},'pending')">Set Pending</button>
+              `
+            }
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  for(const x of rows){
+    if(!x.receipt_url) continue;
+
+    const holder=document.getElementById('receipt-'+x.id);
+    const blobUrl=await getReceiptBlobUrl(x.receipt_url);
+
+    if(!holder) continue;
+
+    if(blobUrl){
+      holder.innerHTML=`<img src="${blobUrl}" alt="Deposit receipt" onclick="openReceipt('${blobUrl}')">`;
+    }else{
+      holder.innerHTML='<div class="receipt-placeholder">Receipt exists but could not be opened.</div>';
+    }
+  }
+}
+
+async function reviewDeposit(id,status){
+  if(!['pending','approved','rejected'].includes(status)) return;
+  if(!await ensureSession()){
+    logout();
+    return;
+  }
+
+  const action=status==='approved'?'approve':status==='rejected'?'reject':'set back to pending';
+
+  if(!confirm('Are you sure you want to '+action+' request #'+id+'?')){
+    return;
+  }
+
+  const payload={
+    status,
+    reviewed_at:status==='pending'?null:new Date().toISOString()
+  };
+
+  let r=await fetch(
+    SUPABASE_URL+'/rest/v1/deposit_requests?id=eq.'+encodeURIComponent(id),
+    {
+      method:'PATCH',
+      headers:authHeaders({
+        'Content-Type':'application/json',
+        Prefer:'return=representation'
+      }),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+'/rest/v1/deposit_requests?id=eq.'+encodeURIComponent(id),
+      {
+        method:'PATCH',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          Prefer:'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Update failed: '+await r.text());
+    return;
+  }
+
+  setMsg('adminMsg','Request #'+id+' updated to '+status+'.',true);
+  await loadDeposits();
+}
+
+function openReceipt(url){
+  document.getElementById('modalImage').src=url;
+  document.getElementById('imageModal').classList.add('show');
+}
+
+function closeReceipt(){
+  document.getElementById('imageModal').classList.remove('show');
+  document.getElementById('modalImage').removeAttribute('src');
+}
+
+async function logout(){
+  try{
+    if(session?.access_token){
+      await fetch(
+        SUPABASE_URL+'/auth/v1/logout',
+        {method:'POST',headers:authHeaders()}
+      );
+    }
+  }catch(_){}
+
+  session=null;
+  sessionStorage.removeItem('adminSession');
+  clearReceiptUrls();
+  showLogin();
+}
+
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  setMsg('loginMsg','');
+
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;
+  btn.textContent='Logging in...';
+
+  try{
+    await login(
+      document.getElementById('email').value.trim(),
+      document.getElementById('password').value
+    );
+    document.getElementById('password').value='';
+    showAdmin();
+    await loadDeposits();
+  }catch(err){
+    setMsg('loginMsg',err?.message||'Login failed');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Login';
+  }
+});
+
+document.getElementById('logoutBtn').onclick=logout;
+document.getElementById('refreshBtn').onclick=loadDeposits;
+
+document.querySelectorAll('.filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter=btn.dataset.filter;
+    loadDeposits();
+  });
+});
+
+document.getElementById('closeModal').onclick=closeReceipt;
+document.getElementById('imageModal').addEventListener('click',e=>{
+  if(e.target.id==='imageModal') closeReceipt();
+});
+
+(async()=>{
+  if(loadSavedSession() && await verifyAdmin()){
+    showAdmin();
+    await loadDeposits();
+  }else{
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

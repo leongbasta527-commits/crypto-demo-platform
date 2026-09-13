@@ -506,7 +506,7 @@ function renderMarkets() {
             data.filter(
                 coin =>
                     favorites.includes(
-                        coin.id
+                        coin.symbol.toUpperCase()
                     )
             );
     }

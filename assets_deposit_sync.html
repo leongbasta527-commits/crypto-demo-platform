@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assets - Crypto Demo</title>
+<style>
+:root{--bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#252d38;--text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;--blue:#4b8cff;--nav:74px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom))}button,input{font:inherit}a{text-decoration:none;color:inherit}.container{width:min(760px,100%);margin:0 auto;padding:18px 14px 28px}.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.header h1{font-size:26px;margin:0}.badge{font-size:11px;font-weight:800;border:1px solid rgba(34,201,139,.35);color:var(--green);padding:6px 9px;border-radius:999px;background:rgba(34,201,139,.08)}.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.18)}.label{font-size:12px;color:var(--muted)}.balance{font-size:34px;font-weight:900;margin-top:6px}.balance small{font-size:13px;color:var(--muted);font-weight:700}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.btn{height:46px;border-radius:11px;border:1px solid var(--line);font-weight:800;cursor:pointer}.primary{background:var(--blue);color:#fff;border-color:transparent}.secondary{background:#161d26;color:#fff}.section-title{font-weight:800;margin-bottom:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid #202831;font-size:13px}.row:first-of-type{border-top:0}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.empty{text-align:center;color:var(--muted);padding:18px 0}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;z-index:5000}.overlay.show{display:flex}.modal{width:min(430px,100%);background:#111820;border:1px solid #2a3542;border-radius:18px;padding:18px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.modal-head h2{margin:0;font-size:20px}.close{width:36px;height:36px;border-radius:9px;border:1px solid #2b3744;background:#171f28;color:#fff;cursor:pointer}.field{margin-bottom:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input{width:100%;height:46px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:10px;padding:0 12px;outline:none}.hint{font-size:12px;color:var(--muted);line-height:1.55}.msg{display:none;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:13px}.msg.show{display:block}.msg.ok{background:rgba(34,201,139,.1);color:var(--green);border:1px solid rgba(34,201,139,.25)}.msg.err{background:rgba(240,91,106,.1);color:var(--red);border:1px solid rgba(240,91,106,.25)}.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));background:#0d1218;border-top:1px solid #232c37;display:grid;grid-template-columns:repeat(4,1fr);z-index:1000;padding-bottom:env(safe-area-inset-bottom)}.nav-item{display:flex;align-items:center;justify-content:center;color:#8290a0;font-size:12px}.nav-item.active{color:#4b8cff;font-weight:800}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><h1>Assets</h1><div class="badge">DEMO</div></div>
+  <section class="card">
+    <div class="label">Demo Balance</div>
+    <div class="balance"><span id="balanceValue">0.00</span> <small>USDT</small></div>
+    <div class="actions"><button class="btn primary" onclick="openDeposit()">Deposit</button><button class="btn secondary" onclick="openSupport()">Withdraw</button></div>
+  </section>
+  <section class="card">
+    <div class="section-title">Deposit Requests</div>
+    <div id="depositList" class="empty">No deposit requests yet.</div>
+  </section>
+  <section class="card">
+    <div class="section-title">Demo Trading History</div>
+    <div id="historyList" class="empty">No demo trades yet.</div>
+  </section>
+  <div class="hint">Demo only. Deposit approval only adds demo USDT credits. No real-money transfer is processed by this page.</div>
+</div>
+
+<div id="depositModal" class="overlay" onclick="if(event.target===this)closeDeposit()">
+  <div class="modal">
+    <div class="modal-head"><h2>Deposit Request</h2><button class="close" onclick="closeDeposit()">✕</button></div>
+    <form id="depositForm">
+      <div class="field"><label>Amount (USDT)</label><input id="depositAmount" type="number" min="1" step="0.01" placeholder="100" required></div>
+      <div class="hint">Submit a request first. An administrator can mark it approved or rejected in Supabase. Once approved, this page will automatically add the demo credit and show a success popup.</div>
+      <div id="depositMsg" class="msg"></div>
+      <button id="depositSubmit" class="btn primary" style="width:100%;margin-top:14px" type="submit">Submit Request</button>
+    </form>
+  </div>
+</div>
+
+<div id="supportModal" class="overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal"><div class="modal-head"><h2>Withdrawal Support</h2><button class="close" onclick="document.getElementById('supportModal').classList.remove('show')">✕</button></div><div class="hint">Withdrawal remains a demo/support flow.</div><a class="btn primary" style="display:grid;place-items:center;margin-top:14px" href="https://t.me/Kath02210" target="_blank" rel="noopener">Contact Support</a></div>
+</div>
+
+<nav class="bottom-nav"><a class="nav-item" href="index.html">Markets</a><a class="nav-item" href="trading.html?symbol=BTC">Trading</a><a class="nav-item active" href="assets.html">Assets</a><a class="nav-item" href="profile.html">Profile</a></nav>
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+function uid(){let v=localStorage.getItem('demoUid');if(!v){v='DEMO-'+String(Math.floor(100000+Math.random()*900000));localStorage.setItem('demoUid',v)}return v}
+function fmt(v){return Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function renderBalance(){const b=Number(localStorage.getItem('demoBalance'));document.getElementById('balanceValue').textContent=fmt(Number.isFinite(b)?b:0)}
+function openDeposit(){document.getElementById('depositModal').classList.add('show')}
+function closeDeposit(){document.getElementById('depositModal').classList.remove('show')}
+function openSupport(){document.getElementById('supportModal').classList.add('show')}
+function setMsg(text,ok){const el=document.getElementById('depositMsg');el.textContent=text;el.className='msg show '+(ok?'ok':'err')}
+async function loadDeposits(){
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/deposit_requests?select=id,amount,status,created_at&uid=eq.'+encodeURIComponent(uid())+'&order=id.desc&limit=20',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY},cache:'no-store'});
+    if(!r.ok)return; const rows=await r.json(); const el=document.getElementById('depositList');
+    if(!Array.isArray(rows)||!rows.length){el.className='empty';el.textContent='No deposit requests yet.';return}
+    el.className=''; el.innerHTML=rows.map(x=>'<div class="row"><div><b>'+fmt(x.amount)+' USDT</b><div class="muted">#'+x.id+' · '+new Date(x.created_at).toLocaleString()+'</div></div><div class="'+(x.status==='approved'?'green':x.status==='rejected'?'red':'muted')+'">'+String(x.status).toUpperCase()+'</div></div>').join('');
+  }catch(_){ }
+}
+function loadHistory(){let h=[];try{h=JSON.parse(localStorage.getItem('demoHistory')||'[]')}catch(_){ }const el=document.getElementById('historyList');if(!Array.isArray(h)||!h.length){el.className='empty';el.textContent='No demo trades yet.';return}el.className='';el.innerHTML=h.slice(0,15).map(x=>'<div class="row"><div><b>'+(x.symbol||'')+' '+(x.side||'')+'</b><div class="muted">'+new Date(x.time||Date.now()).toLocaleString()+'</div></div><div class="'+(x.result==='WIN'?'green':x.result==='LOSS'?'red':'muted')+'">'+(x.result||'--')+'</div></div>').join('')}
+document.getElementById('depositForm').addEventListener('submit',async e=>{
+  e.preventDefault(); const amount=Number(document.getElementById('depositAmount').value); if(!Number.isFinite(amount)||amount<=0){setMsg('Enter a valid amount.',false);return}
+  const btn=document.getElementById('depositSubmit'); btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/deposit_requests',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({uid:uid(),amount:Number(amount.toFixed(2)),status:'pending'})});
+    if(!r.ok)throw new Error(await r.text()); setMsg('Deposit request submitted. Waiting for review.',true); document.getElementById('depositAmount').value=''; loadDeposits();
+  }catch(err){console.error(err);setMsg('Submission failed. Please try again.',false)}finally{btn.disabled=false;btn.textContent='Submit Request'}
+});
+window.addEventListener('demoBalanceUpdated',()=>{renderBalance();loadDeposits()});
+renderBalance();loadDeposits();loadHistory();setInterval(loadDeposits,5000);
+</script>
+<script src="balance-sync.js"></script>
+</body>
+</html>

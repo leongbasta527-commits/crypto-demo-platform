@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Deposit - Crypto Demo</title>
+<style>
+:root{
+  --bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#252d38;
+  --text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;
+  --blue:#4b8cff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+a{text-decoration:none;color:inherit}
+.container{width:min(620px,100%);margin:0 auto;padding:16px 14px 34px}
+.topbar{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;margin-bottom:18px}
+.back{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#121820;color:#fff;display:grid;place-items:center;font-size:22px}
+.title{text-align:center;font-size:19px;font-weight:850}
+.badge{justify-self:end;font-size:10px;font-weight:850;border:1px solid rgba(34,201,139,.35);color:var(--green);padding:6px 7px;border-radius:999px;background:rgba(34,201,139,.08)}
+.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.label{font-size:12px;color:var(--muted)}
+.balance{font-size:28px;font-weight:900;margin-top:5px}
+.balance small{font-size:12px;color:var(--muted)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.info-box{background:#0d131a;border:1px solid #202934;border-radius:12px;padding:12px}
+.info-box b{display:block;font-size:13px;margin-top:4px;word-break:break-all}
+.section-title{font-size:16px;font-weight:850;margin-bottom:14px}
+.method{display:flex;align-items:center;gap:12px;border:1px solid #2b3744;background:#0d131a;border-radius:13px;padding:13px;margin-bottom:15px}
+.coin{width:42px;height:42px;border-radius:50%;background:#1b8d6b;display:grid;place-items:center;font-weight:900;font-size:19px}
+.method-text{flex:1}
+.method-text b{display:block;font-size:14px}
+.method-text span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.check{color:var(--green);font-size:20px;font-weight:900}
+.field{margin-top:10px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+.amount-wrap{position:relative}
+.amount-wrap input{width:100%;height:54px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:12px;padding:0 72px 0 14px;outline:none;font-size:20px;font-weight:800}
+.amount-wrap input:focus{border-color:#4b8cff;box-shadow:0 0 0 3px rgba(75,140,255,.10)}
+.unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:800}
+.presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.preset{height:38px;border-radius:9px;border:1px solid #2a3541;background:#141b23;color:#dce4ed;cursor:pointer;font-weight:750}
+.preset:active{transform:scale(.98)}
+.summary{margin-top:16px;border-top:1px solid #202831;padding-top:13px}
+.summary-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:6px 0}
+.muted{color:var(--muted)}
+.btn{width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-weight:850;cursor:pointer;margin-top:16px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.msg{display:none;margin-top:12px;padding:12px;border-radius:10px;font-size:13px;line-height:1.5}
+.msg.show{display:block}
+.msg.ok{background:rgba(34,201,139,.1);color:var(--green);border:1px solid rgba(34,201,139,.25)}
+.msg.err{background:rgba(240,91,106,.1);color:var(--red);border:1px solid rgba(240,91,106,.25)}
+.request{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #202831}
+.request:first-child{border-top:0}
+.request b{font-size:14px}
+.sub{font-size:11px;color:var(--muted);margin-top:4px}
+.status{font-size:11px;font-weight:850;padding:6px 8px;border-radius:999px}
+.pending{color:#d6ad4d;background:rgba(214,173,77,.10);border:1px solid rgba(214,173,77,.22)}
+.approved{color:var(--green);background:rgba(34,201,139,.10);border:1px solid rgba(34,201,139,.22)}
+.rejected{color:var(--red);background:rgba(240,91,106,.10);border:1px solid rgba(240,91,106,.22)}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:16px 0}
+.notice{font-size:11px;line-height:1.55;color:var(--muted);margin-top:12px}
+
+.address-box{margin-top:14px;background:#0d131a;border:1px solid #26313d;border-radius:12px;padding:13px}
+.address-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
+.network-tag{font-size:11px;font-weight:850;color:#22c98b;background:rgba(34,201,139,.10);border:1px solid rgba(34,201,139,.22);padding:5px 8px;border-radius:999px}
+.address-row{display:flex;gap:8px;align-items:stretch}
+.address-text{flex:1;background:#0a0f14;border:1px solid #202934;border-radius:9px;padding:11px 12px;font-size:12px;line-height:1.5;word-break:break-all;color:#e8edf3}
+.copy-btn{min-width:78px;border:1px solid #2b3744;background:#141b23;color:#fff;border-radius:9px;font-weight:800;cursor:pointer}
+.copy-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <a class="back" href="assets.html" aria-label="Back">‹</a>
+    <div class="title">Deposit</div>
+    <div class="badge">DEMO</div>
+  </div>
+
+  <section class="card">
+    <div class="label">Current Demo Balance</div>
+    <div class="balance"><span id="balanceValue">0.00</span> <small>USDT</small></div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="label">Account UID</div>
+        <b id="uidValue">--</b>
+      </div>
+      <div class="info-box">
+        <div class="label">Credit Type</div>
+        <b>Demo USDT</b>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">Deposit Demo USDT</div>
+
+    <div class="method">
+      <div class="coin">₮</div>
+      <div class="method-text">
+        <b>USDT · TRC20</b>
+        <span>Send only USDT on the TRON (TRC20) network</span>
+      </div>
+      <div class="check">✓</div>
+    </div>
+
+    <div class="address-box">
+      <div class="address-top">
+        <div>
+          <div class="label">USDT Deposit Address</div>
+        </div>
+        <div class="network-tag">TRC20</div>
+      </div>
+      <div class="address-row">
+        <div id="depositAddress" class="address-text">TVfeZuj9N2Jp3BBTjWEFDAemkaopu5Sx1i</div>
+        <button id="copyAddressBtn" class="copy-btn" type="button">Copy</button>
+      </div>
+      <div id="copyNote" class="copy-note">
+        Use only the TRON (TRC20) network. Sending another asset or using another network may result in loss.
+      </div>
+    </div>
+
+    <form id="depositForm">
+      <div class="field">
+        <label>Deposit Amount</label>
+        <div class="amount-wrap">
+          <input id="depositAmount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Enter amount" required>
+          <span class="unit">USDT</span>
+        </div>
+      </div>
+
+      <div class="presets">
+        <button class="preset" type="button" data-amount="100">100</button>
+        <button class="preset" type="button" data-amount="500">500</button>
+        <button class="preset" type="button" data-amount="1000">1,000</button>
+        <button class="preset" type="button" data-amount="5000">5,000</button>
+      </div>
+
+      <div class="field">
+        <label>Transaction Hash / TXID (optional for now)</label>
+        <input id="depositTxid" type="text" placeholder="Paste TRC20 transaction hash" style="width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:12px;padding:0 14px;outline:none">
+      </div>
+
+      <div class="summary">
+        <div class="summary-row"><span class="muted">Status after submission</span><b>Pending Review</b></div>
+        <div class="summary-row"><span class="muted">Credited after approval</span><b id="creditPreview">0.00 USDT</b></div>
+      </div>
+
+      <div id="depositMsg" class="msg"></div>
+
+      <button id="depositSubmit" class="btn" type="submit">Submit Deposit Request</button>
+    </form>
+
+    <div class="notice">
+      This page displays the configured TRC20 address and records a deposit request.
+      The current balance system is still demo-only: approval adds demo USDT to this browser's local demo balance.
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">Recent Deposit Requests</div>
+    <div id="depositList" class="empty">No deposit requests yet.</div>
+  </section>
+
+</div>
+
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+function getUid(){
+  let v=localStorage.getItem('demoUid');
+  if(!v){
+    v='DEMO-'+String(Math.floor(100000+Math.random()*900000));
+    localStorage.setItem('demoUid',v);
+  }
+  return v;
+}
+
+function fmt(v){
+  return Number(v||0).toLocaleString(undefined,{
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
+}
+
+function renderBalance(){
+  const b=Number(localStorage.getItem('demoBalance'));
+  document.getElementById('balanceValue').textContent=fmt(Number.isFinite(b)?b:0);
+}
+
+function setMsg(text,ok){
+  const el=document.getElementById('depositMsg');
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function statusClass(status){
+  if(status==='approved') return 'approved';
+  if(status==='rejected') return 'rejected';
+  return 'pending';
+}
+
+async function loadDeposits(){
+  try{
+    const url=
+      SUPABASE_URL+
+      '/rest/v1/deposit_requests?select=id,amount,status,created_at&uid=eq.'+
+      encodeURIComponent(getUid())+
+      '&order=id.desc&limit=10';
+
+    const r=await fetch(url,{
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:'Bearer '+SUPABASE_KEY
+      },
+      cache:'no-store'
+    });
+
+    if(!r.ok) return;
+
+    const rows=await r.json();
+    const el=document.getElementById('depositList');
+
+    if(!Array.isArray(rows)||!rows.length){
+      el.className='empty';
+      el.textContent='No deposit requests yet.';
+      return;
+    }
+
+    el.className='';
+    el.innerHTML=rows.map(x=>{
+      const status=String(x.status||'pending');
+      return `
+        <div class="request">
+          <div>
+            <b>${fmt(x.amount)} USDT</b>
+            <div class="sub">#${x.id} · ${new Date(x.created_at).toLocaleString()}</div>
+          </div>
+          <div class="status ${statusClass(status)}">${status.toUpperCase()}</div>
+        </div>
+      `;
+    }).join('');
+  }catch(_){}
+}
+
+const amountInput=document.getElementById('depositAmount');
+
+function updatePreview(){
+  const amount=Number(amountInput.value);
+  document.getElementById('creditPreview').textContent=
+    (Number.isFinite(amount)&&amount>0 ? fmt(amount) : '0.00')+' USDT';
+}
+
+amountInput.addEventListener('input',updatePreview);
+
+document.querySelectorAll('.preset').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    amountInput.value=btn.dataset.amount;
+    updatePreview();
+    amountInput.focus();
+  });
+});
+
+document.getElementById('copyAddressBtn').addEventListener('click',async()=>{
+  const address='TVfeZuj9N2Jp3BBTjWEFDAemkaopu5Sx1i';
+  try{
+    await navigator.clipboard.writeText(address);
+    document.getElementById('copyAddressBtn').textContent='Copied';
+    setTimeout(()=>document.getElementById('copyAddressBtn').textContent='Copy',1500);
+  }catch(_){
+    const ta=document.createElement('textarea');
+    ta.value=address;
+    ta.style.position='fixed';
+    ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    document.getElementById('copyAddressBtn').textContent='Copied';
+    setTimeout(()=>document.getElementById('copyAddressBtn').textContent='Copy',1500);
+  }
+});
+
+document.getElementById('depositForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const amount=Number(amountInput.value);
+
+  if(!Number.isFinite(amount)||amount<=0){
+    setMsg('Enter a valid deposit amount.',false);
+    return;
+  }
+
+  const btn=document.getElementById('depositSubmit');
+  btn.disabled=true;
+  btn.textContent='Submitting...';
+
+  try{
+    const r=await fetch(
+      SUPABASE_URL+'/rest/v1/deposit_requests',
+      {
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          Prefer:'return=minimal'
+        },
+        body:JSON.stringify({
+          uid:getUid(),
+          amount:Number(amount.toFixed(2)),
+          status:'pending'
+        })
+      }
+    );
+
+    if(!r.ok) throw new Error(await r.text());
+
+    setMsg('Deposit request submitted successfully. Status: Pending Review.',true);
+    amountInput.value='';
+    updatePreview();
+    loadDeposits();
+
+  }catch(err){
+    console.error(err);
+    setMsg('Submission failed. Please try again.',false);
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Submit Deposit Request';
+  }
+});
+
+document.getElementById('uidValue').textContent=getUid();
+
+window.addEventListener('demoBalanceUpdated',()=>{
+  renderBalance();
+  loadDeposits();
+});
+
+renderBalance();
+loadDeposits();
+setInterval(loadDeposits,5000);
+</script>
+
+<script src="balance-sync.js"></script>
+</body>
+</html>

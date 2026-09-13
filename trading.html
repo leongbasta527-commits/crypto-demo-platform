@@ -643,6 +643,38 @@ async function getRemoteTrade(id){
   const rows=await r.json();
   return rows?.[0]||null;
 }
+
+async function settleExpiredRemoteTrade(id){
+  if(!id)return null;
+  const r=await fetch(TRADE_SUPABASE_URL+'/rest/v1/rpc/settle_expired_trade',{
+    method:'POST',
+    headers:{
+      apikey:TRADE_SUPABASE_KEY,
+      Authorization:'Bearer '+TRADE_SUPABASE_KEY,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      p_order_id:Number(id),
+      p_uid:getDemoUid()
+    })
+  });
+  if(!r.ok)throw new Error(await r.text());
+  const rows=await r.json();
+  return Array.isArray(rows)?(rows[0]||null):rows;
+}
+
+async function ensureExpiredTradeDraw(id,attempts=3){
+  for(let i=0;i<attempts;i++){
+    try{
+      await settleExpiredRemoteTrade(id);
+      return true;
+    }catch(e){
+      console.warn('Auto DRAW sync attempt failed',e);
+      if(i<attempts-1)await new Promise(resolve=>setTimeout(resolve,450));
+    }
+  }
+  return false;
+}
 async function placeOrder(side){
   if(activeOrder)return alert('已有订单进行中');
   const amount=Number(document.getElementById('amount').value),duration=Number(document.getElementById('duration').value);
@@ -678,6 +710,11 @@ async function finishOrder(){
   const fresh=await fetchFreshPrice();
   if(fresh)updatePrice(fresh);
   const exit=(fresh||currentPrice||o.entry);
+
+  // 到期时，如果后台仍未结算，正式把 Supabase 订单结算为 DRAW。
+  // 如果管理员已经提前设成 WIN / LOSS / DRAW，数据库函数不会覆盖。
+  await ensureExpiredTradeDraw(o.remoteId);
+
   const remote=await getRemoteTrade(o.remoteId);
   let result='DRAW';
   let payoutRate=0.80;

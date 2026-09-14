@@ -10,6 +10,9 @@
   const POSITION_KEY = 'demoFloatingWidgetPosition';
   const NOTIFICATION_READ_KEY = 'demoNotificationReadIds';
 
+  // 自动弹窗已经显示过的 notification ID
+  const POPUP_SHOWN_KEY = 'demoNotificationPopupShownIds';
+
   const SUPPORT_URL = 'https://t.me/Kath02210';
 
   const style = document.createElement('style');
@@ -207,6 +210,150 @@
       display: block;
     }
 
+    /* =========================
+       全站自动通知弹窗
+       ========================= */
+
+    #dfw-global-popup {
+      position: fixed;
+      z-index: 1000000;
+      top: calc(18px + env(safe-area-inset-top));
+      left: 50%;
+      width: min(420px, calc(100vw - 28px));
+      transform: translate(-50%, -24px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    }
+
+    #dfw-global-popup.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .dfw-global-popup-card {
+      display: grid;
+      grid-template-columns: 46px 1fr 30px;
+      align-items: start;
+      gap: 11px;
+      padding: 14px;
+      border-radius: 15px;
+      background: rgba(19,24,32,.98);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 50px rgba(0,0,0,.48);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dfw-global-popup-card::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 3px;
+      width: 100%;
+      background: #22c98b;
+      transform-origin: left center;
+      animation: dfwPopupTimer 5.2s linear forwards;
+    }
+
+    .dfw-global-popup-card.error::after {
+      background: #f05b6a;
+    }
+
+    .dfw-global-popup-card.info::after {
+      background: #4b8cff;
+    }
+
+    .dfw-global-popup-card.warning::after {
+      background: #f5b84b;
+    }
+
+    @keyframes dfwPopupTimer {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    .dfw-global-popup-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(34,201,139,.12);
+      border: 1px solid rgba(34,201,139,.30);
+      color: #35d69b;
+      font-size: 23px;
+      font-weight: 900;
+    }
+
+    .dfw-global-popup-card.error .dfw-global-popup-icon {
+      background: rgba(240,91,106,.12);
+      border-color: rgba(240,91,106,.30);
+      color: #ff7180;
+    }
+
+    .dfw-global-popup-card.info .dfw-global-popup-icon {
+      background: rgba(75,140,255,.12);
+      border-color: rgba(75,140,255,.30);
+      color: #72a4ff;
+    }
+
+    .dfw-global-popup-card.warning .dfw-global-popup-icon {
+      background: rgba(245,184,75,.12);
+      border-color: rgba(245,184,75,.30);
+      color: #ffc763;
+    }
+
+    .dfw-global-popup-title {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      margin-top: 1px;
+      line-height: 1.3;
+    }
+
+    .dfw-global-popup-message {
+      margin-top: 4px;
+      color: #aeb9c7;
+      font-size: 12.5px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .dfw-global-popup-close {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 7px;
+      background: rgba(255,255,255,.06);
+      color: #b9c1cc;
+      cursor: pointer;
+      font-size: 17px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .dfw-global-popup-close:hover {
+      background: rgba(255,255,255,.10);
+    }
+
     #dfw-modal-backdrop {
       position: fixed;
       inset: 0;
@@ -246,6 +393,7 @@
         opacity: 0;
         transform: scale(.97);
       }
+
       to {
         opacity: 1;
         transform: scale(1);
@@ -389,7 +537,7 @@
       margin-top: 7px;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width:600px) {
       #dfw-tools {
         width: 166px;
       }
@@ -401,10 +549,18 @@
       #dfw-root {
         top: 40%;
       }
+
+      #dfw-global-popup {
+        top: calc(12px + env(safe-area-inset-top));
+      }
     }
   `;
 
   document.head.appendChild(style);
+
+  /* =========================
+     Floating Widget
+     ========================= */
 
   const root = document.createElement('div');
   root.id = 'dfw-root';
@@ -484,6 +640,214 @@
 
   document.body.appendChild(root);
 
+  /* =========================
+     Global notification popup
+     ========================= */
+
+  const globalPopup = document.createElement('div');
+  globalPopup.id = 'dfw-global-popup';
+
+  globalPopup.innerHTML = `
+    <div id="dfw-global-popup-card" class="dfw-global-popup-card">
+      <div id="dfw-global-popup-icon" class="dfw-global-popup-icon">✓</div>
+
+      <div>
+        <div id="dfw-global-popup-title" class="dfw-global-popup-title">
+          Notification
+        </div>
+
+        <div id="dfw-global-popup-message" class="dfw-global-popup-message"></div>
+      </div>
+
+      <button
+        id="dfw-global-popup-close"
+        class="dfw-global-popup-close"
+        type="button"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(globalPopup);
+
+  const popupCard = document.getElementById('dfw-global-popup-card');
+  const popupIcon = document.getElementById('dfw-global-popup-icon');
+  const popupTitle = document.getElementById('dfw-global-popup-title');
+  const popupMessage = document.getElementById('dfw-global-popup-message');
+  const popupClose = document.getElementById('dfw-global-popup-close');
+
+  let popupTimer = null;
+  let popupQueue = [];
+  let popupActive = false;
+
+  function getPopupShownIds() {
+    try {
+      const x = JSON.parse(
+        localStorage.getItem(POPUP_SHOWN_KEY) || '[]'
+      );
+
+      return Array.isArray(x)
+        ? x.map(String)
+        : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function savePopupShownIds(ids) {
+    const clean = [...new Set(ids.map(String))].slice(-500);
+
+    localStorage.setItem(
+      POPUP_SHOWN_KEY,
+      JSON.stringify(clean)
+    );
+  }
+
+  function markPopupShown(id) {
+    const ids = getPopupShownIds();
+
+    if (!ids.includes(String(id))) {
+      ids.push(String(id));
+      savePopupShownIds(ids);
+    }
+  }
+
+  function popupAppearance(item) {
+    const text = (
+      String(item.title || '') +
+      ' ' +
+      String(item.message || '')
+    ).toLowerCase();
+
+    if (
+      text.includes('reject') ||
+      text.includes('failed') ||
+      text.includes('loss') ||
+      text.includes('declined')
+    ) {
+      return {
+        className: 'error',
+        icon: '×'
+      };
+    }
+
+    if (
+      text.includes('pending') ||
+      text.includes('review')
+    ) {
+      return {
+        className: 'warning',
+        icon: '!'
+      };
+    }
+
+    if (
+      text.includes('approved') ||
+      text.includes('successful') ||
+      text.includes('success') ||
+      text.includes('win') ||
+      text.includes('credited') ||
+      text.includes('completed')
+    ) {
+      return {
+        className: 'success',
+        icon: '✓'
+      };
+    }
+
+    return {
+      className: 'info',
+      icon: 'i'
+    };
+  }
+
+  function hideGlobalPopup() {
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+
+    globalPopup.classList.remove('show');
+
+    setTimeout(() => {
+      popupActive = false;
+      showNextPopup();
+    }, 260);
+  }
+
+  function showNextPopup() {
+    if (popupActive || !popupQueue.length) {
+      return;
+    }
+
+    const item = popupQueue.shift();
+
+    if (!item) return;
+
+    popupActive = true;
+
+    const appearance = popupAppearance(item);
+
+    popupCard.className =
+      'dfw-global-popup-card ' +
+      appearance.className;
+
+    popupIcon.textContent = appearance.icon;
+
+    popupTitle.textContent =
+      item.title || 'Notification';
+
+    popupMessage.textContent =
+      item.message || '';
+
+    // 重新启动底部计时条动画
+    const oldCard = popupCard;
+    oldCard.style.animation = 'none';
+    void oldCard.offsetHeight;
+    oldCard.style.animation = '';
+
+    globalPopup.classList.add('show');
+
+    markPopupShown(item.id);
+
+    popupTimer = setTimeout(() => {
+      hideGlobalPopup();
+    }, 5200);
+  }
+
+  function queueGlobalPopup(item) {
+    if (!item || item.id == null) return;
+
+    const shownIds = new Set(
+      getPopupShownIds()
+    );
+
+    if (shownIds.has(String(item.id))) {
+      return;
+    }
+
+    const alreadyQueued =
+      popupQueue.some(
+        x => String(x.id) === String(item.id)
+      );
+
+    if (alreadyQueued) return;
+
+    popupQueue.push(item);
+    showNextPopup();
+  }
+
+  popupClose.addEventListener(
+    'click',
+    hideGlobalPopup
+  );
+
+  /* =========================
+     Normal modal
+     ========================= */
+
   const backdrop = document.createElement('div');
   backdrop.id = 'dfw-modal-backdrop';
 
@@ -491,7 +855,10 @@
     <div id="dfw-modal" role="dialog" aria-modal="true">
       <div class="dfw-modal-head">
         <div id="dfw-modal-title" class="dfw-modal-title"></div>
-        <button id="dfw-modal-close" type="button">×</button>
+
+        <button id="dfw-modal-close" type="button">
+          ×
+        </button>
       </div>
 
       <div id="dfw-modal-body"></div>
@@ -500,15 +867,25 @@
 
   document.body.appendChild(backdrop);
 
-  const handle = document.getElementById('dfw-handle');
-  const tools = document.getElementById('dfw-tools');
+  const handle =
+    document.getElementById('dfw-handle');
 
-  const modalTitle = document.getElementById('dfw-modal-title');
-  const modalBody = document.getElementById('dfw-modal-body');
-  const modalClose = document.getElementById('dfw-modal-close');
+  const tools =
+    document.getElementById('dfw-tools');
+
+  const modalTitle =
+    document.getElementById('dfw-modal-title');
+
+  const modalBody =
+    document.getElementById('dfw-modal-body');
+
+  const modalClose =
+    document.getElementById('dfw-modal-close');
 
   const notificationDot =
-    document.getElementById('dfw-notification-dot');
+    document.getElementById(
+      'dfw-notification-dot'
+    );
 
   let dragging = false;
   let moved = false;
@@ -518,6 +895,9 @@
   let startTop = 0;
 
   let notifications = [];
+
+  // 第一次读取时使用，避免把很久以前的旧通知全部弹出来
+  let firstNotificationFetch = true;
 
   function esc(value) {
     return String(value ?? '')
@@ -540,7 +920,9 @@
     try {
       const parsed =
         JSON.parse(
-          localStorage.getItem(NOTIFICATION_READ_KEY) || '[]'
+          localStorage.getItem(
+            NOTIFICATION_READ_KEY
+          ) || '[]'
         );
 
       return Array.isArray(parsed)
@@ -552,7 +934,9 @@
   }
 
   function saveReadIds(ids) {
-    const clean = [...new Set(ids.map(String))].slice(-500);
+    const clean =
+      [...new Set(ids.map(String))]
+        .slice(-500);
 
     localStorage.setItem(
       NOTIFICATION_READ_KEY,
@@ -602,8 +986,13 @@
       localStorage.setItem(
         POSITION_KEY,
         JSON.stringify({
-          side: root.dataset.side || 'right',
-          y: parseFloat(root.style.top) || 42
+          side:
+            root.dataset.side ||
+            'right',
+
+          y:
+            parseFloat(root.style.top) ||
+            42
         })
       );
     } catch (_) {}
@@ -613,21 +1002,29 @@
     try {
       const data =
         JSON.parse(
-          localStorage.getItem(POSITION_KEY) || 'null'
+          localStorage.getItem(
+            POSITION_KEY
+          ) || 'null'
         );
 
       if (!data) return;
 
-      if (data.side === 'left' || data.side === 'right') {
+      if (
+        data.side === 'left' ||
+        data.side === 'right'
+      ) {
         root.dataset.side = data.side;
       }
 
       if (
-        Number.isFinite(Number(data.y)) &&
+        Number.isFinite(
+          Number(data.y)
+        ) &&
         Number(data.y) >= 5 &&
         Number(data.y) <= 88
       ) {
-        root.style.top = Number(data.y) + '%';
+        root.style.top =
+          Number(data.y) + '%';
       }
     } catch (_) {}
   }
@@ -635,7 +1032,10 @@
   restorePosition();
 
   function dockToNearestEdge(clientX) {
-    if (clientX < window.innerWidth / 2) {
+    if (
+      clientX <
+      window.innerWidth / 2
+    ) {
       root.dataset.side = 'left';
     } else {
       root.dataset.side = 'right';
@@ -644,85 +1044,130 @@
     savePosition();
   }
 
-  handle.addEventListener('pointerdown', e => {
-    dragging = true;
-    moved = false;
+  handle.addEventListener(
+    'pointerdown',
+    e => {
+      dragging = true;
+      moved = false;
 
-    pointerStartX = e.clientX;
-    pointerStartY = e.clientY;
+      pointerStartX = e.clientX;
+      pointerStartY = e.clientY;
 
-    startTop = root.getBoundingClientRect().top;
+      startTop =
+        root.getBoundingClientRect().top;
 
-    try {
-      handle.setPointerCapture(e.pointerId);
-    } catch (_) {}
-  });
-
-  handle.addEventListener('pointermove', e => {
-    if (!dragging) return;
-
-    const dx = e.clientX - pointerStartX;
-    const dy = e.clientY - pointerStartY;
-
-    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-      moved = true;
+      try {
+        handle.setPointerCapture(
+          e.pointerId
+        );
+      } catch (_) {}
     }
+  );
 
-    if (!moved) return;
+  handle.addEventListener(
+    'pointermove',
+    e => {
+      if (!dragging) return;
 
-    closeMenu();
+      const dx =
+        e.clientX -
+        pointerStartX;
 
-    let newTop = startTop + dy;
+      const dy =
+        e.clientY -
+        pointerStartY;
 
-    const maxTop =
-      window.innerHeight -
-      root.offsetHeight -
-      80;
+      if (
+        Math.abs(dx) > 4 ||
+        Math.abs(dy) > 4
+      ) {
+        moved = true;
+      }
 
-    newTop = Math.max(
-      30,
-      Math.min(newTop, Math.max(30, maxTop))
-    );
+      if (!moved) return;
 
-    root.style.top =
-      (newTop / window.innerHeight) * 100 + '%';
-  });
-
-  handle.addEventListener('pointerup', e => {
-    if (!dragging) return;
-
-    dragging = false;
-
-    try {
-      handle.releasePointerCapture(e.pointerId);
-    } catch (_) {}
-
-    if (moved) {
-      dockToNearestEdge(e.clientX);
-      savePosition();
-      return;
-    }
-
-    toggleMenu();
-  });
-
-  handle.addEventListener('pointercancel', () => {
-    dragging = false;
-  });
-
-  document.addEventListener('pointerdown', e => {
-    if (!root.contains(e.target)) {
       closeMenu();
-    }
-  });
 
-  modalClose.addEventListener('click', closeModal);
+      let newTop =
+        startTop + dy;
 
-  backdrop.addEventListener('click', e => {
-    if (e.target === backdrop) {
-      closeModal();
+      const maxTop =
+        window.innerHeight -
+        root.offsetHeight -
+        80;
+
+      newTop =
+        Math.max(
+          30,
+          Math.min(
+            newTop,
+            Math.max(30,maxTop)
+          )
+        );
+
+      root.style.top =
+        (
+          newTop /
+          window.innerHeight
+        ) * 100 + '%';
     }
-  });
+  );
+
+  handle.addEventListener(
+    'pointerup',
+    e => {
+      if (!dragging) return;
+
+      dragging = false;
+
+      try {
+        handle.releasePointerCapture(
+          e.pointerId
+        );
+      } catch (_) {}
+
+      if (moved) {
+        dockToNearestEdge(
+          e.clientX
+        );
+
+        savePosition();
+        return;
+      }
+
+      toggleMenu();
+    }
+  );
+
+  handle.addEventListener(
+    'pointercancel',
+    () => {
+      dragging = false;
+    }
+  );
+
+  document.addEventListener(
+    'pointerdown',
+    e => {
+      if (!root.contains(e.target)) {
+        closeMenu();
+      }
+    }
+  );
+
+  modalClose.addEventListener(
+    'click',
+    closeModal
+  );
+
+  backdrop.addEventListener(
+    'click',
+    e => {
+      if (e.target === backdrop) {
+        closeModal();
+      }
+    }
+  );
 
   function showSupport() {
     openModal(
@@ -756,20 +1201,28 @@
     );
 
     const button =
-      document.getElementById('dfw-contact-support');
+      document.getElementById(
+        'dfw-contact-support'
+      );
 
     if (button) {
-      button.addEventListener('click', () => {
-        window.open(
-          SUPPORT_URL,
-          '_blank',
-          'noopener,noreferrer'
-        );
-      });
+      button.addEventListener(
+        'click',
+        () => {
+          window.open(
+            SUPPORT_URL,
+            '_blank',
+            'noopener,noreferrer'
+          );
+        }
+      );
     }
   }
 
-  function showPlaceholder(title, message) {
+  function showPlaceholder(
+    title,
+    message
+  ) {
     openModal(
       title,
       `
@@ -780,28 +1233,24 @@
     );
   }
 
+  /* =========================
+     Notifications
+     ========================= */
+
   async function fetchNotifications() {
     const uid = getUid();
 
     if (!uid) {
       notifications = [];
-      notificationDot.classList.remove('has-new');
+
+      notificationDot
+        .classList
+        .remove('has-new');
+
       return [];
     }
 
     try {
-      /*
-        这里已经修正。
-
-        旧版错误字段：
-        is_read
-        related_id
-
-        现在使用你 notifications 表实际字段：
-        source_type
-        source_id
-      */
-
       const url =
         SUPABASE_URL +
         '/rest/v1/notifications' +
@@ -811,21 +1260,33 @@
         '&order=created_at.desc' +
         '&limit=30';
 
-      const response = await fetch(url, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: 'Bearer ' + SUPABASE_KEY
-        },
-        cache: 'no-store'
-      });
+      const response =
+        await fetch(
+          url,
+          {
+            headers: {
+              apikey:
+                SUPABASE_KEY,
+
+              Authorization:
+                'Bearer ' +
+                SUPABASE_KEY
+            },
+
+            cache:
+              'no-store'
+          }
+        );
 
       if (!response.ok) {
         throw new Error(
-          'Notifications HTTP ' + response.status
+          'Notifications HTTP ' +
+          response.status
         );
       }
 
-      const rows = await response.json();
+      const rows =
+        await response.json();
 
       notifications =
         Array.isArray(rows)
@@ -833,6 +1294,101 @@
           : [];
 
       updateNotificationDot();
+
+      /*
+        自动弹出新通知。
+
+        第一次进入页面：
+        - 10分钟以内且没有弹过的通知可以弹
+        - 很旧的通知不会突然全部冒出来
+
+        后续每10秒：
+        - 任何新增 notification 都自动弹
+      */
+
+      const shownIds =
+        new Set(
+          getPopupShownIds()
+        );
+
+      const now =
+        Date.now();
+
+      const candidates =
+        notifications
+          .filter(item => {
+            if (
+              shownIds.has(
+                String(item.id)
+              )
+            ) {
+              return false;
+            }
+
+            if (!firstNotificationFetch) {
+              return true;
+            }
+
+            const created =
+              new Date(
+                item.created_at
+              ).getTime();
+
+            if (
+              !Number.isFinite(created)
+            ) {
+              return false;
+            }
+
+            // 第一次加载只自动显示10分钟内的新通知
+            return (
+              now - created <=
+              10 * 60 * 1000
+            );
+          })
+          // 数据库是 desc，
+          // 弹窗改成旧 -> 新，避免顺序反过来
+          .reverse();
+
+      for (
+        const item of candidates
+      ) {
+        queueGlobalPopup(item);
+      }
+
+      /*
+        第一次加载后：
+        对于超过10分钟的旧通知，
+        标记成已经处理过，
+        防止下一次10秒轮询突然全部弹出来。
+      */
+
+      if (firstNotificationFetch) {
+        const ids =
+          getPopupShownIds();
+
+        for (
+          const item of notifications
+        ) {
+          const created =
+            new Date(
+              item.created_at
+            ).getTime();
+
+          if (
+            !Number.isFinite(created) ||
+            now - created >
+            10 * 60 * 1000
+          ) {
+            ids.push(
+              String(item.id)
+            );
+          }
+        }
+
+        savePopupShownIds(ids);
+        firstNotificationFetch = false;
+      }
 
       return notifications;
 
@@ -847,26 +1403,41 @@
   }
 
   function updateNotificationDot() {
-    const readIds = new Set(getReadIds());
+    const readIds =
+      new Set(
+        getReadIds()
+      );
 
     const hasUnread =
       notifications.some(
-        item => !readIds.has(String(item.id))
+        item =>
+          !readIds.has(
+            String(item.id)
+          )
       );
 
-    notificationDot.classList.toggle(
-      'has-new',
-      hasUnread
-    );
+    notificationDot
+      .classList
+      .toggle(
+        'has-new',
+        hasUnread
+      );
   }
 
   function markNotificationsRead() {
-    if (!notifications.length) return;
+    if (!notifications.length) {
+      return;
+    }
 
-    const ids = getReadIds();
+    const ids =
+      getReadIds();
 
-    for (const item of notifications) {
-      ids.push(String(item.id));
+    for (
+      const item of notifications
+    ) {
+      ids.push(
+        String(item.id)
+      );
     }
 
     saveReadIds(ids);
@@ -883,9 +1454,14 @@
       `
     );
 
-    const rows = await fetchNotifications();
+    const rows =
+      await fetchNotifications();
 
-    if (!backdrop.classList.contains('show')) {
+    if (
+      !backdrop
+        .classList
+        .contains('show')
+    ) {
       return;
     }
 
@@ -901,14 +1477,18 @@
     }
 
     const readIds =
-      new Set(getReadIds());
+      new Set(
+        getReadIds()
+      );
 
     modalBody.innerHTML = `
       <div class="dfw-notification-list">
-        ${rows.map(item => {
 
+        ${rows.map(item => {
           const unread =
-            !readIds.has(String(item.id));
+            !readIds.has(
+              String(item.id)
+            );
 
           return `
             <div class="
@@ -917,70 +1497,112 @@
             ">
 
               <div class="dfw-notification-title">
-                ${esc(item.title || 'Notification')}
+                ${esc(
+                  item.title ||
+                  'Notification'
+                )}
               </div>
 
               <div class="dfw-notification-message">
-                ${esc(item.message || '')}
+                ${esc(
+                  item.message ||
+                  ''
+                )}
               </div>
 
               <div class="dfw-notification-time">
-                ${esc(formatDate(item.created_at))}
+                ${esc(
+                  formatDate(
+                    item.created_at
+                  )
+                )}
               </div>
 
             </div>
           `;
         }).join('')}
+
       </div>
     `;
 
     markNotificationsRead();
   }
 
-  tools.addEventListener('click', e => {
-    const button =
-      e.target.closest('.dfw-tool');
+  tools.addEventListener(
+    'click',
+    e => {
+      const button =
+        e.target.closest(
+          '.dfw-tool'
+        );
 
-    if (!button) return;
+      if (!button) return;
 
-    const action =
-      button.dataset.action;
+      const action =
+        button.dataset.action;
 
-    if (action === 'notifications') {
-      showNotifications();
-      return;
+      if (
+        action ===
+        'notifications'
+      ) {
+        showNotifications();
+        return;
+      }
+
+      if (
+        action ===
+        'pnl'
+      ) {
+        window.location.href =
+          'pnl.html';
+
+        return;
+      }
+
+      if (
+        action ===
+        'news'
+      ) {
+        showPlaceholder(
+          'Crypto News',
+          'Crypto News will appear here after the news backend is connected.'
+        );
+
+        return;
+      }
+
+      if (
+        action ===
+        'events'
+      ) {
+        showPlaceholder(
+          'Events',
+          'Events and promotions will appear here.'
+        );
+
+        return;
+      }
+
+      if (
+        action ===
+        'support'
+      ) {
+        showSupport();
+      }
     }
-
-    if (action === 'pnl') {
-      window.location.href = 'pnl.html';
-      return;
-    }
-
-    if (action === 'news') {
-      showPlaceholder(
-        'Crypto News',
-        'Crypto News will appear here after the news backend is connected.'
-      );
-      return;
-    }
-
-    if (action === 'events') {
-      showPlaceholder(
-        'Events',
-        'Events and promotions will appear here.'
-      );
-      return;
-    }
-
-    if (action === 'support') {
-      showSupport();
-    }
-  });
+  );
 
   /*
-    页面打开时立即读取一次通知。
-    之后每 10 秒刷新一次，
-    所以 Admin Approve / Reject 后不需要客户刷新页面。
+    页面打开时约0.7秒检查一次。
+    之后每5秒检查新通知。
+
+    所以：
+    Admin Approve Deposit
+    Admin Approve Withdrawal
+    Admin Reject Withdrawal
+    未来 Trade / Balance / Score
+
+    都能在用户当前页面直接弹出。
   */
 
   setTimeout(
@@ -990,7 +1612,7 @@
 
   setInterval(
     fetchNotifications,
-    10000
+    5000
   );
 
   window.addEventListener(
@@ -1002,8 +1624,12 @@
     'storage',
     e => {
       if (
-        e.key === NOTIFICATION_READ_KEY ||
-        e.key === 'demoUid'
+        e.key ===
+          NOTIFICATION_READ_KEY ||
+        e.key ===
+          POPUP_SHOWN_KEY ||
+        e.key ===
+          'demoUid'
       ) {
         fetchNotifications();
       }

@@ -695,7 +695,7 @@ async function reviewDeposit(id,status){
 
   const changed=await r.json();
   const row=Array.isArray(changed)?changed[0]:null;
-  alert('Deposit row: '+JSON.stringify(row));
+ 
   if(row && status!=='pending'){
     const approved=status==='approved';
     const amount=money(row.amount);

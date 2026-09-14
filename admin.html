@@ -544,6 +544,60 @@ async function loadDeposits(){
 
 async function createCustomerNotification(uid,type,title,message,sourceType,sourceId){
   if(!uid || !await ensureSession()) return false;
+
+  const payload={
+    uid:String(uid),
+    type:String(type),
+    title:String(title),
+    message:String(message),
+    source_type:sourceType ? String(sourceType) : null,
+    source_id:sourceId==null ? null : String(sourceId)
+  };
+
+  async function sendNotification(){
+    return fetch(
+      SUPABASE_URL+'/rest/v1/notifications',
+      {
+        method:'POST',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  let r=await sendNotification();
+
+  if(r.status===401 && await refreshSession()){
+    r=await sendNotification();
+  }
+
+  const text=await r.text();
+
+  if(!r.ok){
+    console.error(
+      'Notification insert failed:',
+      r.status,
+      text,
+      payload
+    );
+
+    alert(
+      'Notification failed ('+
+      r.status+
+      '):\n\n'+
+      text
+    );
+
+    return false;
+  }
+
+  console.log('Notification created:',text);
+  return true;
+}
+  if(!uid || !await ensureSession()) return false;
   const payload={uid:String(uid),type,title,message,source_type:sourceType||null,source_id:sourceId==null?null:String(sourceId)};
   let r=await fetch(SUPABASE_URL+'/rest/v1/notifications',{method:'POST',headers:authHeaders({'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'}),body:JSON.stringify(payload)});
   if(r.status===401 && await refreshSession()){

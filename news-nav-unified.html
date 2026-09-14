@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>News - Crypto Demo</title>
+
+<style>
+:root{
+  --bg:#0b0e11;
+  --panel:#11161c;
+  --line:#252d38;
+  --text:#f4f7fb;
+  --muted:#8f9cab;
+  --green:#22c98b;
+  --blue:#4b8cff;
+  --nav:74px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+body{
+  padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom));
+}
+
+button,input{
+  font:inherit;
+}
+
+a{
+  text-decoration:none;
+  color:inherit;
+}
+
+.container{
+  width:min(760px,100%);
+  margin:0 auto;
+  padding:18px 14px 28px;
+}
+
+/* HEADER */
+
+.header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.back-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid #26303b;
+  background:#111820;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  cursor:pointer;
+  flex:0 0 auto;
+}
+
+.header-content{
+  flex:1;
+}
+
+.header h1{
+  font-size:25px;
+  margin:0;
+  line-height:1.2;
+}
+
+.header-sub{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.live-badge{
+  font-size:10px;
+  font-weight:900;
+  border:1px solid rgba(34,201,139,.35);
+  color:var(--green);
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(34,201,139,.08);
+}
+
+/* SEARCH */
+
+.top-card{
+  background:linear-gradient(180deg,var(--panel),#0f141a);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.search-input{
+  width:100%;
+  height:44px;
+  border:1px solid #2b3744;
+  background:#0e141b;
+  color:#fff;
+  border-radius:11px;
+  padding:0 13px;
+  outline:none;
+}
+
+.search-input::placeholder{
+  color:#697787;
+}
+
+.search-input:focus{
+  border-color:#3e6fb5;
+}
+
+/* FILTERS */
+
+.filter-row{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:none;
+}
+
+.filter-row::-webkit-scrollbar{
+  display:none;
+}
+
+.filter-btn{
+  flex:0 0 auto;
+  height:34px;
+  border-radius:999px;
+  border:1px solid #28333f;
+  background:#121922;
+  color:#97a4b3;
+  padding:0 13px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.filter-btn.active{
+  background:#1a2b46;
+  color:#7fb0ff;
+  border-color:#315b95;
+}
+
+/* NEWS CARD */
+
+.news-card{
+  display:block;
+  background:linear-gradient(180deg,var(--panel),#0f141a);
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+  margin-bottom:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+  transition:transform .15s ease,border-color .15s ease;
+}
+
+.news-card:active{
+  transform:scale(.995);
+}
+
+.news-image-wrap{
+  width:100%;
+  aspect-ratio:16/8.7;
+  background:#0d1319;
+  overflow:hidden;
+}
+
+.news-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.news-body{
+  padding:14px;
+}
+
+.news-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  align-items:center;
+  margin-bottom:9px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.meta-pill{
+  padding:4px 7px;
+  border-radius:999px;
+  background:#161e27;
+  border:1px solid #25303b;
+}
+
+.coin-pill{
+  color:#7fb0ff;
+  border-color:#315b95;
+  background:#142136;
+}
+
+.news-title{
+  margin:0;
+  font-size:17px;
+  line-height:1.4;
+  font-weight:900;
+  color:#fff;
+}
+
+.news-summary{
+  margin-top:8px;
+  color:#98a5b4;
+  font-size:13px;
+  line-height:1.62;
+
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.news-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:12px;
+  font-size:11px;
+  color:#74808e;
+}
+
+.read-more{
+  color:#6ea3ff;
+  font-weight:800;
+}
+
+/* EMPTY / ERROR */
+
+.state-card{
+  background:linear-gradient(180deg,var(--panel),#0f141a);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:30px 18px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.state-title{
+  color:#fff;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.state-sub{
+  font-size:13px;
+  line-height:1.6;
+}
+
+.refresh-btn{
+  margin-top:14px;
+  height:40px;
+  border:0;
+  border-radius:10px;
+  background:var(--blue);
+  color:#fff;
+  padding:0 16px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+/* LOADING */
+
+.loading-line{
+  width:100%;
+  height:3px;
+  background:#15202c;
+  overflow:hidden;
+  margin-bottom:12px;
+  border-radius:999px;
+  display:none;
+}
+
+.loading-line.show{
+  display:block;
+}
+
+.loading-line span{
+  display:block;
+  width:40%;
+  height:100%;
+  background:#4b8cff;
+  animation:loading 1s infinite ease-in-out;
+}
+
+@keyframes loading{
+  0%{
+    transform:translateX(-120%);
+  }
+
+  100%{
+    transform:translateX(320%);
+  }
+}
+
+/* BOTTOM NAV - ORIGINAL 4 ITEMS */
+
+.bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+
+  height:calc(var(--nav) + env(safe-area-inset-bottom));
+
+  background:#0d1218;
+  border-top:1px solid #232c37;
+
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+
+  z-index:1000;
+
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#8290a0;
+  font-size:12px;
+}
+
+.nav-item.active{
+  color:#4b8cff;
+  font-weight:800;
+}
+
+@media (min-width:620px){
+
+  .news-card.with-image{
+    display:grid;
+    grid-template-columns:210px 1fr;
+  }
+
+  .news-card.with-image .news-image-wrap{
+    aspect-ratio:auto;
+    min-height:190px;
+  }
+}
+
+
+/* ===== Unified premium bottom navigation ===== */
+.bottom-nav{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:100% !important;
+  height:calc(74px + env(safe-area-inset-bottom)) !important;
+  padding:0 4px env(safe-area-inset-bottom) !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  grid-template-rows:1fr !important;
+  align-items:stretch !important;
+  background:rgba(10,15,22,.97) !important;
+  border-top:1px solid #202b38 !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+  box-shadow:0 -10px 30px rgba(0,0,0,.22) !important;
+  z-index:9999 !important;
+  overflow:hidden !important;
+}
+.bottom-nav .nav-item,
+.bottom-nav > a{
+  position:relative !important;
+  min-width:0 !important;
+  height:74px !important;
+  padding:9px 2px 7px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  color:#7f8c9f !important;
+  text-decoration:none !important;
+  font-size:10.5px !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+.bottom-nav .nav-icon{
+  width:23px !important;
+  height:23px !important;
+  display:grid !important;
+  place-items:center !important;
+  flex:0 0 23px !important;
+}
+.bottom-nav .nav-icon svg{
+  width:23px !important;
+  height:23px !important;
+  display:block !important;
+  fill:none !important;
+  stroke:currentColor !important;
+  stroke-width:1.8 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+}
+.bottom-nav .nav-label{
+  display:block !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.bottom-nav .nav-item.active,
+.bottom-nav > a.active{
+  color:#4b92ff !important;
+  font-weight:800 !important;
+}
+.bottom-nav .nav-item.active::before,
+.bottom-nav > a.active::before{
+  content:"" !important;
+  position:absolute !important;
+  top:0 !important;
+  left:50% !important;
+  width:28px !important;
+  height:2px !important;
+  border-radius:0 0 999px 999px !important;
+  background:#4b92ff !important;
+  transform:translateX(-50%) !important;
+  box-shadow:0 0 10px rgba(75,146,255,.7) !important;
+}
+.bottom-nav .nav-item.active .nav-icon,
+.bottom-nav > a.active .nav-icon{
+  filter:drop-shadow(0 0 7px rgba(75,146,255,.35)) !important;
+}
+@media(max-width:380px){
+  .bottom-nav .nav-item,
+  .bottom-nav > a{
+    font-size:9.5px !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .bottom-nav .nav-icon,
+  .bottom-nav .nav-icon svg{
+    width:21px !important;
+    height:21px !important;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+
+    <button
+      class="back-btn"
+      onclick="goBack()"
+      aria-label="Back"
+    >
+      ‹
+    </button>
+
+    <div class="header-content">
+      <h1>Crypto News</h1>
+      <div class="header-sub">
+        Latest market news and updates
+      </div>
+    </div>
+
+    <div class="live-badge">
+      LIVE
+    </div>
+
+  </div>
+
+
+  <section class="top-card">
+
+    <input
+      id="searchInput"
+      class="search-input"
+      type="search"
+      placeholder="Search crypto news"
+      autocomplete="off"
+    >
+
+    <div
+      class="filter-row"
+      id="filterRow"
+    >
+
+      <button
+        class="filter-btn active"
+        data-filter="ALL"
+      >
+        All
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="BTC"
+      >
+        BTC
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="ETH"
+      >
+        ETH
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="SOL"
+      >
+        SOL
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="XRP"
+      >
+        XRP
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="MARKET"
+      >
+        Market
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="REGULATION"
+      >
+        Regulation
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <div
+    id="loadingLine"
+    class="loading-line"
+  >
+    <span></span>
+  </div>
+
+
+  <div id="newsList">
+
+    <div class="state-card">
+
+      <div class="state-title">
+        Loading news...
+      </div>
+
+      <div class="state-sub">
+        Fetching the latest crypto headlines.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ORIGINAL 4 BUTTON BOTTOM NAV -->
+
+<nav class="bottom-nav" aria-label="Primary navigation">
+  <a class="nav-item" href="index.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></svg></span><span class="nav-label">Markets</span></a>
+  <a class="nav-item" href="trading.html?symbol=BTC"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M19 4v16M12 4v16"/><path d="M2.8 8h4.4M9.8 15h4.4M16.8 10h4.4"/></svg></span><span class="nav-label">Trading</span></a>
+  <a class="nav-item active" href="news.html" aria-current="page"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="nav-label">News</span></a>
+  <a class="nav-item" href="assets.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M15.5 11.5H21v4h-5.5a2 2 0 1 1 0-4Z"/></svg></span><span class="nav-label">Assets</span></a>
+  <a class="nav-item" href="profile.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6"/></svg></span><span class="nav-label">Profile</span></a>
+</nav>
+
+
+<script>
+
+const SUPABASE_URL =
+  'https://cyvquivolvkxzcseyhvk.supabase.co';
+
+const SUPABASE_KEY =
+  'sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+
+let allNews = [];
+
+let activeFilter = 'ALL';
+
+
+function esc(value){
+
+  return String(value ?? '')
+
+    .replace(/&/g,'&amp;')
+
+    .replace(/</g,'&lt;')
+
+    .replace(/>/g,'&gt;')
+
+    .replace(/"/g,'&quot;')
+
+    .replace(/'/g,'&#39;');
+
+}
+
+
+function safeUrl(value){
+
+  try{
+
+    const u =
+      new URL(
+        String(value || '')
+      );
+
+    if(
+      u.protocol === 'http:' ||
+      u.protocol === 'https:'
+    ){
+
+      return u.href;
+
+    }
+
+  }catch(_){}
+
+  return '#';
+
+}
+
+
+function formatDate(value){
+
+  if(!value){
+    return '';
+  }
+
+  const d =
+    new Date(value);
+
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  ){
+    return '';
+  }
+
+  const now =
+    Date.now();
+
+  const diff =
+    now - d.getTime();
+
+  const minute =
+    60 * 1000;
+
+  const hour =
+    60 * minute;
+
+  const day =
+    24 * hour;
+
+
+  if(
+    diff >= 0 &&
+    diff < minute
+  ){
+
+    return 'Just now';
+
+  }
+
+
+  if(
+    diff >= 0 &&
+    diff < hour
+  ){
+
+    return (
+      Math.max(
+        1,
+        Math.floor(
+          diff / minute
+        )
+      ) +
+      'm ago'
+    );
+
+  }
+
+
+  if(
+    diff >= 0 &&
+    diff < day
+  ){
+
+    return (
+      Math.floor(
+        diff / hour
+      ) +
+      'h ago'
+    );
+
+  }
+
+
+  if(
+    diff >= 0 &&
+    diff < 7 * day
+  ){
+
+    return (
+      Math.floor(
+        diff / day
+      ) +
+      'd ago'
+    );
+
+  }
+
+
+  return d.toLocaleDateString(
+    undefined,
+    {
+      year:'numeric',
+      month:'short',
+      day:'numeric'
+    }
+  );
+
+}
+
+
+function goBack(){
+
+  if(
+    document.referrer &&
+    document.referrer.includes(
+      location.hostname
+    )
+  ){
+
+    history.back();
+
+  }else{
+
+    location.href =
+      'index.html';
+
+  }
+
+}
+
+
+function renderNews(){
+
+  const list =
+    document.getElementById(
+      'newsList'
+    );
+
+  const search =
+    String(
+      document.getElementById(
+        'searchInput'
+      ).value || ''
+    )
+    .trim()
+    .toLowerCase();
+
+
+  const rows =
+    allNews.filter(
+      item => {
+
+        const title =
+          String(
+            item.title || ''
+          ).toLowerCase();
+
+        const summary =
+          String(
+            item.summary || ''
+          ).toLowerCase();
+
+        const coin =
+          String(
+            item.coin_symbol || ''
+          ).toUpperCase();
+
+        const category =
+          String(
+            item.category || ''
+          ).toUpperCase();
+
+        const source =
+          String(
+            item.source_name || ''
+          ).toLowerCase();
+
+
+        const matchesSearch =
+
+          !search ||
+
+          title.includes(
+            search
+          ) ||
+
+          summary.includes(
+            search
+          ) ||
+
+          coin
+            .toLowerCase()
+            .includes(
+              search
+            ) ||
+
+          category
+            .toLowerCase()
+            .includes(
+              search
+            ) ||
+
+          source.includes(
+            search
+          );
+
+
+        let matchesFilter =
+          true;
+
+
+        if(
+          activeFilter ===
+          'BTC'
+        ){
+
+          matchesFilter =
+            coin === 'BTC';
+
+        }
+
+        else if(
+          activeFilter ===
+          'ETH'
+        ){
+
+          matchesFilter =
+            coin === 'ETH';
+
+        }
+
+        else if(
+          activeFilter ===
+          'SOL'
+        ){
+
+          matchesFilter =
+            coin === 'SOL';
+
+        }
+
+        else if(
+          activeFilter ===
+          'XRP'
+        ){
+
+          matchesFilter =
+            coin === 'XRP';
+
+        }
+
+        else if(
+          activeFilter ===
+          'MARKET'
+        ){
+
+          matchesFilter =
+            category ===
+            'MARKET';
+
+        }
+
+        else if(
+          activeFilter ===
+          'REGULATION'
+        ){
+
+          matchesFilter =
+            category ===
+            'REGULATION';
+
+        }
+
+
+        return (
+          matchesSearch &&
+          matchesFilter
+        );
+
+      }
+    );
+
+
+  if(
+    rows.length === 0
+  ){
+
+    list.innerHTML =
+
+      '<div class="state-card">' +
+
+        '<div class="state-title">' +
+          'No news found' +
+        '</div>' +
+
+        '<div class="state-sub">' +
+          'Try another search or category.' +
+        '</div>' +
+
+      '</div>';
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+
+    rows.map(
+      item => {
+
+        const url =
+          safeUrl(
+            item.source_url
+          );
+
+        const image =
+          safeUrl(
+            item.image_url
+          );
+
+        const hasImage =
+          image !== '#';
+
+
+        const coin =
+
+          item.coin_symbol
+
+            ?
+
+            '<span class="meta-pill coin-pill">' +
+
+              esc(
+                item.coin_symbol
+              ) +
+
+            '</span>'
+
+            :
+
+            '';
+
+
+        const category =
+
+          item.category
+
+            ?
+
+            '<span class="meta-pill">' +
+
+              esc(
+                item.category
+              ) +
+
+            '</span>'
+
+            :
+
+            '';
+
+
+        const source =
+
+          item.source_name
+
+            ?
+
+            '<span>' +
+
+              esc(
+                item.source_name
+              ) +
+
+            '</span>'
+
+            :
+
+            '';
+
+
+        const imageHtml =
+
+          hasImage
+
+            ?
+
+            '<div class="news-image-wrap">' +
+
+              '<img ' +
+
+                'class="news-image" ' +
+
+                'src="' +
+                  esc(image) +
+                '" ' +
+
+                'alt="" ' +
+
+                'loading="lazy" ' +
+
+                'onerror="this.parentElement.style.display=\'none\'"' +
+
+              '>' +
+
+            '</div>'
+
+            :
+
+            '';
+
+
+        return (
+
+          '<a ' +
+
+            'class="news-card ' +
+              (
+                hasImage
+                  ?
+                  'with-image'
+                  :
+                  ''
+              ) +
+            '" ' +
+
+            'href="' +
+              esc(url) +
+            '" ' +
+
+            'target="_blank" ' +
+
+            'rel="noopener noreferrer"' +
+
+          '>' +
+
+
+            imageHtml +
+
+
+            '<div class="news-body">' +
+
+
+              '<div class="news-meta">' +
+
+                coin +
+
+                category +
+
+                source +
+
+              '</div>' +
+
+
+              '<h2 class="news-title">' +
+
+                esc(
+                  item.title ||
+                  'Untitled news'
+                ) +
+
+              '</h2>' +
+
+
+              (
+                item.summary
+
+                  ?
+
+                  '<div class="news-summary">' +
+
+                    esc(
+                      item.summary
+                    ) +
+
+                  '</div>'
+
+                  :
+
+                  ''
+              ) +
+
+
+              '<div class="news-footer">' +
+
+                '<span>' +
+
+                  esc(
+                    formatDate(
+                      item.published_at
+                    )
+                  ) +
+
+                '</span>' +
+
+                '<span class="read-more">' +
+
+                  'Read article →' +
+
+                '</span>' +
+
+              '</div>' +
+
+
+            '</div>' +
+
+
+          '</a>'
+
+        );
+
+      }
+    )
+    .join('');
+
+}
+
+
+async function loadNews(){
+
+  const list =
+    document.getElementById(
+      'newsList'
+    );
+
+  const loading =
+    document.getElementById(
+      'loadingLine'
+    );
+
+
+  loading.classList.add(
+    'show'
+  );
+
+
+  try{
+
+    const fields = [
+
+      'id',
+
+      'title',
+
+      'summary',
+
+      'source_name',
+
+      'source_url',
+
+      'image_url',
+
+      'coin_symbol',
+
+      'category',
+
+      'published_at',
+
+      'is_featured',
+
+      'is_active'
+
+    ].join(',');
+
+
+    const url =
+
+      SUPABASE_URL +
+
+      '/rest/v1/crypto_news?select=' +
+
+      encodeURIComponent(
+        fields
+      ) +
+
+      '&is_active=eq.true' +
+
+      '&order=published_at.desc' +
+
+      '&limit=100';
+
+
+    const response =
+      await fetch(
+        url,
+        {
+          headers:{
+
+            apikey:
+              SUPABASE_KEY,
+
+            Authorization:
+              'Bearer ' +
+              SUPABASE_KEY
+
+          },
+
+          cache:
+            'no-store'
+
+        }
+      );
+
+
+    if(
+      !response.ok
+    ){
+
+      const text =
+        await response.text();
+
+      throw new Error(
+        text ||
+        'Failed to load news'
+      );
+
+    }
+
+
+    const rows =
+      await response.json();
+
+
+    allNews =
+      Array.isArray(
+        rows
+      )
+        ?
+        rows
+        :
+        [];
+
+
+    renderNews();
+
+  }
+
+  catch(error){
+
+    console.error(
+      'News loading error:',
+      error
+    );
+
+
+    list.innerHTML =
+
+      '<div class="state-card">' +
+
+        '<div class="state-title">' +
+
+          'Unable to load news' +
+
+        '</div>' +
+
+        '<div class="state-sub">' +
+
+          'Please check your connection and try again.' +
+
+        '</div>' +
+
+        '<button ' +
+
+          'class="refresh-btn" ' +
+
+          'onclick="loadNews()"' +
+
+        '>' +
+
+          'Try Again' +
+
+        '</button>' +
+
+      '</div>';
+
+  }
+
+  finally{
+
+    loading.classList.remove(
+      'show'
+    );
+
+  }
+
+}
+
+
+document
+  .getElementById(
+    'searchInput'
+  )
+  .addEventListener(
+    'input',
+    renderNews
+  );
+
+
+document
+  .getElementById(
+    'filterRow'
+  )
+  .addEventListener(
+    'click',
+    event => {
+
+      const button =
+        event.target.closest(
+          '.filter-btn'
+        );
+
+
+      if(
+        !button
+      ){
+        return;
+      }
+
+
+      activeFilter =
+        button.dataset.filter ||
+        'ALL';
+
+
+      document
+        .querySelectorAll(
+          '.filter-btn'
+        )
+        .forEach(
+          btn => {
+
+            btn.classList.toggle(
+              'active',
+              btn === button
+            );
+
+          }
+        );
+
+
+      renderNews();
+
+    }
+  );
+
+
+loadNews();
+
+/* refresh data every 60 seconds */
+
+setInterval(
+  loadNews,
+  60000
+);
+
+</script>
+
+
+<script src="balance-sync.js"></script>
+<script src="floating-widget.js"></script>
+
+</body>
+</html>

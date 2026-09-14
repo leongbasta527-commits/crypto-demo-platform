@@ -1,1583 +1,1013 @@
-(function () {
-  "use strict";
+(() => {
+  'use strict';
 
-  if (document.getElementById("demoFloatingWidget")) return;
+  if (window.__demoFloatingWidgetLoaded) return;
+  window.__demoFloatingWidgetLoaded = true;
 
-  const SUPABASE_URL =
-    "https://cyvquivolvkxzcseyhvk.supabase.co";
+  const SUPABASE_URL = 'https://cyvquivolvkxzcseyhvk.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
 
-  const SUPABASE_KEY =
-    "sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU";
+  const POSITION_KEY = 'demoFloatingWidgetPosition';
+  const NOTIFICATION_READ_KEY = 'demoNotificationReadIds';
 
-  const SUPPORT_URL =
-    "https://t.me/Kath02210";
+  const SUPPORT_URL = 'https://t.me/Kath02210';
 
-  const SUPPORT_HANDLE =
-    "@Kath02210";
+  const style = document.createElement('style');
 
-  const POS_KEY =
-    "demoFloatingWidgetPosition";
-
-  const NOTIFY_SEEN_KEY =
-    "demoNotificationLastSeenId";
-
-  /* =========================
-     CSS
-  ========================= */
-
-  const css = `
-  #demoFloatingWidget {
-    position: fixed;
-    z-index: 99990;
-    left: calc(100vw - 34px);
-    top: 42%;
-    font-family: Arial, sans-serif;
-    touch-action: none;
-    user-select: none;
-  }
-
-  #demoFloatingWidget * {
-    box-sizing: border-box;
-  }
-
-  .dfw-handle {
-    width: 34px;
-    height: 46px;
-    border: 1px solid #2a3440;
-    border-radius: 14px 0 0 14px;
-    background: rgba(17,24,33,.96);
-    box-shadow: 0 6px 22px rgba(0,0,0,.32);
-    display: grid;
-    place-items: center;
-    color: #9aa7b7;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-  }
-
-  .dfw-handle svg {
-    width: 17px;
-    height: 17px;
-    transition: transform .2s;
-  }
-
-  #demoFloatingWidget.open .dfw-handle svg {
-    transform: rotate(180deg);
-  }
-
-  .dfw-tools {
-    position: absolute;
-    right: 39px;
-    top: 50%;
-    transform: translateY(-50%) scale(.92);
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    padding: 7px;
-    border: 1px solid #26313d;
-    border-radius: 14px;
-    background: rgba(13,19,27,.97);
-    box-shadow: 0 10px 30px rgba(0,0,0,.38);
-    opacity: 0;
-    pointer-events: none;
-    transition: .18s ease;
-    transform-origin: right center;
-  }
-
-  #demoFloatingWidget.open .dfw-tools {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(-50%) scale(1);
-  }
-
-  .dfw-tool {
-    position: relative;
-    width: 39px;
-    height: 39px;
-    border: 0;
-    border-radius: 10px;
-    background: #17202a;
-    color: #c7d0db;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-
-  .dfw-tool:hover,
-  .dfw-tool:active {
-    background: #202b37;
-    color: #fff;
-  }
-
-  .dfw-tool svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .dfw-dot {
-    display: none;
-    position: absolute;
-    right: 5px;
-    top: 5px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #ff4d5e;
-    box-shadow: 0 0 0 2px #17202a;
-  }
-
-  .dfw-tool.has-new .dfw-dot {
-    display: block;
-  }
-
-  .dfw-tip {
-    position: absolute;
-    right: 48px;
-    white-space: nowrap;
-    background: #0a0f15;
-    border: 1px solid #26313d;
-    color: #c5cfda;
-    padding: 6px 8px;
-    border-radius: 7px;
-    font-size: 11px;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .dfw-tool:hover .dfw-tip {
-    opacity: 1;
-  }
-
-  /* =========================
-     MODAL
-  ========================= */
-
-  .dfw-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 99995;
-    background: rgba(0,0,0,.55);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-  }
-
-  .dfw-modal-backdrop.show {
-    display: flex;
-  }
-
-  .dfw-modal {
-    width: min(410px,100%);
-    max-height: 78vh;
-    overflow: auto;
-    background: #111821;
-    border: 1px solid #2b3642;
-    border-radius: 16px;
-    box-shadow: 0 22px 60px rgba(0,0,0,.5);
-    color: #eef3f8;
-  }
-
-  .dfw-modal-head {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 16px;
-    border-bottom: 1px solid #222d38;
-    background: #111821;
-  }
-
-  .dfw-modal-title {
-    font-size: 15px;
-    font-weight: 800;
-  }
-
-  .dfw-close {
-    width: 30px;
-    height: 30px;
-    border: 0;
-    border-radius: 8px;
-    background: #1b2530;
-    color: #aeb9c5;
-    font-size: 20px;
-    cursor: pointer;
-  }
-
-  .dfw-modal-body {
-    padding: 16px;
-  }
-
-  .dfw-empty,
-  .dfw-loading {
-    padding: 22px 10px;
-    text-align: center;
-    color: #7f8b99;
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  /* =========================
-     NOTIFICATIONS
-  ========================= */
-
-  .dfw-notification-list {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-  }
-
-  .dfw-notification {
-    border: 1px solid #27323e;
-    border-radius: 12px;
-    background: #0c1219;
-    padding: 12px;
-  }
-
-  .dfw-notification.new {
-    border-color: #35567a;
-    background: #0e1823;
-  }
-
-  .dfw-notification-top {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .dfw-notification-icon {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    border-radius: 9px;
-    display: grid;
-    place-items: center;
-    background: #17212c;
-    font-size: 16px;
-  }
-
-  .dfw-notification-main {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .dfw-notification-title {
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1.35;
-  }
-
-  .dfw-notification-time {
-    color: #6f7d8c;
-    font-size: 9px;
-    margin-top: 3px;
-  }
-
-  .dfw-notification-message {
-    color: #a7b3c0;
-    font-size: 11px;
-    line-height: 1.5;
-    margin-top: 7px;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  .dfw-notification-new {
-    width: 7px;
-    height: 7px;
-    flex: 0 0 7px;
-    border-radius: 50%;
-    background: #ff4d5e;
-    margin-top: 5px;
-  }
-
-  /* =========================
-     SUPPORT
-  ========================= */
-
-  .dfw-support-card {
-    border: 1px solid #27323e;
-    border-radius: 13px;
-    background: #0c1219;
-    padding: 14px;
-  }
-
-  .dfw-support-label {
-    font-size: 11px;
-    color: #788696;
-    margin-bottom: 6px;
-  }
-
-  .dfw-support-value {
-    font-size: 16px;
-    font-weight: 800;
-  }
-
-  .dfw-support-status {
-    font-size: 11px;
-    color: #20c997;
-    margin-top: 5px;
-  }
-
-  .dfw-support-btn {
-    display: block;
-    text-align: center;
-    text-decoration: none;
-    margin-top: 14px;
-    padding: 11px;
-    border-radius: 10px;
-    background: #2f80ed;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  @media (max-width:600px) {
-    .dfw-tip {
-      display: none;
+  style.textContent = `
+    #dfw-root,
+    #dfw-root * {
+      box-sizing: border-box;
     }
 
-    .dfw-tools {
-      right: 37px;
+    #dfw-root {
+      position: fixed;
+      z-index: 99990;
+      top: 42%;
+      right: 0;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #dfw-root[data-side="left"] {
+      left: 0;
+      right: auto;
+    }
+
+    #dfw-root[data-side="right"] {
+      right: 0;
+      left: auto;
+    }
+
+    #dfw-handle {
+      position: relative;
+      width: 34px;
+      height: 46px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(22,26,34,.96);
+      box-shadow: 0 6px 24px rgba(0,0,0,.34);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background .18s ease,
+        transform .18s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    #dfw-root[data-side="right"] #dfw-handle {
+      border-radius: 12px 0 0 12px;
+      border-right: 0;
+    }
+
+    #dfw-root[data-side="left"] #dfw-handle {
+      border-radius: 0 12px 12px 0;
+      border-left: 0;
+    }
+
+    #dfw-handle:hover {
+      background: rgba(31,36,46,.98);
+    }
+
+    #dfw-handle svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+      transition: transform .2s ease;
+    }
+
+    #dfw-root[data-side="right"] #dfw-handle svg {
+      transform: rotate(180deg);
+    }
+
+    #dfw-root[data-side="left"] #dfw-handle svg {
+      transform: rotate(0deg);
+    }
+
+    #dfw-root.open[data-side="right"] #dfw-handle svg {
+      transform: rotate(0deg);
+    }
+
+    #dfw-root.open[data-side="left"] #dfw-handle svg {
+      transform: rotate(180deg);
+    }
+
+    #dfw-tools {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 178px;
+      padding: 7px;
+      background: rgba(18,22,29,.98);
+      border: 1px solid rgba(255,255,255,.11);
+      box-shadow: 0 10px 32px rgba(0,0,0,.42);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity .18s ease,
+        transform .18s ease,
+        visibility .18s ease;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    #dfw-root[data-side="right"] #dfw-tools {
+      right: 39px;
+      border-radius: 12px;
+      transform: translate(8px,-50%);
+    }
+
+    #dfw-root[data-side="left"] #dfw-tools {
+      left: 39px;
+      border-radius: 12px;
+      transform: translate(-8px,-50%);
+    }
+
+    #dfw-root.open #dfw-tools {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translate(0,-50%);
     }
 
     .dfw-tool {
-      width: 37px;
-      height: 37px;
+      position: relative;
+      width: 100%;
+      min-height: 43px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #e9edf4;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background .15s ease;
     }
-  }
+
+    .dfw-tool:hover {
+      background: rgba(255,255,255,.07);
+    }
+
+    .dfw-tool-icon {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #dce3ed;
+    }
+
+    .dfw-tool-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dfw-dot {
+      display: none;
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      right: 0;
+      top: 0;
+      border-radius: 50%;
+      background: #f04444;
+      border: 2px solid #171b22;
+      box-shadow: 0 0 0 1px rgba(240,68,68,.15);
+    }
+
+    .dfw-dot.has-new {
+      display: block;
+    }
+
+    #dfw-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 99998;
+      background: rgba(0,0,0,.56);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    }
+
+    #dfw-modal-backdrop.show {
+      display: flex;
+    }
+
+    #dfw-modal {
+      width: min(430px,100%);
+      max-height: min(640px,82vh);
+      overflow: hidden;
+      background: #151922;
+      color: #f4f6fa;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.52);
+      animation: dfwPop .16s ease-out;
+    }
+
+    @keyframes dfwPop {
+      from {
+        opacity: 0;
+        transform: scale(.97);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .dfw-modal-head {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dfw-modal-title {
+      font-size: 16px;
+      font-weight: 750;
+      color: #fff;
+    }
+
+    #dfw-modal-close {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      color: #dce2ea;
+      cursor: pointer;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    #dfw-modal-close:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    #dfw-modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      max-height: calc(82vh - 59px);
+      color: #cbd2dd;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .dfw-placeholder {
+      padding: 24px 10px;
+      text-align: center;
+      color: #8f99a8;
+    }
+
+    .dfw-support-box {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.035);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .dfw-support-name {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .dfw-support-user {
+      color: #aeb7c4;
+      margin-bottom: 12px;
+    }
+
+    .dfw-online {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #bfc7d2;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .dfw-online-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #26c281;
+    }
+
+    .dfw-primary-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      min-height: 43px;
+      padding: 10px 14px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .dfw-primary-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .dfw-notification-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .dfw-notification {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.035);
+      border-radius: 11px;
+      padding: 12px;
+    }
+
+    .dfw-notification.unread {
+      border-color: rgba(64,120,255,.42);
+      background: rgba(37,99,235,.08);
+    }
+
+    .dfw-notification-title {
+      color: #f4f6fa;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .dfw-notification-message {
+      color: #b7c0cc;
+      font-size: 13px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .dfw-notification-time {
+      color: #747f8e;
+      font-size: 11px;
+      margin-top: 7px;
+    }
+
+    @media (max-width: 600px) {
+      #dfw-tools {
+        width: 166px;
+      }
+
+      .dfw-tool {
+        min-height: 42px;
+      }
+
+      #dfw-root {
+        top: 40%;
+      }
+    }
   `;
-
-  const style =
-    document.createElement("style");
-
-  style.textContent = css;
 
   document.head.appendChild(style);
 
-  /* =========================
-     ICONS
-  ========================= */
-
-  const icons = {
-
-    bell: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-      <path d="M10 21h4"/>
-    </svg>
-    `,
-
-    calendar: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8">
-      <rect x="3" y="5"
-      width="18"
-      height="16"
-      rx="2"/>
-      <path d="M16 3v4M8 3v4M3 10h18"/>
-      <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
-    </svg>
-    `,
-
-    news: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8">
-      <path d="M4 4h13v16H5a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z"/>
-      <path d="M17 8h5v9a3 3 0 0 1-3 3h-2"/>
-      <path d="M7 8h6M7 12h6M7 16h4"/>
-    </svg>
-    `,
-
-    gift: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8">
-      <rect x="3" y="8"
-      width="18"
-      height="13"
-      rx="2"/>
-      <path d="M12 8v13M3 12h18"/>
-      <path d="M7.5 8C5 8 4 6.8 4 5.5S5 3 6.5 3C9 3 12 8 12 8"/>
-      <path d="M16.5 8C19 8 20 6.8 20 5.5S19 3 17.5 3C15 3 12 8 12 8"/>
-    </svg>
-    `,
-
-    support: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8">
-      <path d="M4 14v-2a8 8 0 0 1 16 0v2"/>
-      <path d="M4 14a2 2 0 0 0 0 4h2v-6H4"/>
-      <path d="M20 14a2 2 0 0 1 0 4h-2v-6h2"/>
-      <path d="M18 18c0 2-2 3-5 3"/>
-    </svg>
-    `,
-
-    arrow: `
-    <svg viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2.2">
-      <path d="m14 6-6 6 6 6"/>
-    </svg>
-    `
-  };
-
-  /* =========================
-     WIDGET
-  ========================= */
-
-  const root =
-    document.createElement("div");
-
-  root.id =
-    "demoFloatingWidget";
+  const root = document.createElement('div');
+  root.id = 'dfw-root';
+  root.dataset.side = 'right';
 
   root.innerHTML = `
+    <div id="dfw-tools">
 
-    <button
-      class="dfw-handle"
-      type="button"
-      aria-label="Open quick tools"
-    >
-      ${icons.arrow}
-    </button>
-
-    <div class="dfw-tools">
-
-      <button
-        class="dfw-tool"
-        data-action="notifications"
-        type="button"
-      >
-        ${icons.bell}
-
-        <span class="dfw-dot"></span>
-
-        <span class="dfw-tip">
-          Notifications
+      <button class="dfw-tool" type="button" data-action="notifications">
+        <span class="dfw-tool-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+            <path d="M10 21h4"></path>
+          </svg>
+          <span id="dfw-notification-dot" class="dfw-dot"></span>
         </span>
+        <span>Notifications</span>
       </button>
 
-      <button
-        class="dfw-tool"
-        data-action="pnl"
-        type="button"
-      >
-        ${icons.calendar}
-
-        <span class="dfw-tip">
-          P&L Calendar
+      <button class="dfw-tool" type="button" data-action="pnl">
+        <span class="dfw-tool-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <path d="M16 3v4M8 3v4M3 10h18"></path>
+            <path d="M8 14h2M14 14h2M8 18h2M14 18h2"></path>
+          </svg>
         </span>
+        <span>P&amp;L Calendar</span>
       </button>
 
-      <button
-        class="dfw-tool"
-        data-action="news"
-        type="button"
-      >
-        ${icons.news}
-
-        <span class="dfw-dot"></span>
-
-        <span class="dfw-tip">
-          News
+      <button class="dfw-tool" type="button" data-action="news">
+        <span class="dfw-tool-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 5h13v14H4z"></path>
+            <path d="M17 8h3v9a2 2 0 0 1-2 2h-1"></path>
+            <path d="M7 9h7M7 13h7M7 17h5"></path>
+          </svg>
+          <span id="dfw-news-dot" class="dfw-dot"></span>
         </span>
+        <span>News</span>
       </button>
 
-      <button
-        class="dfw-tool"
-        data-action="events"
-        type="button"
-      >
-        ${icons.gift}
-
-        <span class="dfw-dot"></span>
-
-        <span class="dfw-tip">
-          Events
+      <button class="dfw-tool" type="button" data-action="events">
+        <span class="dfw-tool-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 12v8H4v-8"></path>
+            <path d="M2 7h20v5H2z"></path>
+            <path d="M12 7v13"></path>
+            <path d="M12 7H7.5A2.5 2.5 0 1 1 10 4.5L12 7z"></path>
+            <path d="M12 7h4.5A2.5 2.5 0 1 0 14 4.5L12 7z"></path>
+          </svg>
+          <span id="dfw-events-dot" class="dfw-dot"></span>
         </span>
+        <span>Events</span>
       </button>
 
-      <button
-        class="dfw-tool"
-        data-action="support"
-        type="button"
-      >
-        ${icons.support}
-
-        <span class="dfw-tip">
-          Support
+      <button class="dfw-tool" type="button" data-action="support">
+        <span class="dfw-tool-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 13v-2a8 8 0 0 1 16 0v2"></path>
+            <path d="M4 13a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v-6z"></path>
+            <path d="M20 13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2v-6z"></path>
+            <path d="M18 19c0 2-2 2-4 2"></path>
+          </svg>
         </span>
+        <span>Support</span>
       </button>
 
+    </div>
+
+    <div id="dfw-handle" role="button" aria-label="Open quick menu">
+      <svg viewBox="0 0 24 24">
+        <path d="m9 18 6-6-6-6"></path>
+      </svg>
     </div>
   `;
 
   document.body.appendChild(root);
 
-  /* =========================
-     MODAL HTML
-  ========================= */
-
-  const backdrop =
-    document.createElement("div");
-
-  backdrop.className =
-    "dfw-modal-backdrop";
+  const backdrop = document.createElement('div');
+  backdrop.id = 'dfw-modal-backdrop';
 
   backdrop.innerHTML = `
-
-    <div
-      class="dfw-modal"
-      role="dialog"
-      aria-modal="true"
-    >
-
+    <div id="dfw-modal" role="dialog" aria-modal="true">
       <div class="dfw-modal-head">
-
-        <div
-          class="dfw-modal-title"
-          id="dfwModalTitle"
-        ></div>
-
-        <button
-          class="dfw-close"
-          type="button"
-        >
-          ×
-        </button>
-
+        <div id="dfw-modal-title" class="dfw-modal-title"></div>
+        <button id="dfw-modal-close" type="button">×</button>
       </div>
 
-      <div
-        class="dfw-modal-body"
-        id="dfwModalBody"
-      ></div>
-
+      <div id="dfw-modal-body"></div>
     </div>
   `;
 
   document.body.appendChild(backdrop);
 
-  const handle =
-    root.querySelector(".dfw-handle");
+  const handle = document.getElementById('dfw-handle');
+  const tools = document.getElementById('dfw-tools');
 
-  const tools =
-    root.querySelector(".dfw-tools");
+  const modalTitle = document.getElementById('dfw-modal-title');
+  const modalBody = document.getElementById('dfw-modal-body');
+  const modalClose = document.getElementById('dfw-modal-close');
 
-  const modalTitle =
-    backdrop.querySelector(
-      "#dfwModalTitle"
-    );
+  const notificationDot =
+    document.getElementById('dfw-notification-dot');
 
-  const modalBody =
-    backdrop.querySelector(
-      "#dfwModalBody"
-    );
+  let dragging = false;
+  let moved = false;
 
-  const notificationButton =
-    root.querySelector(
-      '[data-action="notifications"]'
-    );
+  let pointerStartX = 0;
+  let pointerStartY = 0;
+  let startTop = 0;
 
-  /* =========================
-     UID
-  ========================= */
-
-  function getUid() {
-
-    let value =
-      localStorage.getItem(
-        "demoUid"
-      );
-
-    if (!value) {
-
-      value =
-        "DEMO-" +
-        String(
-          Math.floor(
-            100000 +
-            Math.random() *
-            900000
-          )
-        );
-
-      localStorage.setItem(
-        "demoUid",
-        value
-      );
-    }
-
-    return value;
-  }
-
-  /* =========================
-     HELPERS
-  ========================= */
+  let notifications = [];
 
   function esc(value) {
-
-    return String(
-      value ?? ""
-    )
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
-  function clamp(
-    value,
-    min,
-    max
-  ) {
-
-    return Math.max(
-      min,
-      Math.min(
-        max,
-        value
-      )
-    );
+  function getUid() {
+    return (
+      localStorage.getItem('demoUid') ||
+      localStorage.getItem('demoUID') ||
+      ''
+    ).trim();
   }
 
-  /* =========================
-     POSITION
-  ========================= */
+  function getReadIds() {
+    try {
+      const parsed =
+        JSON.parse(
+          localStorage.getItem(NOTIFICATION_READ_KEY) || '[]'
+        );
 
-  function savePos() {
+      return Array.isArray(parsed)
+        ? parsed.map(String)
+        : [];
+    } catch (_) {
+      return [];
+    }
+  }
 
-    const rect =
-      root.getBoundingClientRect();
+  function saveReadIds(ids) {
+    const clean = [...new Set(ids.map(String))].slice(-500);
 
     localStorage.setItem(
-      POS_KEY,
-      JSON.stringify({
-        side:
-          rect.left <
-          innerWidth / 2
-            ? "left"
-            : "right",
-
-        y: rect.top
-      })
+      NOTIFICATION_READ_KEY,
+      JSON.stringify(clean)
     );
   }
 
-  function dock() {
+  function formatDate(value) {
+    if (!value) return '';
 
-    const rect =
-      root.getBoundingClientRect();
+    const d = new Date(value);
 
-    const side =
-      rect.left +
-      rect.width / 2 <
-      innerWidth / 2
-        ? "left"
-        : "right";
+    if (Number.isNaN(d.getTime())) {
+      return '';
+    }
 
-    const y =
-      clamp(
-        rect.top,
-        10,
-        innerHeight -
-        rect.height -
-        80
+    return d.toLocaleString();
+  }
+
+  function openMenu() {
+    root.classList.add('open');
+  }
+
+  function closeMenu() {
+    root.classList.remove('open');
+  }
+
+  function toggleMenu() {
+    root.classList.toggle('open');
+  }
+
+  function openModal(title, html) {
+    closeMenu();
+
+    modalTitle.textContent = title;
+    modalBody.innerHTML = html;
+
+    backdrop.classList.add('show');
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('show');
+  }
+
+  function savePosition() {
+    try {
+      localStorage.setItem(
+        POSITION_KEY,
+        JSON.stringify({
+          side: root.dataset.side || 'right',
+          y: parseFloat(root.style.top) || 42
+        })
       );
-
-    root.style.top =
-      y + "px";
-
-    root.style.left =
-      side === "left"
-        ? "0px"
-        : (innerWidth - 34) +
-          "px";
-
-    root.style.right =
-      "auto";
-
-    savePos();
+    } catch (_) {}
   }
 
   function restorePosition() {
-
     try {
-
-      const position =
+      const data =
         JSON.parse(
-          localStorage.getItem(
-            POS_KEY
-          ) || "null"
+          localStorage.getItem(POSITION_KEY) || 'null'
         );
 
-      if (!position) return;
+      if (!data) return;
 
-      root.style.top =
-        clamp(
-          Number(position.y) ||
-          100,
-          10,
-          innerHeight - 130
-        ) + "px";
+      if (data.side === 'left' || data.side === 'right') {
+        root.dataset.side = data.side;
+      }
 
-      root.style.left =
-        position.side ===
-        "left"
-          ? "0px"
-          : (innerWidth - 34) +
-            "px";
-
+      if (
+        Number.isFinite(Number(data.y)) &&
+        Number(data.y) >= 5 &&
+        Number(data.y) <= 88
+      ) {
+        root.style.top = Number(data.y) + '%';
+      }
     } catch (_) {}
   }
 
   restorePosition();
 
-  /* =========================
-     DRAG
-  ========================= */
-
-  let dragging = false;
-  let moved = false;
-
-  let startX = 0;
-  let startY = 0;
-
-  let startLeft = 0;
-  let startTop = 0;
-
-  handle.addEventListener(
-    "pointerdown",
-    function (event) {
-
-      dragging = true;
-      moved = false;
-
-      startX =
-        event.clientX;
-
-      startY =
-        event.clientY;
-
-      const rect =
-        root.getBoundingClientRect();
-
-      startLeft =
-        rect.left;
-
-      startTop =
-        rect.top;
-
-      handle.setPointerCapture(
-        event.pointerId
-      );
+  function dockToNearestEdge(clientX) {
+    if (clientX < window.innerWidth / 2) {
+      root.dataset.side = 'left';
+    } else {
+      root.dataset.side = 'right';
     }
-  );
 
-  handle.addEventListener(
-    "pointermove",
-    function (event) {
+    savePosition();
+  }
 
-      if (!dragging) return;
+  handle.addEventListener('pointerdown', e => {
+    dragging = true;
+    moved = false;
 
-      const dx =
-        event.clientX -
-        startX;
+    pointerStartX = e.clientX;
+    pointerStartY = e.clientY;
 
-      const dy =
-        event.clientY -
-        startY;
+    startTop = root.getBoundingClientRect().top;
 
-      if (
-        Math.abs(dx) +
-        Math.abs(dy) >
-        5
-      ) {
-        moved = true;
-      }
+    try {
+      handle.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  });
 
-      if (!moved) return;
+  handle.addEventListener('pointermove', e => {
+    if (!dragging) return;
 
-      root.classList.remove(
-        "open"
-      );
+    const dx = e.clientX - pointerStartX;
+    const dy = e.clientY - pointerStartY;
 
-      root.style.left =
-        clamp(
-          startLeft + dx,
-          0,
-          innerWidth - 34
-        ) + "px";
-
-      root.style.top =
-        clamp(
-          startTop + dy,
-          8,
-          innerHeight - 54
-        ) + "px";
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+      moved = true;
     }
-  );
 
-  handle.addEventListener(
-    "pointerup",
-    function () {
+    if (!moved) return;
 
-      if (!dragging) return;
+    closeMenu();
 
-      dragging = false;
+    let newTop = startTop + dy;
 
-      if (moved) {
+    const maxTop =
+      window.innerHeight -
+      root.offsetHeight -
+      80;
 
-        dock();
-
-        return;
-      }
-
-      root.classList.toggle(
-        "open"
-      );
-    }
-  );
-
-  window.addEventListener(
-    "resize",
-    dock
-  );
-
-  /* =========================
-     MODAL
-  ========================= */
-
-  function openModal(
-    title,
-    html
-  ) {
-
-    root.classList.remove(
-      "open"
+    newTop = Math.max(
+      30,
+      Math.min(newTop, Math.max(30, maxTop))
     );
 
-    modalTitle.textContent =
-      title;
+    root.style.top =
+      (newTop / window.innerHeight) * 100 + '%';
+  });
 
-    modalBody.innerHTML =
-      html;
+  handle.addEventListener('pointerup', e => {
+    if (!dragging) return;
 
-    backdrop.classList.add(
-      "show"
-    );
-  }
+    dragging = false;
 
-  function closeModal() {
+    try {
+      handle.releasePointerCapture(e.pointerId);
+    } catch (_) {}
 
-    backdrop.classList.remove(
-      "show"
-    );
-  }
-
-  backdrop
-    .querySelector(
-      ".dfw-close"
-    )
-    .addEventListener(
-      "click",
-      closeModal
-    );
-
-  backdrop.addEventListener(
-    "click",
-    function (event) {
-
-      if (
-        event.target ===
-        backdrop
-      ) {
-        closeModal();
-      }
-    }
-  );
-
-  /* =========================
-     NOTIFICATION HELPERS
-  ========================= */
-
-  function notificationIcon(
-    type
-  ) {
-
-    switch (
-      String(
-        type || ""
-      ).toLowerCase()
-    ) {
-
-      case "trade":
-        return "↕";
-
-      case "deposit":
-        return "+";
-
-      case "withdrawal":
-        return "−";
-
-      case "balance":
-        return "$";
-
-      case "account":
-        return "✓";
-
-      default:
-        return "•";
-    }
-  }
-
-  function formatTime(
-    value
-  ) {
-
-    if (!value) return "";
-
-    const date =
-      new Date(value);
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return "";
-    }
-
-    return date.toLocaleString();
-  }
-
-  function lastSeenNotificationId() {
-
-    const number =
-      Number(
-        localStorage.getItem(
-          NOTIFY_SEEN_KEY
-        )
-      );
-
-    return Number.isFinite(
-      number
-    )
-      ? number
-      : 0;
-  }
-
-  function setLastSeenNotificationId(
-    id
-  ) {
-
-    const number =
-      Number(id);
-
-    if (
-      !Number.isFinite(
-        number
-      ) ||
-      number <= 0
-    ) {
+    if (moved) {
+      dockToNearestEdge(e.clientX);
+      savePosition();
       return;
     }
 
-    localStorage.setItem(
-      NOTIFY_SEEN_KEY,
-      String(number)
+    toggleMenu();
+  });
+
+  handle.addEventListener('pointercancel', () => {
+    dragging = false;
+  });
+
+  document.addEventListener('pointerdown', e => {
+    if (!root.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  modalClose.addEventListener('click', closeModal);
+
+  backdrop.addEventListener('click', e => {
+    if (e.target === backdrop) {
+      closeModal();
+    }
+  });
+
+  function showSupport() {
+    openModal(
+      'Customer Service',
+      `
+        <div class="dfw-support-box">
+
+          <div class="dfw-support-name">
+            Online Support
+          </div>
+
+          <div class="dfw-support-user">
+            Telegram: @Kath02210
+          </div>
+
+          <div class="dfw-online">
+            <span class="dfw-online-dot"></span>
+            <span>Online Support</span>
+          </div>
+
+          <button
+            id="dfw-contact-support"
+            class="dfw-primary-btn"
+            type="button"
+          >
+            Contact via Telegram
+          </button>
+
+        </div>
+      `
+    );
+
+    const button =
+      document.getElementById('dfw-contact-support');
+
+    if (button) {
+      button.addEventListener('click', () => {
+        window.open(
+          SUPPORT_URL,
+          '_blank',
+          'noopener,noreferrer'
+        );
+      });
+    }
+  }
+
+  function showPlaceholder(title, message) {
+    openModal(
+      title,
+      `
+        <div class="dfw-placeholder">
+          ${esc(message)}
+        </div>
+      `
     );
   }
 
-  /* =========================
-     FETCH NOTIFICATIONS
-  ========================= */
+  async function fetchNotifications() {
+    const uid = getUid();
 
-  async function fetchNotifications(
-    limit = 30
-  ) {
-
-    const url =
-      SUPABASE_URL +
-      "/rest/v1/notifications" +
-      "?select=" +
-      "id,uid,type,title,message,is_read,related_id,created_at" +
-      "&uid=eq." +
-      encodeURIComponent(
-        getUid()
-      ) +
-      "&order=id.desc" +
-      "&limit=" +
-      encodeURIComponent(
-        limit
-      );
-
-    const response =
-      await fetch(
-        url,
-        {
-          headers: {
-            apikey:
-              SUPABASE_KEY,
-
-            Authorization:
-              "Bearer " +
-              SUPABASE_KEY
-          },
-
-          cache:
-            "no-store"
-        }
-      );
-
-    if (!response.ok) {
-
-      throw new Error(
-        "Could not load notifications."
-      );
+    if (!uid) {
+      notifications = [];
+      notificationDot.classList.remove('has-new');
+      return [];
     }
 
-    return await response.json();
-  }
-
-  /* =========================
-     RED DOT
-  ========================= */
-
-  async function refreshNotificationDot() {
-
     try {
+      /*
+        这里已经修正。
 
-      const rows =
-        await fetchNotifications(
-          1
+        旧版错误字段：
+        is_read
+        related_id
+
+        现在使用你 notifications 表实际字段：
+        source_type
+        source_id
+      */
+
+      const url =
+        SUPABASE_URL +
+        '/rest/v1/notifications' +
+        '?select=id,uid,type,title,message,source_type,source_id,created_at' +
+        '&uid=eq.' +
+        encodeURIComponent(uid) +
+        '&order=created_at.desc' +
+        '&limit=30';
+
+      const response = await fetch(url, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + SUPABASE_KEY
+        },
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          'Notifications HTTP ' + response.status
         );
-
-      if (
-        !Array.isArray(rows) ||
-        !rows.length
-      ) {
-
-        notificationButton
-          .classList
-          .remove(
-            "has-new"
-          );
-
-        return;
       }
 
-      const latestId =
-        Number(
-          rows[0].id
-        ) || 0;
+      const rows = await response.json();
 
-      if (
-        latestId >
-        lastSeenNotificationId()
-      ) {
+      notifications =
+        Array.isArray(rows)
+          ? rows
+          : [];
 
-        notificationButton
-          .classList
-          .add(
-            "has-new"
-          );
+      updateNotificationDot();
 
-      } else {
-
-        notificationButton
-          .classList
-          .remove(
-            "has-new"
-          );
-      }
+      return notifications;
 
     } catch (error) {
-
       console.warn(
-        "Notification refresh failed:",
+        '[Floating Widget] Notification load failed:',
         error
       );
+
+      return [];
     }
   }
 
-  /* =========================
-     OPEN NOTIFICATIONS
-  ========================= */
+  function updateNotificationDot() {
+    const readIds = new Set(getReadIds());
 
-  async function openNotifications() {
+    const hasUnread =
+      notifications.some(
+        item => !readIds.has(String(item.id))
+      );
 
+    notificationDot.classList.toggle(
+      'has-new',
+      hasUnread
+    );
+  }
+
+  function markNotificationsRead() {
+    if (!notifications.length) return;
+
+    const ids = getReadIds();
+
+    for (const item of notifications) {
+      ids.push(String(item.id));
+    }
+
+    saveReadIds(ids);
+    updateNotificationDot();
+  }
+
+  async function showNotifications() {
     openModal(
-      "Notifications",
+      'Notifications',
       `
-      <div class="dfw-loading">
-        Loading notifications...
-      </div>
+        <div class="dfw-placeholder">
+          Loading notifications...
+        </div>
       `
     );
 
-    try {
+    const rows = await fetchNotifications();
 
-      const rows =
-        await fetchNotifications(
-          30
-        );
+    if (!backdrop.classList.contains('show')) {
+      return;
+    }
 
-      if (
-        !Array.isArray(rows) ||
-        !rows.length
-      ) {
+    if (!rows.length) {
+      modalBody.innerHTML = `
+        <div class="dfw-placeholder">
+          No notifications yet.
+        </div>
+      `;
 
-        modalBody.innerHTML =
-          `
-          <div class="dfw-empty">
-            No notifications yet.
-          </div>
-          `;
+      markNotificationsRead();
+      return;
+    }
 
-        notificationButton
-          .classList
-          .remove(
-            "has-new"
-          );
+    const readIds =
+      new Set(getReadIds());
 
-        return;
-      }
+    modalBody.innerHTML = `
+      <div class="dfw-notification-list">
+        ${rows.map(item => {
 
-      const previousSeen =
-        lastSeenNotificationId();
+          const unread =
+            !readIds.has(String(item.id));
 
-      modalBody.innerHTML =
-        `
-        <div class="dfw-notification-list">
-        ` +
-
-        rows.map(
-          function (item) {
-
-            const id =
-              Number(
-                item.id
-              ) || 0;
-
-            const isNew =
-              id >
-              previousSeen;
-
-            return `
-
+          return `
             <div class="
               dfw-notification
-              ${isNew ? "new" : ""}
+              ${unread ? 'unread' : ''}
             ">
 
-              <div class="
-                dfw-notification-top
-              ">
+              <div class="dfw-notification-title">
+                ${esc(item.title || 'Notification')}
+              </div>
 
-                <div class="
-                  dfw-notification-icon
-                ">
-                  ${notificationIcon(
-                    item.type
-                  )}
-                </div>
+              <div class="dfw-notification-message">
+                ${esc(item.message || '')}
+              </div>
 
-                <div class="
-                  dfw-notification-main
-                ">
-
-                  <div class="
-                    dfw-notification-title
-                  ">
-                    ${esc(
-                      item.title ||
-                      "Notification"
-                    )}
-                  </div>
-
-                  <div class="
-                    dfw-notification-time
-                  ">
-                    ${esc(
-                      formatTime(
-                        item.created_at
-                      )
-                    )}
-                  </div>
-
-                  <div class="
-                    dfw-notification-message
-                  ">
-                    ${esc(
-                      item.message ||
-                      ""
-                    )}
-                  </div>
-
-                </div>
-
-                ${
-                  isNew
-                    ? `
-                      <span
-                        class="
-                          dfw-notification-new
-                        "
-                      ></span>
-                    `
-                    : ""
-                }
-
+              <div class="dfw-notification-time">
+                ${esc(formatDate(item.created_at))}
               </div>
 
             </div>
-            `;
-          }
-        ).join("") +
+          `;
+        }).join('')}
+      </div>
+    `;
 
-        `
-        </div>
-        `;
-
-      const newestId =
-        Math.max(
-          ...rows.map(
-            function (item) {
-              return (
-                Number(
-                  item.id
-                ) || 0
-              );
-            }
-          )
-        );
-
-      setLastSeenNotificationId(
-        newestId
-      );
-
-      notificationButton
-        .classList
-        .remove(
-          "has-new"
-        );
-
-    } catch (error) {
-
-      console.error(
-        error
-      );
-
-      modalBody.innerHTML =
-        `
-        <div class="dfw-empty">
-          Unable to load notifications right now.
-        </div>
-        `;
-    }
+    markNotificationsRead();
   }
 
-  /* =========================
-     BUTTON ACTIONS
-  ========================= */
+  tools.addEventListener('click', e => {
+    const button =
+      e.target.closest('.dfw-tool');
 
-  tools.addEventListener(
-    "click",
-    function (event) {
+    if (!button) return;
 
-      const button =
-        event.target.closest(
-          ".dfw-tool"
-        );
+    const action =
+      button.dataset.action;
 
-      if (!button) return;
-
-      const action =
-        button.dataset.action;
-
-      /* NOTIFICATIONS */
-
-      if (
-        action ===
-        "notifications"
-      ) {
-
-        openNotifications();
-
-        return;
-      }
-
-      /* P&L */
-
-      if (
-        action ===
-        "pnl"
-      ) {
-
-        if (
-          location.pathname
-            .endsWith(
-              "/pnl.html"
-            )
-        ) {
-
-          root.classList.remove(
-            "open"
-          );
-
-          return;
-        }
-
-        location.href =
-          "pnl.html";
-
-        return;
-      }
-
-      /* NEWS */
-
-      if (
-        action ===
-        "news"
-      ) {
-
-        openModal(
-          "Crypto News",
-          `
-          <div class="dfw-empty">
-            Automatic crypto market news
-            will appear here after the
-            News service is connected.
-          </div>
-          `
-        );
-
-        return;
-      }
-
-      /* EVENTS */
-
-      if (
-        action ===
-        "events"
-      ) {
-
-        openModal(
-          "Events",
-          `
-          <div class="dfw-empty">
-            Platform events and promotions
-            will appear here after the
-            Events section is connected.
-          </div>
-          `
-        );
-
-        return;
-      }
-
-      /* SUPPORT */
-
-      if (
-        action ===
-        "support"
-      ) {
-
-        openModal(
-          "Customer Service",
-          `
-
-          <div class="
-            dfw-support-card
-          ">
-
-            <div class="
-              dfw-support-label
-            ">
-              Telegram Support
-            </div>
-
-            <div class="
-              dfw-support-value
-            ">
-              ${SUPPORT_HANDLE}
-            </div>
-
-            <div class="
-              dfw-support-status
-            ">
-              ● Online Support
-            </div>
-
-            <a
-              class="
-                dfw-support-btn
-              "
-              href="
-                ${SUPPORT_URL}
-              "
-              target="_blank"
-              rel="noopener"
-            >
-              Contact via Telegram
-            </a>
-
-          </div>
-          `
-        );
-
-        return;
-      }
+    if (action === 'notifications') {
+      showNotifications();
+      return;
     }
-  );
 
-  /* =========================
-     CLICK OUTSIDE
-  ========================= */
-
-  document.addEventListener(
-    "pointerdown",
-    function (event) {
-
-      if (
-        !root.contains(
-          event.target
-        ) &&
-        !backdrop.contains(
-          event.target
-        )
-      ) {
-
-        root.classList.remove(
-          "open"
-        );
-      }
+    if (action === 'pnl') {
+      window.location.href = 'pnl.html';
+      return;
     }
-  );
 
-  /* =========================
-     CROSS TAB
-  ========================= */
-
-  window.addEventListener(
-    "storage",
-    function (event) {
-
-      if (
-        event.key ===
-        NOTIFY_SEEN_KEY ||
-        event.key ===
-        "demoUid"
-      ) {
-
-        refreshNotificationDot();
-      }
+    if (action === 'news') {
+      showPlaceholder(
+        'Crypto News',
+        'Crypto News will appear here after the news backend is connected.'
+      );
+      return;
     }
+
+    if (action === 'events') {
+      showPlaceholder(
+        'Events',
+        'Events and promotions will appear here.'
+      );
+      return;
+    }
+
+    if (action === 'support') {
+      showSupport();
+    }
+  });
+
+  /*
+    页面打开时立即读取一次通知。
+    之后每 10 秒刷新一次，
+    所以 Admin Approve / Reject 后不需要客户刷新页面。
+  */
+
+  setTimeout(
+    fetchNotifications,
+    700
   );
-
-  /* =========================
-     AUTO REFRESH
-  ========================= */
-
-  window.addEventListener(
-    "focus",
-    refreshNotificationDot
-  );
-
-  refreshNotificationDot();
 
   setInterval(
-    refreshNotificationDot,
-    15000
+    fetchNotifications,
+    10000
   );
 
-  /* =========================
-     PUBLIC API
-  ========================= */
+  window.addEventListener(
+    'focus',
+    fetchNotifications
+  );
 
-  window.DemoFloatingWidget = {
-
-    open: function () {
-
-      root.classList.add(
-        "open"
-      );
-    },
-
-    close: function () {
-
-      root.classList.remove(
-        "open"
-      );
-    },
-
-    refreshNotifications:
-      refreshNotificationDot,
-
-    showNotifications:
-      openNotifications,
-
-    showSupport:
-      function () {
-
-        openModal(
-          "Customer Service",
-          `
-
-          <div class="
-            dfw-support-card
-          ">
-
-            <div class="
-              dfw-support-label
-            ">
-              Telegram Support
-            </div>
-
-            <div class="
-              dfw-support-value
-            ">
-              ${SUPPORT_HANDLE}
-            </div>
-
-            <div class="
-              dfw-support-status
-            ">
-              ● Online Support
-            </div>
-
-            <a
-              class="
-                dfw-support-btn
-              "
-              href="
-                ${SUPPORT_URL}
-              "
-              target="_blank"
-              rel="noopener"
-            >
-              Contact via Telegram
-            </a>
-
-          </div>
-          `
-        );
+  window.addEventListener(
+    'storage',
+    e => {
+      if (
+        e.key === NOTIFICATION_READ_KEY ||
+        e.key === 'demoUid'
+      ) {
+        fetchNotifications();
       }
-  };
+    }
+  );
 
 })();

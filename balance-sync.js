@@ -7,19 +7,54 @@
   let tradePolling=false;
 
   function getUid(){
-    let uid=localStorage.getItem('demoUid');
+    /*
+     * AUTH CUSTOMER UID ONLY
+     *
+     * login.html / protected customer pages load the authenticated
+     * customer's customer_profiles.uid into demoCustomerUid/demoUid.
+     *
+     * IMPORTANT:
+     * Do NOT generate a random fallback UID here anymore.
+     */
+    const customerUid=String(
+      localStorage.getItem('demoCustomerUid') ||
+      localStorage.getItem('demoUid') ||
+      ''
+    ).trim();
+
+    if(
+      /^DEMO-\d{6}$/.test(customerUid)
+    ){
+      if(
+        localStorage.getItem('demoUid')!==customerUid
+      ){
+        localStorage.setItem(
+          'demoUid',
+          customerUid
+        );
+      }
+
+      if(
+        localStorage.getItem('demoCustomerUid')!==customerUid
+      ){
+        localStorage.setItem(
+          'demoCustomerUid',
+          customerUid
+        );
+      }
+
+      return customerUid;
+    }
+
+    return '';
+  }
+
+  function requireUid(){
+    const uid=getUid();
 
     if(!uid){
-      uid='DEMO-'+String(
-        Math.floor(
-          100000+
-          Math.random()*900000
-        )
-      );
-
-      localStorage.setItem(
-        'demoUid',
-        uid
+      throw new Error(
+        'Authenticated customer UID is not ready.'
       );
     }
 
@@ -57,7 +92,7 @@
   }
 
   async function readServerBalance(){
-    const uid=getUid();
+    const uid=requireUid();
 
     const r=await fetch(
       SUPABASE_URL+
@@ -90,7 +125,7 @@
   }
 
   async function writeServerBalance(v){
-    const uid=getUid();
+    const uid=requireUid();
     const n=Number(v);
 
     if(!Number.isFinite(n)){
@@ -429,7 +464,7 @@
     polling=true;
 
     try{
-      const uid=getUid();
+      const uid=requireUid();
 
       const r=
         await fetch(
@@ -621,7 +656,7 @@
     adjustmentPolling=true;
 
     try{
-      const uid=getUid();
+      const uid=requireUid();
 
       const r=
         await fetch(
@@ -645,7 +680,8 @@
               'no-store'
           }
         );
-            if(!r.ok){
+
+      if(!r.ok){
         return;
       }
 
@@ -732,11 +768,13 @@
           processed
         );
       }
+
     }catch(e){
       console.warn(
         'Account adjustment check failed',
         e
       );
+
     }finally{
       adjustmentPolling=
         false;
@@ -764,6 +802,7 @@
       )
         ? x
         : {};
+
     }catch(_){
       return {};
     }
@@ -844,6 +883,7 @@
               token
           }
         : null;
+
     }catch(_){
       return {
         key:
@@ -880,14 +920,14 @@
           lock.key
         );
       }
+
     }catch(_){
       localStorage.removeItem(
         lock.key
       );
     }
   }
-
-  function showWithdrawalToast(
+    function showWithdrawalToast(
     status,
     amount
   ){
@@ -932,6 +972,7 @@
         Number(amount)
           .toFixed(2)+
         ' USDT demo withdrawal has been approved.';
+
     }else{
       icon.textContent='↩';
 
@@ -965,7 +1006,7 @@
     withdrawalPolling=true;
 
     try{
-      const uid=getUid();
+      const uid=requireUid();
 
       const fields=
         'id,uid,withdrawal_type,usdt_amount,myr_amount,exchange_rate,method,destination,status,created_at,reviewed_at';
@@ -1090,7 +1131,6 @@
           const applied=
             state.applied===
             true;
-
           let changed=
             false;
 
@@ -1171,6 +1211,7 @@
                 amount
               );
             }
+
           }else if(
             status==='rejected' &&
             oldStatus!==
@@ -1233,6 +1274,7 @@
               )
             );
           }
+
         }finally{
           releaseWithdrawalLock(
             lock
@@ -1270,6 +1312,7 @@
         ) ||
         'null'
       );
+
     }catch(_){
       return null;
     }
@@ -1285,6 +1328,7 @@
           trade
         )
       );
+
     }else{
       localStorage.removeItem(
         'demoActiveTrade'
@@ -1332,7 +1376,8 @@
       )
     );
   }
-    function acquireSettlementLock(
+
+  function acquireSettlementLock(
     id
   ){
     const key=
@@ -1626,7 +1671,7 @@
 
     try{
       const uid=
-        getUid();
+        requireUid();
 
       const r=
         await fetch(
@@ -1679,7 +1724,7 @@
   async function findOpenTrade(){
     try{
       const uid=
-        getUid();
+        requireUid();
 
       const r=
         await fetch(
@@ -1757,7 +1802,7 @@
                   Number(id),
 
                 p_uid:
-                  getUid()
+                  requireUid()
               })
           }
         );
@@ -1863,8 +1908,7 @@
         end
     };
   }
-
-  async function processSettledTrade(
+    async function processSettledTrade(
     row
   ){
     if(
@@ -2049,7 +2093,8 @@
       );
     }
   }
-    async function pollTradeStatus(){
+
+  async function pollTradeStatus(){
     if(tradePolling){
       return;
     }
@@ -2079,6 +2124,7 @@
           setActiveTrade(
             active
           );
+
         }else{
           return;
         }
@@ -2155,6 +2201,7 @@
         if(settled){
           row=
             settled;
+
         }else{
           row=
             await getTrade(
@@ -2251,9 +2298,9 @@
   /*
    * Unified Supabase balance bridge.
    *
-   * demo_balances is now the central balance record.
-   * demoBalance remains as a local compatibility cache
-   * for the existing Trading / Assets / Profile pages.
+   * demo_balances is the central balance record.
+   * demoBalance remains as a local compatibility
+   * cache for Trading / Assets / Profile.
    */
   window.DemoBalanceSync={
     getUid:
@@ -2275,18 +2322,54 @@
       readServerBalance
   };
 
+  async function waitForAuthenticatedUid(){
+    /*
+     * Protected customer pages obtain the real UID
+     * from customer_profiles after Supabase Auth
+     * verifies the current session.
+     *
+     * Wait up to ~5 seconds so balance-sync.js
+     * cannot create/read another customer's balance
+     * during page startup.
+     */
+    for(let i=0;i<100;i++){
+      const uid=getUid();
+
+      if(uid){
+        return uid;
+      }
+
+      await new Promise(
+        resolve=>
+          setTimeout(
+            resolve,
+            50
+          )
+      );
+    }
+
+    return '';
+  }
+
   async function start(){
     ensureToast();
 
+    const authenticatedUid=
+      await waitForAuthenticatedUid();
+
+    if(!authenticatedUid){
+      console.warn(
+        'Balance sync stopped: authenticated customer UID is unavailable.'
+      );
+
+      return;
+    }
+
     /*
-     * IMPORTANT:
-     * Initialize/migrate the central balance first.
+     * Initialize central balance only after
+     * authenticated customer UID is available.
      *
-     * If demo_balances does not yet contain this UID,
-     * the existing local demoBalance is uploaded.
-     *
-     * If a row already exists, the Supabase balance
-     * becomes the source of truth.
+     * Existing server balance is always preferred.
      */
     await initServerBalance();
 
@@ -2305,7 +2388,7 @@
     );
 
     /*
-     * Existing deposit approval synchronization.
+     * Deposit approval synchronization.
      */
     setInterval(
       pollDepositStatus,
@@ -2313,7 +2396,7 @@
     );
 
     /*
-     * Existing Admin manual balance credits.
+     * Admin manual balance credits.
      */
     setInterval(
       pollAccountAdjustments,
@@ -2321,7 +2404,7 @@
     );
 
     /*
-     * Existing withdrawal status / refund sync.
+     * Withdrawal status / refund sync.
      */
     setInterval(
       pollWithdrawalStatus,
@@ -2329,7 +2412,7 @@
     );
 
     /*
-     * Existing seconds-contract settlement sync.
+     * Seconds trade settlement sync.
      */
     setInterval(
       pollTradeStatus,
@@ -2345,6 +2428,7 @@
       'DOMContentLoaded',
       start
     );
+
   }else{
     start();
   }

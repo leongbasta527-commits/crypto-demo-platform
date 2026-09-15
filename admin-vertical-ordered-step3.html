@@ -1,0 +1,1651 @@
+<!doctype html>
+<html lang="en">
+<head> 
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin Dashboard</title>
+<style>
+:root{
+  --bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#27313c;
+  --text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;
+  --blue:#4b8cff;--yellow:#d6ad4d;--purple:#a879ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1180px,100%);margin:0 auto;padding:18px 14px 42px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{font-size:20px;font-weight:900}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.login-card{width:min(430px,100%);margin:8vh auto 0}
+.field{margin-top:13px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.field input{width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:11px;padding:0 13px;outline:none}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,140,255,.1)}
+.btn{height:42px;border:0;border-radius:10px;padding:0 14px;font-weight:850}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#151d26;color:#fff;border:1px solid #2d3946}
+.danger{background:rgba(240,91,106,.12);color:#ff8390;border:1px solid rgba(240,91,106,.28)}
+.success{background:rgba(34,201,139,.12);color:#47e0a9;border:1px solid rgba(34,201,139,.28)}
+.drawbtn{background:rgba(168,121,255,.12);color:#c5a6ff;border:1px solid rgba(168,121,255,.30)}
+.full{width:100%;margin-top:16px}
+.msg{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:13px}
+.msg.show{display:block}
+.msg.err{background:rgba(240,91,106,.1);border:1px solid rgba(240,91,106,.25);color:#ff8390}
+.msg.ok{background:rgba(34,201,139,.1);border:1px solid rgba(34,201,139,.25);color:#47e0a9}
+.hidden{display:none!important}
+.main-tabs{display:flex;gap:8px;margin-bottom:14px}
+.main-tab{flex:1;height:46px;border-radius:11px;border:1px solid #2a3542;background:#10171f;color:#9eabb9;font-weight:900}
+.main-tab.active{border-color:#4b8cff;background:rgba(75,140,255,.12);color:#fff}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{height:38px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#b7c0ca;padding:0 12px;font-weight:800}
+.filter.active{color:#fff;border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.list{display:grid;gap:12px;margin-top:14px}
+.entry{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.row-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.amount{font-size:22px;font-weight:900}
+.status{font-size:11px;font-weight:900;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.pending{color:var(--yellow);background:rgba(214,173,77,.10);border:1px solid rgba(214,173,77,.24)}
+.approved,.win{color:var(--green);background:rgba(34,201,139,.10);border:1px solid rgba(34,201,139,.24)}
+.rejected,.loss{color:var(--red);background:rgba(240,91,106,.10);border:1px solid rgba(240,91,106,.24)}
+.draw{color:#c5a6ff;background:rgba(168,121,255,.10);border:1px solid rgba(168,121,255,.24)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.item{background:#0a0f14;border:1px solid #202934;border-radius:10px;padding:10px;min-width:0}
+.item .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.item .v{font-size:13px;font-weight:750;margin-top:4px;word-break:break-word}
+.receipt-area{display:grid;grid-template-columns:170px 1fr;gap:12px;margin-top:12px}
+.receipt{height:140px;border:1px solid #26313d;border-radius:11px;background:#090d12;display:grid;place-items:center;overflow:hidden}
+.receipt img{width:100%;height:100%;object-fit:cover;cursor:pointer}
+.receipt-placeholder{font-size:12px;color:var(--muted);text-align:center;padding:10px}
+.actions{display:flex;gap:8px;align-items:flex-end;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.actions .btn{min-width:100px}
+.note{font-size:11px;color:var(--muted);line-height:1.55}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal img{max-width:95vw;max-height:90vh;border-radius:10px;border:1px solid #394553;background:#fff}
+.close{position:fixed;top:18px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #45515e;background:#111820;color:#fff;font-size:22px}
+.security{font-size:11px;color:var(--muted);line-height:1.55;margin-top:12px}
+.trade-side-buy{color:#47e0a9}
+.trade-side-sell{color:#ff8390}
+.payout-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.payout-input{width:90px;height:40px;border:1px solid #2b3744;background:#0b1118;color:#fff;border-radius:9px;padding:0 10px}
+.trade-warning{padding:10px 12px;border-radius:10px;background:rgba(214,173,77,.08);border:1px solid rgba(214,173,77,.18);color:#cbb77e;font-size:11px;line-height:1.55;margin-top:12px}
+@media(max-width:850px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr 1fr}
+  .receipt-area{grid-template-columns:1fr}
+  .receipt{height:210px}
+  .actions{justify-content:stretch}
+  .actions .btn{flex:1;min-width:0}
+  .topbar{align-items:flex-start}
+}
+
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.account-box{background:#0d131a;border:1px solid #27313c;border-radius:14px;padding:14px}
+.account-box h3{margin:0 0 10px;font-size:15px}
+.account-box .field{margin-top:10px}
+.account-result{margin-top:12px;padding:12px;border-radius:10px;background:#0a0f14;border:1px solid #202934}
+.account-result .big{font-size:22px;font-weight:900;margin-top:4px}
+.account-history{margin-top:14px;display:grid;gap:8px}
+.account-history-row{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #202934;border-radius:10px;background:#0a0f14}
+@media(max-width:700px){.account-grid{grid-template-columns:1fr}}
+
+.trading-data-search{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.trading-data-search .field{flex:1;min-width:230px;margin-top:0}
+.trade-data-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.trade-data-tab{height:36px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#9eabb9;padding:0 11px;font-weight:800}
+.trade-data-tab.active{color:#fff;border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.trade-data-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.trade-data-summary .item .v{font-size:16px}
+@media(max-width:760px){.trade-data-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== Vertical Admin Layout ===== */
+#adminView{position:relative}
+.admin-shell{display:block}
+@media(min-width:900px){
+  .wrap{width:min(1440px,100%);padding-left:230px}
+  .topbar{padding:0 4px}
+  .main-tabs{
+    position:fixed;left:0;top:0;bottom:0;width:210px;z-index:20;
+    display:flex;flex-direction:column;gap:7px;margin:0;padding:86px 14px 18px;
+    background:#0d131a;border-right:1px solid #202a35
+  }
+  .main-tabs:before{
+    content:"Admin Panel";position:absolute;left:18px;top:24px;
+    font-size:19px;font-weight:900;color:#f4f7fb
+  }
+  .main-tab{flex:none;width:100%;height:44px;text-align:left;padding:0 14px}
+  .main-tab.active{box-shadow:inset 3px 0 0 #4b8cff}
+}
+@media(max-width:899px){
+  .main-tabs{overflow-x:auto;justify-content:flex-start}
+  .main-tab{flex:0 0 auto;min-width:135px}
+}
+#tradingDataSection{padding:18px}
+.trading-data-search{
+  position:sticky;top:0;z-index:8;background:linear-gradient(180deg,#11161c 82%,rgba(17,22,28,0));
+  padding:4px 0 16px;margin-top:12px
+}
+.trading-data-search .field input{height:46px}
+.trade-data-tabs{display:none!important}
+#tradingDataSummary{margin-top:4px;margin-bottom:14px}
+.trading-vertical-sections{display:grid;gap:14px}
+.td-section{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.td-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.td-section-title{font-size:15px;font-weight:900}
+.td-section-count{font-size:11px;color:#8f9cab}
+.td-table-wrap{overflow:auto;border:1px solid #202934;border-radius:10px}
+.td-table{width:100%;border-collapse:collapse;min-width:720px}
+.td-table th,.td-table td{padding:10px 11px;border-bottom:1px solid #202934;text-align:left;font-size:12px;white-space:nowrap}
+.td-table th{background:#151d26;color:#8f9cab;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.td-table tr:last-child td{border-bottom:0}
+.td-empty{padding:22px;text-align:center;color:#8f9cab;font-size:12px}
+.td-pos{color:#47e0a9;font-weight:800}.td-neg{color:#ff8390;font-weight:800}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="loginView" class="card login-card">
+    <div class="brand">Admin Login</div>
+    <div class="sub">Deposit and demo trade management</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" autocomplete="username" required placeholder="Admin email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="current-password" required placeholder="Admin password">
+      </div>
+      <div id="loginMsg" class="msg"></div>
+      <button id="loginBtn" class="btn primary full" type="submit">Login</button>
+    </form>
+
+    <div class="security">
+      Supabase Authentication is used for administrator access. Never place a service-role key or admin password inside this file.
+    </div>
+  </section>
+
+  <section id="resetView" class="card login-card hidden">
+    <div class="brand">Set New Password</div>
+    <div class="sub">Create a new password for this administrator account.</div>
+
+    <form id="resetForm">
+      <div class="field">
+        <label>New Password</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+      </div>
+      <div class="field">
+        <label>Confirm New Password</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter the new password again">
+      </div>
+      <div id="resetMsg" class="msg"></div>
+      <button id="resetBtn" class="btn primary full" type="submit">Save New Password</button>
+    </form>
+
+    <div class="security">
+      This form is shown only when Supabase redirects a valid password-recovery session to this page.
+    </div>
+  </section>
+
+  <div id="adminView" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="brand">Admin Dashboard</div>
+        <div id="adminEmail" class="sub"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="refreshBtn" class="btn secondary" type="button">Refresh</button>
+        <button id="logoutBtn" class="btn danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <div class="main-tabs">
+      <button id="depositTabBtn" class="main-tab active" type="button">Deposits</button>
+      <button id="withdrawTabBtn" class="main-tab" type="button">Withdrawals</button>
+      <button id="tradeTabBtn" class="main-tab" type="button">Trading Orders</button>
+      <button id="tradingDataTabBtn" class="main-tab" type="button">Customer Trading</button>
+      <button id="accountTabBtn" class="main-tab" type="button">Account Management</button>
+    </div>
+
+    <section id="depositSection" class="card">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter deposit-filter active" data-filter="pending" type="button">Pending</button>
+          <button class="filter deposit-filter" data-filter="all" type="button">All</button>
+          <button class="filter deposit-filter" data-filter="approved" type="button">Approved</button>
+          <button class="filter deposit-filter" data-filter="rejected" type="button">Rejected</button>
+        </div>
+        <div id="countText" class="sub">0 requests</div>
+      </div>
+      <div id="adminMsg" class="msg"></div>
+      <div id="depositList" class="list"></div>
+    </section>
+
+    <section id="tradeSection" class="card hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter trade-filter active" data-trade-filter="pending" type="button">Pending</button>
+          <button class="filter trade-filter" data-trade-filter="all" type="button">All</button>
+          <button class="filter trade-filter" data-trade-filter="WIN" type="button">WIN</button>
+          <button class="filter trade-filter" data-trade-filter="LOSS" type="button">LOSS</button>
+          <button class="filter trade-filter" data-trade-filter="DRAW" type="button">DRAW</button>
+        </div>
+        <div id="tradeCountText" class="sub">0 orders</div>
+      </div>
+
+      <div class="trade-warning">
+        Demo orders only. If no administrator result is set before the customer order expires, the customer page settles it as DRAW and refunds the demo principal.
+      </div>
+
+      <div id="tradeMsg" class="msg"></div>
+      <div id="tradeList" class="list"></div>
+    </section>
+
+    <section id="tradingDataSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:19px">Customer Trading Data</div>
+          <div class="sub">Search a customer UID to view all trading activity in one page.</div>
+        </div>
+      </div>
+
+      <div class="trading-data-search">
+        <div class="field">
+          <label>Search Customer UID</label>
+          <input id="tradingDataUid" type="text" placeholder="Enter UID, e.g. DEMO-729155" autocomplete="off">
+        </div>
+        <button id="loadTradingDataBtn" class="btn primary" type="button">Search</button>
+        <button id="clearTradingDataBtn" class="btn secondary" type="button">Clear</button>
+      </div>
+
+      <div id="tradingDataMsg" class="msg"></div>
+      <div id="tradingDataSummary" class="trade-data-summary"></div>
+      <div id="tradingDataList" class="trading-vertical-sections">
+        <div class="empty">Search a customer UID to view trading data.</div>
+      </div>
+    </section>
+
+    <section id="withdrawSection" class="card hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter withdraw-filter active" data-withdraw-filter="pending" type="button">Pending</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="all" type="button">All</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="approved" type="button">Approved</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="rejected" type="button">Rejected</button>
+        </div>
+        <div id="withdrawCountText" class="sub">0 requests</div>
+      </div>
+
+      <div class="trade-warning">
+        Demo withdrawal requests only. Review the customer UID, currency, amount and destination before changing the request status.
+      </div>
+
+      <div id="withdrawMsg" class="msg"></div>
+      <div id="withdrawList" class="list"></div>
+    </section>
+
+    <section id="accountSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:17px">Account Management</div>
+          <div class="sub">Manage demo balance credits and account score by customer UID.</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>Customer UID</label>
+        <input id="accountUid" type="text" placeholder="Example: DEMO-123456" autocomplete="off">
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button id="lookupAccountBtn" class="btn primary" type="button">Load Account</button>
+        <button id="clearAccountBtn" class="btn secondary" type="button">Clear</button>
+      </div>
+
+      <div id="accountMsg" class="msg"></div>
+
+      <div class="account-grid">
+        <div class="account-box">
+          <h3>Credit Demo Balance</h3>
+          <div class="note">Adds Demo USDT to the selected UID. The customer receives it through balance-sync.js.</div>
+
+          <div class="field">
+            <label>Amount (USDT)</label>
+            <input id="creditAmount" type="number" min="0.01" step="0.01" placeholder="5000">
+          </div>
+
+          <div class="field">
+            <label>Note (optional)</label>
+            <input id="creditNote" type="text" maxlength="120" placeholder="Manual demo credit">
+          </div>
+
+          <button id="creditBalanceBtn" class="btn success full" type="button">Add Demo USDT</button>
+        </div>
+
+        <div class="account-box">
+          <h3>Account Score</h3>
+          <div class="note">Score is stored in Supabase and controlled from Admin only.</div>
+
+          <div class="account-result">
+            <div class="sub">Current Score</div>
+            <div id="currentScore" class="big">—</div>
+          </div>
+
+          <div class="field">
+            <label>New Score (0–100)</label>
+            <input id="scoreInput" type="number" min="0" max="100" step="1" placeholder="100">
+          </div>
+
+          <button id="saveScoreBtn" class="btn primary full" type="button">Save Score</button>
+        </div>
+      </div>
+
+      <div class="account-box" style="margin-top:14px">
+        <h3>Recent Manual Credits</h3>
+        <div id="accountHistory" class="account-history"><div class="empty">Enter a UID and load the account.</div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="imageModal" class="modal">
+  <button id="closeModal" class="close" type="button">×</button>
+  <img id="modalImage" alt="Receipt">
+</div>
+
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+let session=null;
+let currentFilter='pending';
+let currentTradeFilter='pending';
+let currentWithdrawFilter='pending';
+let currentMainTab='deposits';
+let currentTradingDataView='seconds';
+let tradingDataCache={};
+let receiptObjectUrls=[];
+
+function authHeaders(extra={}){
+  return {
+    apikey:SUPABASE_KEY,
+    Authorization:'Bearer '+session.access_token,
+    ...extra
+  };
+}
+
+function setMsg(id,text,ok=false){
+  const el=document.getElementById(id);
+  if(!text){
+    el.className='msg';
+    el.textContent='';
+    return;
+  }
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function saveSession(data){
+  session={
+    access_token:data.access_token,
+    refresh_token:data.refresh_token,
+    expires_at:Date.now()+(Number(data.expires_in||3600)*1000),
+    user:data.user
+  };
+  sessionStorage.setItem('adminSession',JSON.stringify(session));
+}
+
+function loadSavedSession(){
+  try{
+    const x=JSON.parse(sessionStorage.getItem('adminSession')||'null');
+    if(x?.access_token && x?.refresh_token){
+      session=x;
+      return true;
+    }
+  }catch(_){}
+  return false;
+}
+
+async function refreshSession(){
+  if(!session?.refresh_token) return false;
+  try{
+    const r=await fetch(
+      SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',
+      {
+        method:'POST',
+        headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({refresh_token:session.refresh_token})
+      }
+    );
+    if(!r.ok) return false;
+    saveSession(await r.json());
+    return true;
+  }catch(_){
+    return false;
+  }
+}
+
+async function ensureSession(){
+  if(!session) return false;
+  if(session.expires_at && Date.now()>session.expires_at-60000){
+    return await refreshSession();
+  }
+  return true;
+}
+
+async function verifyAdmin(){
+  if(!await ensureSession()) return false;
+  const uid=session?.user?.id;
+  if(!uid) return false;
+
+  let r=await fetch(
+    SUPABASE_URL+'/rest/v1/admin_users?select=user_id&user_id=eq.'+encodeURIComponent(uid),
+    {headers:authHeaders()}
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+'/rest/v1/admin_users?select=user_id&user_id=eq.'+encodeURIComponent(uid),
+      {headers:authHeaders()}
+    );
+  }
+
+  if(!r.ok) return false;
+  const rows=await r.json();
+  return Array.isArray(rows)&&rows.length>0;
+}
+
+async function login(email,password){
+  const r=await fetch(
+    SUPABASE_URL+'/auth/v1/token?grant_type=password',
+    {
+      method:'POST',
+      headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    }
+  );
+
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+    throw new Error(data?.msg||data?.error_description||data?.message||'Login failed');
+  }
+
+  saveSession(data);
+
+  if(!await verifyAdmin()){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    throw new Error('This account is not authorized as an administrator.');
+  }
+}
+
+function showAdmin(){
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('resetView').classList.add('hidden');
+  document.getElementById('adminView').classList.remove('hidden');
+  document.getElementById('adminEmail').textContent=session?.user?.email||'Authenticated admin';
+}
+
+function showLogin(){
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('resetView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+}
+
+function showReset(){
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('resetView').classList.remove('hidden');
+}
+
+function getRecoverySessionFromUrl(){
+  const hash=new URLSearchParams(location.hash.replace(/^#/,'') || '');
+  const query=new URLSearchParams(location.search);
+  const type=hash.get('type') || query.get('type');
+  const accessToken=hash.get('access_token');
+  const refreshToken=hash.get('refresh_token');
+  const errorDescription=hash.get('error_description') || query.get('error_description');
+  return {type,accessToken,refreshToken,errorDescription};
+}
+
+async function updatePasswordWithRecoveryToken(accessToken,newPassword){
+  const r=await fetch(
+    SUPABASE_URL+'/auth/v1/user',
+    {
+      method:'PUT',
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:'Bearer '+accessToken,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({password:newPassword})
+    }
+  );
+
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+    throw new Error(data?.msg||data?.error_description||data?.message||'Could not update password.');
+  }
+  return data;
+}
+
+function money(v,d=2){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+
+function esc(v){
+  return String(v??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function statusClass(s){
+  return ['approved','rejected'].includes(s)?s:'pending';
+}
+
+function resultClass(result,status){
+  if(status==='pending') return 'pending';
+  if(result==='WIN') return 'win';
+  if(result==='LOSS') return 'loss';
+  return 'draw';
+}
+
+function formatRemaining(expiresAt){
+  const ms=new Date(expiresAt).getTime()-Date.now();
+  if(!Number.isFinite(ms)) return '—';
+  if(ms<=0) return 'Expired';
+  const sec=Math.ceil(ms/1000);
+  if(sec<60) return sec+'s';
+  return Math.floor(sec/60)+'m '+(sec%60)+'s';
+}
+
+async function getReceiptBlobUrl(path){
+  if(!path || !await ensureSession()) return null;
+  const clean=String(path).replace(/^\/+/,'');
+  const url=SUPABASE_URL+'/storage/v1/object/authenticated/deposit-receipts/'+clean.split('/').map(encodeURIComponent).join('/');
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+  if(!r.ok) return null;
+
+  const blob=await r.blob();
+  const obj=URL.createObjectURL(blob);
+  receiptObjectUrls.push(obj);
+  return obj;
+}
+
+function clearReceiptUrls(){
+  receiptObjectUrls.forEach(x=>URL.revokeObjectURL(x));
+  receiptObjectUrls=[];
+}
+
+async function loadDeposits(){
+  setMsg('adminMsg','');
+  clearReceiptUrls();
+
+  if(!await ensureSession()){ logout(); return; }
+
+  const filterPart=currentFilter==='all'?'':'&status=eq.'+encodeURIComponent(currentFilter);
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/deposit_requests?select=id,uid,amount,status,created_at,reviewed_at,payment_method,reference,receipt_url,myr_amount,exchange_rate'+
+    filterPart+'&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Could not load deposit requests: '+await r.text());
+    return;
+  }
+
+  const rows=await r.json();
+  document.getElementById('countText').textContent=(rows?.length||0)+' request'+((rows?.length||0)===1?'':'s');
+  const list=document.getElementById('depositList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML='<div class="empty">No '+esc(currentFilter==='all'?'':currentFilter+' ')+'deposit requests.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const method=x.payment_method||'—';
+    const isMyr=method==='MYR_BANK';
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${money(x.amount)} USDT</div>
+            <div class="sub">Request #${x.id} · ${esc(x.uid||'—')} · ${esc(new Date(x.created_at).toLocaleString())}</div>
+          </div>
+          <div class="status ${statusClass(x.status)}">${esc(String(x.status||'pending').toUpperCase())}</div>
+        </div>
+
+        <div class="grid">
+          <div class="item"><div class="k">Payment Method</div><div class="v">${esc(method)}</div></div>
+          <div class="item"><div class="k">Reference / TXID</div><div class="v">${esc(x.reference||'—')}</div></div>
+          <div class="item"><div class="k">MYR Amount</div><div class="v">${isMyr && x.myr_amount!=null?'RM '+money(x.myr_amount):'—'}</div></div>
+          <div class="item"><div class="k">Exchange Rate</div><div class="v">${isMyr && x.exchange_rate!=null?'1 USDT = RM '+money(x.exchange_rate,6):'—'}</div></div>
+        </div>
+
+        <div class="receipt-area">
+          <div class="receipt" id="receipt-${x.id}">
+            <div class="receipt-placeholder">${x.receipt_url?'Loading receipt...':'No receipt uploaded'}</div>
+          </div>
+
+          <div class="actions">
+            <div style="flex:1;min-width:180px">
+              <div class="note">${x.reviewed_at?'Reviewed: '+esc(new Date(x.reviewed_at).toLocaleString()):'Not reviewed yet.'}</div>
+            </div>
+            ${
+              x.status==='pending'
+              ? `
+                <button class="btn success" type="button" onclick="reviewDeposit(${x.id},'approved')">Approve</button>
+                <button class="btn danger" type="button" onclick="reviewDeposit(${x.id},'rejected')">Reject</button>
+              `
+              : `<button class="btn secondary" type="button" onclick="reviewDeposit(${x.id},'pending')">Set Pending</button>`
+            }
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  for(const x of rows){
+    if(!x.receipt_url) continue;
+    const holder=document.getElementById('receipt-'+x.id);
+    const blobUrl=await getReceiptBlobUrl(x.receipt_url);
+    if(!holder) continue;
+    holder.innerHTML=blobUrl
+      ? `<img src="${blobUrl}" alt="Deposit receipt" onclick="openReceipt('${blobUrl}')">`
+      : '<div class="receipt-placeholder">Receipt exists but could not be opened.</div>';
+  }
+}
+
+async function createCustomerNotification(uid,type,title,message,sourceType,sourceId){
+  if(!uid || !await ensureSession()) return false;
+
+  const payload={
+    uid:String(uid),
+    type:String(type),
+    title:String(title),
+    message:String(message),
+    source_type:sourceType ? String(sourceType) : null,
+    source_id:sourceId==null ? null : String(sourceId)
+  };
+
+  async function sendNotification(){
+    return fetch(
+      SUPABASE_URL+'/rest/v1/notifications',
+      {
+        method:'POST',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  let r=await sendNotification();
+
+  if(r.status===401 && await refreshSession()){
+    r=await sendNotification();
+  }
+
+  const text=await r.text();
+
+  if(!r.ok){
+    console.error(
+      'Notification insert failed:',
+      r.status,
+      text,
+      payload
+    );
+
+    alert(
+      'Notification failed ('+
+      r.status+
+      '):\n\n'+
+      text
+    );
+
+    return false;
+  }
+
+  console.log('Notification created:',text);
+  return true;
+}
+
+async function reviewDeposit(id,status){
+  if(!['pending','approved','rejected'].includes(status)) return;
+  if(!await ensureSession()){ logout(); return; }
+
+  const action=status==='approved'?'approve':status==='rejected'?'reject':'set back to pending';
+  if(!confirm('Are you sure you want to '+action+' request #'+id+'?')) return;
+
+  const payload={status,reviewed_at:status==='pending'?null:new Date().toISOString()};
+
+  let r=await fetch(
+    SUPABASE_URL+'/rest/v1/deposit_requests?id=eq.'+encodeURIComponent(id),
+    {
+      method:'PATCH',
+      headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+'/rest/v1/deposit_requests?id=eq.'+encodeURIComponent(id),
+      {
+        method:'PATCH',
+        headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Update failed: '+await r.text());
+    return;
+  }
+
+  const changed=await r.json();
+  const row=Array.isArray(changed)?changed[0]:null;
+ 
+  if(row && status!=='pending'){
+    const approved=status==='approved';
+    const amount=money(row.amount);
+    await createCustomerNotification(
+      row.uid,
+      'deposit',
+      approved?'Deposit Approved':'Deposit Rejected',
+      approved
+        ? 'Your deposit #'+id+' for '+amount+' USDT has been approved.'
+        : 'Your deposit #'+id+' for '+amount+' USDT has been rejected.',
+      'deposit',
+      id+'-'+status
+    );
+  }
+
+  setMsg('adminMsg','Request #'+id+' updated to '+status+'.',true);
+  await loadDeposits();
+}
+
+async function loadTrades(){
+  setMsg('tradeMsg','');
+  if(!await ensureSession()){ logout(); return; }
+
+  let filterPart='';
+  if(currentTradeFilter==='pending') filterPart='&status=eq.pending';
+  else if(['WIN','LOSS','DRAW'].includes(currentTradeFilter)) filterPart='&result=eq.'+encodeURIComponent(currentTradeFilter);
+
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/trade_orders?select=id,uid,symbol,side,amount,entry_price,duration_seconds,payout_rate,status,result,profit_loss,created_at,expires_at,settled_at'+
+    filterPart+'&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg('tradeMsg','Could not load trading orders: '+await r.text());
+    return;
+  }
+
+  const rows=await r.json();
+  document.getElementById('tradeCountText').textContent=(rows?.length||0)+' order'+((rows?.length||0)===1?'':'s');
+  const list=document.getElementById('tradeList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML='<div class="empty">No trading orders found.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const pct=(Number(x.payout_rate||0.8)*100);
+    const resultLabel=x.status==='settled'?(x.result||'DRAW'):'PENDING';
+    const pl=x.profit_loss==null?'—':(Number(x.profit_loss)>0?'+':'')+money(x.profit_loss)+' USDT';
+
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${esc(x.symbol)} / USDT · <span class="${x.side==='BUY'?'trade-side-buy':'trade-side-sell'}">${esc(x.side)}</span></div>
+            <div class="sub">Order #${x.id} · ${esc(x.uid)} · ${esc(new Date(x.created_at).toLocaleString())}</div>
+          </div>
+          <div class="status ${resultClass(x.result,x.status)}">${esc(resultLabel)}</div>
+        </div>
+
+        <div class="grid">
+          <div class="item"><div class="k">Amount</div><div class="v">${money(x.amount)} USDT</div></div>
+          <div class="item"><div class="k">Entry Price</div><div class="v">${money(x.entry_price,8)}</div></div>
+          <div class="item"><div class="k">Duration</div><div class="v">${Number(x.duration_seconds)||0}s</div></div>
+          <div class="item"><div class="k">Time Left</div><div class="v">${esc(formatRemaining(x.expires_at))}</div></div>
+          <div class="item"><div class="k">Expires At</div><div class="v">${esc(new Date(x.expires_at).toLocaleString())}</div></div>
+          <div class="item"><div class="k">Payout Rate</div><div class="v">${money(pct,2)}%</div></div>
+          <div class="item"><div class="k">P/L</div><div class="v">${esc(pl)}</div></div>
+          <div class="item"><div class="k">Settled At</div><div class="v">${x.settled_at?esc(new Date(x.settled_at).toLocaleString()):'—'}</div></div>
+        </div>
+
+        <div class="actions">
+          ${
+            x.status==='pending'
+            ? `
+              <div class="payout-box" style="margin-right:auto">
+                <span class="note">WIN payout</span>
+                <input id="payout-${x.id}" class="payout-input" type="number" min="0" max="1000" step="1" value="${pct.toFixed(0)}">
+                <span class="note">%</span>
+              </div>
+              <button class="btn success" type="button" onclick="settleTrade(${x.id},'WIN',${Number(x.amount)})">WIN</button>
+              <button class="btn danger" type="button" onclick="settleTrade(${x.id},'LOSS',${Number(x.amount)})">LOSS</button>
+              <button class="btn drawbtn" type="button" onclick="settleTrade(${x.id},'DRAW',${Number(x.amount)})">DRAW</button>
+            `
+            : `
+              <button class="btn secondary" type="button" onclick="resetTrade(${x.id})">Set Pending</button>
+            `
+          }
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function settleTrade(id,result,amount){
+  if(!['WIN','LOSS','DRAW'].includes(result)) return;
+  if(!await ensureSession()){ logout(); return; }
+
+  let payoutRate=0.80;
+  const input=document.getElementById('payout-'+id);
+
+  if(result==='WIN'){
+    const pct=Number(input?.value);
+    if(!Number.isFinite(pct) || pct<0 || pct>1000){
+      setMsg('tradeMsg','Enter a valid WIN payout percentage from 0 to 1000.');
+      return;
+    }
+    payoutRate=pct/100;
+  }
+
+  const pnl=result==='WIN'
+    ? Number(amount)*payoutRate
+    : result==='LOSS'
+      ? -Number(amount)
+      : 0;
+
+  if(!confirm('Set trade #'+id+' to '+result+'?')) return;
+
+  const payload={
+    status:'settled',
+    result,
+    payout_rate:payoutRate,
+    profit_loss:Number(pnl.toFixed(2)),
+    settled_at:new Date().toISOString()
+  };
+
+  let r=await fetch(
+    SUPABASE_URL+'/rest/v1/trade_orders?id=eq.'+encodeURIComponent(id),
+    {
+      method:'PATCH',
+      headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+'/rest/v1/trade_orders?id=eq.'+encodeURIComponent(id),
+      {
+        method:'PATCH',
+        headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  if(!r.ok){
+    setMsg('tradeMsg','Trade update failed: '+await r.text());
+    return;
+  }
+
+  setMsg('tradeMsg','Trade #'+id+' set to '+result+'.',true);
+  await loadTrades();
+}
+
+async function resetTrade(id){
+  if(!await ensureSession()){ logout(); return; }
+  if(!confirm('Set trade #'+id+' back to pending?')) return;
+
+  const payload={
+    status:'pending',
+    result:null,
+    profit_loss:null,
+    settled_at:null
+  };
+
+  const r=await fetch(
+    SUPABASE_URL+'/rest/v1/trade_orders?id=eq.'+encodeURIComponent(id),
+    {
+      method:'PATCH',
+      headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(!r.ok){
+    setMsg('tradeMsg','Trade reset failed: '+await r.text());
+    return;
+  }
+
+  setMsg('tradeMsg','Trade #'+id+' returned to pending.',true);
+  await loadTrades();
+}
+
+
+
+
+async function adminGet(path){
+  if(!await ensureSession()) throw new Error('Session expired.');
+  let r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:authHeaders()});
+  }
+  if(!r.ok) throw new Error(await r.text());
+  return await r.json();
+}
+
+function tdTime(v){
+  if(!v) return '—';
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?'—':d.toLocaleString();
+}
+function tdSigned(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return (n>0?'+':'')+money(n)+' USDT';
+}
+function tdStatus(v){
+  const s=String(v||'—').toUpperCase();
+  const cls=['WIN','FILLED','OPEN'].includes(s)?'approved':
+    ['LOSS','CANCELLED','LIQUIDATION'].includes(s)?'rejected':
+    s==='DRAW'?'draw':'pending';
+  return '<span class="status '+cls+'">'+esc(s)+'</span>';
+}
+
+function tdNum(v,d=2){
+  const n=Number(v);
+  return Number.isFinite(n)?money(n,d):'—';
+}
+function tdPnl(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '<span>—</span>';
+  return '<span class="'+(n>=0?'td-pos':'td-neg')+'">'+(n>0?'+':'')+money(n)+' USDT</span>';
+}
+function tdTable(title,rows,columns){
+  const body=!rows.length
+    ? '<div class="td-empty">No records.</div>'
+    : '<div class="td-table-wrap"><table class="td-table"><thead><tr>'+
+      columns.map(c=>'<th>'+esc(c[0])+'</th>').join('')+
+      '</tr></thead><tbody>'+
+      rows.slice(0,100).map(x=>'<tr>'+columns.map(c=>'<td>'+c[1](x)+'</td>').join('')+'</tr>').join('')+
+      '</tbody></table></div>';
+  return '<div class="td-section"><div class="td-section-head"><div class="td-section-title">'+esc(title)+'</div><div class="td-section-count">'+rows.length+' record'+(rows.length===1?'':'s')+'</div></div>'+body+'</div>';
+}
+function renderTradingData(){
+  const list=document.getElementById('tradingDataList');
+  const sum=document.getElementById('tradingDataSummary');
+  const seconds=tradingDataCache.seconds||[];
+  const cp=tradingDataCache.contract_positions||[];
+  const ch=tradingDataCache.contract_history||[];
+  const sh=tradingDataCache.spot_holdings||[];
+  const so=tradingDataCache.spot_orders||[];
+  const sph=tradingDataCache.spot_history||[];
+  const total=seconds.length+cp.length+ch.length+sh.length+so.length+sph.length;
+
+  sum.innerHTML=
+    '<div class="item"><div class="k">Customer UID</div><div class="v">'+esc(document.getElementById('tradingDataUid').value.trim()||'—')+'</div></div>'+
+    '<div class="item"><div class="k">Open Contracts</div><div class="v">'+cp.filter(x=>String(x.status||'open').toLowerCase()==='open').length+'</div></div>'+
+    '<div class="item"><div class="k">Spot Holdings</div><div class="v">'+sh.filter(x=>Number(x.quantity)>0).length+'</div></div>'+
+    '<div class="item"><div class="k">Total Records</div><div class="v">'+total+'</div></div>';
+
+  list.innerHTML=
+    tdTable('秒合约 / Seconds Trading',seconds,[
+      ['ID',x=>esc(x.id)],['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Direction',x=>esc(x.side||'—')],
+      ['Amount',x=>tdNum(x.amount)+' USDT'],['Result',x=>tdStatus(x.status==='settled'?(x.result||'DRAW'):(x.status||'pending'))],
+      ['P/L',x=>tdPnl(x.profit_loss)],['Time',x=>esc(tdTime(x.created_at))]
+    ])+
+    tdTable('Contract Positions',cp,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Mode',x=>esc(x.margin_mode||'—')],
+      ['Leverage',x=>esc((Number(x.leverage)||1)+'x')],['Qty',x=>tdNum(x.qty,8)],['Entry',x=>tdNum(x.entry_price,8)],
+      ['Margin',x=>tdNum(x.margin)+' USDT'],['Status',x=>tdStatus(x.status||'open')]
+    ])+
+    tdTable('Contract History',ch,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Leverage',x=>esc((Number(x.leverage)||1)+'x')],
+      ['Entry',x=>tdNum(x.entry_price,8)],['Exit',x=>tdNum(x.exit_price,8)],['P/L',x=>tdPnl(x.profit_loss)],
+      ['ROE',x=>Number.isFinite(Number(x.roe))?esc(money(x.roe)+'%'):'—'],['Reason',x=>esc(x.close_reason||'—')],['Time',x=>esc(tdTime(x.closed_at||x.created_at))]
+    ])+
+    tdTable('Spot Holdings',sh,[
+      ['Coin',x=>esc(x.symbol||'—')],['Quantity',x=>tdNum(x.quantity,8)],['Avg Price',x=>tdNum(x.avg_price,8)],
+      ['Total Cost',x=>tdNum(x.total_cost)+' USDT'],['Updated',x=>esc(tdTime(x.updated_at))]
+    ])+
+    tdTable('Spot Orders',so,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Type',x=>esc(x.order_type||'—')],
+      ['Value',x=>tdNum(x.order_value)+' USDT'],['Qty',x=>tdNum(x.quantity,8)],['Limit',x=>x.limit_price==null?'—':tdNum(x.limit_price,8)],
+      ['Filled',x=>x.filled_price==null?'—':tdNum(x.filled_price,8)],['Status',x=>tdStatus(x.status)],['Time',x=>esc(tdTime(x.created_at))]
+    ])+
+    tdTable('Spot History',sph,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Type',x=>esc(x.order_type||'—')],
+      ['Price',x=>tdNum(x.price,8)],['Qty',x=>tdNum(x.quantity,8)],['Value',x=>tdNum(x.order_value)+' USDT'],
+      ['Realized P/L',x=>tdPnl(x.realized_pnl)],['Time',x=>esc(tdTime(x.filled_at||x.created_at))]
+    ]);
+}
+async function loadTradingData(){
+  setMsg('tradingDataMsg','');
+  const uid=document.getElementById('tradingDataUid').value.trim();
+  if(!uid){ setMsg('tradingDataMsg','Enter a customer UID first.'); return; }
+  document.getElementById('tradingDataList').innerHTML='<div class="empty">Loading trading data...</div>';
+
+  try{
+    const q=encodeURIComponent(uid);
+    const [seconds,cp,ch,sh,so,sHist]=await Promise.all([
+      adminGet('trade_orders?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('contract_positions?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('contract_history?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_holdings?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_orders?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_history?select=*&uid=eq.'+q+'&order=id.desc&limit=100')
+    ]);
+    tradingDataCache={
+      seconds:seconds||[],
+      contract_positions:cp||[],
+      contract_history:ch||[],
+      spot_holdings:sh||[],
+      spot_orders:so||[],
+      spot_history:sHist||[]
+    };
+    setMsg('tradingDataMsg','Trading data loaded for '+uid+'.',true);
+    renderTradingData();
+  }catch(e){
+    tradingDataCache={};
+    document.getElementById('tradingDataList').innerHTML='<div class="empty">Could not load trading data.</div>';
+    setMsg('tradingDataMsg','Could not load trading data: '+(e?.message||e));
+  }
+}
+
+function clearTradingData(){
+  document.getElementById('tradingDataUid').value='';
+  tradingDataCache={};
+  document.getElementById('tradingDataSummary').innerHTML='';
+  document.getElementById('tradingDataList').innerHTML='<div class="empty">Search a customer UID to view trading data.</div>';
+  setMsg('tradingDataMsg','');
+}
+
+async function loadWithdrawals(){
+  setMsg('withdrawMsg','');
+
+  if(!await ensureSession()){ logout(); return; }
+
+  const filterPart=
+    currentWithdrawFilter==='all'
+      ? ''
+      : '&status=eq.'+encodeURIComponent(currentWithdrawFilter);
+
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/withdrawal_requests'+
+    '?select=id,uid,withdrawal_type,usdt_amount,myr_amount,exchange_rate,method,destination,status,created_at,reviewed_at,note'+
+    filterPart+
+    '&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg(
+      'withdrawMsg',
+      'Could not load withdrawal requests: '+await r.text()
+    );
+    return;
+  }
+
+  const rows=await r.json();
+
+  document.getElementById('withdrawCountText').textContent=
+    (rows?.length||0)+
+    ' request'+
+    ((rows?.length||0)===1?'':'s');
+
+  const list=document.getElementById('withdrawList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML=
+      '<div class="empty">No '+
+      esc(currentWithdrawFilter==='all'?'':currentWithdrawFilter+' ')+
+      'withdrawal requests.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const type=String(x.withdrawal_type||'USDT').toUpperCase();
+    const primaryAmount=
+      type==='MYR'
+        ? 'RM '+money(x.myr_amount)
+        : money(x.usdt_amount)+' USDT';
+
+    const secondaryAmount=
+      type==='MYR' && x.usdt_amount!=null
+        ? money(x.usdt_amount)+' USDT'
+        : (
+            type==='USDT' && x.myr_amount!=null
+              ? 'RM '+money(x.myr_amount)
+              : '—'
+          );
+
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${esc(primaryAmount)}</div>
+            <div class="sub">
+              Withdrawal #${x.id} · ${esc(x.uid||'—')} · ${esc(new Date(x.created_at).toLocaleString())}
+            </div>
+          </div>
+          <div class="status ${statusClass(x.status)}">
+            ${esc(String(x.status||'pending').toUpperCase())}
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="item">
+            <div class="k">Withdrawal Type</div>
+            <div class="v">${esc(type)}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">USDT Amount</div>
+            <div class="v">${x.usdt_amount!=null?money(x.usdt_amount)+' USDT':'—'}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">MYR Amount</div>
+            <div class="v">${x.myr_amount!=null?'RM '+money(x.myr_amount):'—'}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">Equivalent</div>
+            <div class="v">${esc(secondaryAmount)}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">Exchange Rate</div>
+            <div class="v">
+              ${x.exchange_rate!=null?'1 USDT = RM '+money(x.exchange_rate,6):'—'}
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="k">Method</div>
+            <div class="v">${esc(x.method||'—')}</div>
+          </div>
+
+          <div class="item" style="grid-column:1/-1">
+            <div class="k">Full Destination / Bank Account / Wallet</div>
+            <div class="v" style="word-break:break-word">${esc(x.destination||'—')}</div>
+          </div>
+
+          <div class="item" style="grid-column:1/-1">
+            <div class="k">Note</div>
+            <div class="v">${esc(x.note||'—')}</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div style="flex:1;min-width:180px">
+            <div class="note">
+              ${
+                x.reviewed_at
+                  ? 'Reviewed: '+esc(new Date(x.reviewed_at).toLocaleString())
+                  : 'Not reviewed yet.'
+              }
+            </div>
+          </div>
+
+          ${
+            x.status==='pending'
+              ? `
+                <button class="btn success" type="button" onclick="reviewWithdrawal(${x.id},'approved')">Approve</button>
+                <button class="btn danger" type="button" onclick="reviewWithdrawal(${x.id},'rejected')">Reject</button>
+              `
+              : `
+                <button class="btn secondary" type="button" onclick="reviewWithdrawal(${x.id},'pending')">Set Pending</button>
+              `
+          }
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function reviewWithdrawal(id,status){
+  if(!['pending','approved','rejected'].includes(status)) return;
+
+  if(!await ensureSession()){
+    logout();
+    return;
+  }
+
+  const action=
+    status==='approved'
+      ? 'approve'
+      : status==='rejected'
+        ? 'reject'
+        : 'set back to pending';
+
+  if(!confirm('Are you sure you want to '+action+' withdrawal #'+id+'?')){
+    return;
+  }
+
+  const payload={
+    status,
+    reviewed_at:
+      status==='pending'
+        ? null
+        : new Date().toISOString()
+  };
+
+  let r=await fetch(
+    SUPABASE_URL+
+    '/rest/v1/withdrawal_requests?id=eq.'+
+    encodeURIComponent(id),
+    {
+      method:'PATCH',
+      headers:authHeaders({
+        'Content-Type':'application/json',
+        Prefer:'return=representation'
+      }),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/withdrawal_requests?id=eq.'+
+      encodeURIComponent(id),
+      {
+        method:'PATCH',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          Prefer:'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  if(!r.ok){
+    setMsg(
+      'withdrawMsg',
+      'Withdrawal update failed: '+await r.text()
+    );
+    return;
+  }
+
+  const changed=await r.json();
+  const row=Array.isArray(changed)?changed[0]:null;
+  if(row && status!=='pending'){
+    const approved=status==='approved';
+    const amountText=row.withdrawal_type==='MYR'
+      ? money(row.myr_amount)+' MYR'
+      : money(row.usdt_amount)+' USDT';
+    await createCustomerNotification(
+      row.uid,
+      'withdrawal',
+      approved?'Withdrawal Approved':'Withdrawal Rejected',
+      approved
+        ? 'Your withdrawal #'+id+' for '+amountText+' has been approved.'
+        : 'Your withdrawal #'+id+' for '+amountText+' has been rejected. Reserved funds will be returned by the demo balance sync.',
+      'withdrawal',
+      id+'-'+status
+    );
+  }
+
+  setMsg(
+    'withdrawMsg',
+    'Withdrawal #'+id+' updated to '+status+'.',
+    true
+  );
+
+  await loadWithdrawals();
+}
+
+
+async function loadAccountManagement(){
+  setMsg('accountMsg','');
+  const uid=document.getElementById('accountUid').value.trim();
+  if(!uid){
+    setMsg('accountMsg','Enter a customer UID first.');
+    return;
+  }
+  if(!await ensureSession()){ logout(); return; }
+
+  document.getElementById('currentScore').textContent='Loading...';
+  document.getElementById('accountHistory').innerHTML='<div class="empty">Loading...</div>';
+
+  try{
+    const scoreUrl=SUPABASE_URL+'/rest/v1/demo_account_settings?select=uid,account_score,updated_at&uid=eq.'+encodeURIComponent(uid)+'&limit=1';
+    let scoreRes=await fetch(scoreUrl,{headers:authHeaders()});
+    if(scoreRes.status===401 && await refreshSession()) scoreRes=await fetch(scoreUrl,{headers:authHeaders()});
+    if(!scoreRes.ok) throw new Error('Score lookup failed: '+await scoreRes.text());
+    const scoreRows=await scoreRes.json();
+    const score=Array.isArray(scoreRows)&&scoreRows[0]?Number(scoreRows[0].account_score):100;
+    document.getElementById('currentScore').textContent=(Number.isFinite(score)?score:100)+' / 100';
+    document.getElementById('scoreInput').value=Number.isFinite(score)?score:100;
+
+    const histUrl=SUPABASE_URL+'/rest/v1/account_adjustments?select=id,amount,note,created_at,created_by&uid=eq.'+encodeURIComponent(uid)+'&order=id.desc&limit=20';
+    let histRes=await fetch(histUrl,{headers:authHeaders()});
+    if(histRes.status===401 && await refreshSession()) histRes=await fetch(histUrl,{headers:authHeaders()});
+    if(!histRes.ok) throw new Error('Credit history failed: '+await histRes.text());
+    const rows=await histRes.json();
+    const holder=document.getElementById('accountHistory');
+    if(!Array.isArray(rows)||!rows.length){
+      holder.innerHTML='<div class="empty">No manual credits for this UID yet.</div>';
+    }else{
+      holder.innerHTML=rows.map(x=>`<div class="account-history-row"><div><b>+${money(x.amount)} USDT</b><div class="sub">${esc(x.note||'Manual demo credit')}</div></div><div class="sub">${esc(new Date(x.created_at).toLocaleString())}</div></div>`).join('');
+    }
+    setMsg('accountMsg','Account loaded: '+uid,true);
+  }catch(e){
+    document.getElementById('currentScore').textContent='—';
+    setMsg('accountMsg',e?.message||'Could not load account.');
+  }
+}
+
+async function addAccountCredit(){
+  setMsg('accountMsg','');
+  const uid=document.getElementById('accountUid').value.trim();
+  const amount=Number(document.getElementById('creditAmount').value);
+  const note=document.getElementById('creditNote').value.trim();
+  if(!uid){ setMsg('accountMsg','Enter a customer UID first.'); return; }
+  if(!Number.isFinite(amount)||amount<=0){ setMsg('accountMsg','Enter a valid amount greater than 0.'); return; }
+  if(!await ensureSession()){ logout(); return; }
+  if(!confirm('Add '+amount.toFixed(2)+' Demo USDT to '+uid+'?')) return;
+
+  const payload={uid,amount:Number(amount.toFixed(2)),note:note||null,created_by:session.user.id};
+  let r=await fetch(SUPABASE_URL+'/rest/v1/account_adjustments',{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+    body:JSON.stringify(payload)
+  });
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/account_adjustments',{
+      method:'POST',headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),body:JSON.stringify(payload)
+    });
+  }
+  if(!r.ok){ setMsg('accountMsg','Credit failed: '+await r.text()); return; }
+  document.getElementById('creditAmount').value='';
+  document.getElementById('creditNote').value='';
+  setMsg('accountMsg','+'+amount.toFixed(2)+' Demo USDT queued for '+uid+'.',true);
+  await loadAccountManagement();
+}
+
+async function saveAccountScore(){
+  setMsg('accountMsg','');
+  const uid=document.getElementById('accountUid').value.trim();
+  const score=Number(document.getElementById('scoreInput').value);
+  if(!uid){ setMsg('accountMsg','Enter a customer UID first.'); return; }
+  if(!Number.isInteger(score)||score<0||score>100){ setMsg('accountMsg','Score must be a whole number from 0 to 100.'); return; }
+  if(!await ensureSession()){ logout(); return; }
+  if(!confirm('Set '+uid+' account score to '+score+'?')) return;
+
+  const payload={uid,account_score:score,updated_by:session.user.id,updated_at:new Date().toISOString()};
+  let r=await fetch(SUPABASE_URL+'/rest/v1/demo_account_settings?on_conflict=uid',{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}),
+    body:JSON.stringify(payload)
+  });
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/demo_account_settings?on_conflict=uid',{
+      method:'POST',headers:authHeaders({'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)
+    });
+  }
+  if(!r.ok){ setMsg('accountMsg','Score update failed: '+await r.text()); return; }
+  document.getElementById('currentScore').textContent=score+' / 100';
+  setMsg('accountMsg','Account score updated to '+score+'.',true);
+}
+
+function clearAccountManagement(){
+  document.getElementById('accountUid').value='';
+  document.getElementById('creditAmount').value='';
+  document.getElementById('creditNote').value='';
+  document.getElementById('scoreInput').value='';
+  document.getElementById('currentScore').textContent='—';
+  document.getElementById('accountHistory').innerHTML='<div class="empty">Enter a UID and load the account.</div>';
+  setMsg('accountMsg','');
+}
+
+function openReceipt(url){
+  document.getElementById('modalImage').src=url;
+  document.getElementById('imageModal').classList.add('show');
+}
+
+function closeReceipt(){
+  document.getElementById('imageModal').classList.remove('show');
+  document.getElementById('modalImage').removeAttribute('src');
+}
+
+function switchMainTab(tab){
+  currentMainTab=tab;
+
+  const dep=tab==='deposits';
+  const trades=tab==='trades';
+  const withdrawals=tab==='withdrawals';
+  const tradingData=tab==='tradingData';
+  const accounts=tab==='accounts';
+
+  document.getElementById('depositSection').classList.toggle('hidden',!dep);
+  document.getElementById('tradeSection').classList.toggle('hidden',!trades);
+  document.getElementById('withdrawSection').classList.toggle('hidden',!withdrawals);
+  document.getElementById('tradingDataSection').classList.toggle('hidden',!tradingData);
+  document.getElementById('accountSection').classList.toggle('hidden',!accounts);
+
+  document.getElementById('depositTabBtn').classList.toggle('active',dep);
+  document.getElementById('tradeTabBtn').classList.toggle('active',trades);
+  document.getElementById('withdrawTabBtn').classList.toggle('active',withdrawals);
+  document.getElementById('tradingDataTabBtn').classList.toggle('active',tradingData);
+  document.getElementById('accountTabBtn').classList.toggle('active',accounts);
+
+  if(dep) loadDeposits();
+  else if(trades) loadTrades();
+  else if(withdrawals) loadWithdrawals();
+}
+
+async function refreshCurrent(){
+  if(currentMainTab==='deposits') await loadDeposits();
+  else if(currentMainTab==='trades') await loadTrades();
+  else if(currentMainTab==='withdrawals') await loadWithdrawals();
+  else if(currentMainTab==='tradingData' && document.getElementById('tradingDataUid').value.trim()) await loadTradingData();
+  else if(currentMainTab==='accounts' && document.getElementById('accountUid').value.trim()) await loadAccountManagement();
+}
+
+async function logout(){
+  try{
+    if(session?.access_token){
+      await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:authHeaders()});
+    }
+  }catch(_){}
+  session=null;
+  sessionStorage.removeItem('adminSession');
+  clearReceiptUrls();
+  showLogin();
+}
+
+document.getElementById('resetForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  setMsg('resetMsg','');
+
+  const recovery=getRecoverySessionFromUrl();
+  const password=document.getElementById('newPassword').value;
+  const confirmPassword=document.getElementById('confirmPassword').value;
+  const btn=document.getElementById('resetBtn');
+
+  if(!recovery.accessToken || recovery.type!=='recovery'){
+    setMsg('resetMsg','This password reset link is missing or has expired. Request a new reset email from Supabase.');
+    return;
+  }
+  if(password.length<8){
+    setMsg('resetMsg','Password must be at least 8 characters.');
+    return;
+  }
+  if(password!==confirmPassword){
+    setMsg('resetMsg','The two passwords do not match.');
+    return;
+  }
+
+  btn.disabled=true;
+  btn.textContent='Saving...';
+
+  try{
+    await updatePasswordWithRecoveryToken(recovery.accessToken,password);
+    document.getElementById('newPassword').value='';
+    document.getElementById('confirmPassword').value='';
+    history.replaceState({},document.title,location.pathname);
+    showLogin();
+    setMsg('loginMsg','Password updated successfully. Log in with your new password.',true);
+  }catch(err){
+    setMsg('resetMsg',err?.message||'Could not update password.');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save New Password';
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  setMsg('loginMsg','');
+
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;
+  btn.textContent='Logging in...';
+
+  try{
+    await login(
+      document.getElementById('email').value.trim(),
+      document.getElementById('password').value
+    );
+    document.getElementById('password').value='';
+    showAdmin();
+    switchMainTab('deposits');
+  }catch(err){
+    setMsg('loginMsg',err?.message||'Login failed');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Login';
+  }
+});
+
+document.getElementById('logoutBtn').onclick=logout;
+document.getElementById('refreshBtn').onclick=refreshCurrent;
+document.getElementById('depositTabBtn').onclick=()=>switchMainTab('deposits');
+document.getElementById('tradeTabBtn').onclick=()=>switchMainTab('trades');
+document.getElementById('tradingDataTabBtn').onclick=()=>switchMainTab('tradingData');
+document.getElementById('loadTradingDataBtn').onclick=loadTradingData;
+document.getElementById('clearTradingDataBtn').onclick=clearTradingData;
+document.getElementById('tradingDataUid').addEventListener('keydown',e=>{if(e.key==='Enter') loadTradingData();});
+document.getElementById('withdrawTabBtn').onclick=()=>switchMainTab('withdrawals');
+document.getElementById('accountTabBtn').onclick=()=>switchMainTab('accounts');
+document.getElementById('lookupAccountBtn').onclick=loadAccountManagement;
+document.getElementById('creditBalanceBtn').onclick=addAccountCredit;
+document.getElementById('saveScoreBtn').onclick=saveAccountScore;
+document.getElementById('clearAccountBtn').onclick=clearAccountManagement;
+document.getElementById('accountUid').addEventListener('keydown',e=>{if(e.key==='Enter')loadAccountManagement();});
+
+document.querySelectorAll('.deposit-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.deposit-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter=btn.dataset.filter;
+    loadDeposits();
+  });
+});
+
+document.querySelectorAll('.trade-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.trade-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentTradeFilter=btn.dataset.tradeFilter;
+    loadTrades();
+  });
+});
+
+document.querySelectorAll('.withdraw-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.withdraw-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentWithdrawFilter=btn.dataset.withdrawFilter;
+    loadWithdrawals();
+  });
+});
+
+document.getElementById('closeModal').onclick=closeReceipt;
+document.getElementById('imageModal').addEventListener('click',e=>{
+  if(e.target.id==='imageModal') closeReceipt();
+});
+
+(async()=>{
+  const recovery=getRecoverySessionFromUrl();
+
+  if(recovery.errorDescription){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showLogin();
+    setMsg('loginMsg',decodeURIComponent(recovery.errorDescription));
+    return;
+  }
+
+  if(recovery.type==='recovery' && recovery.accessToken){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showReset();
+    return;
+  }
+
+  if(loadSavedSession() && await verifyAdmin()){
+    showAdmin();
+    switchMainTab('deposits');
+  }else{
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

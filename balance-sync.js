@@ -26,24 +26,18 @@
     return uid;
   }
 
-  function getBalance(){
-    const n=Number(
-      localStorage.getItem(
-        'demoBalance'
-      )
-    );
+  let serverBalanceReady=false;
+  let serverBalanceWrite=Promise.resolve();
+  let serverBalancePolling=false;
 
-    return Number.isFinite(n)
-      ? n
-      : 0;
+  function getBalance(){
+    const n=Number(localStorage.getItem('demoBalance'));
+    return Number.isFinite(n) ? n : 0;
   }
 
-  function setBalance(v){
+  function applyLocalBalance(v){
     const n=Number(v);
-
-    if(!Number.isFinite(n)){
-      return;
-    }
+    if(!Number.isFinite(n)) return;
 
     localStorage.setItem(
       'demoBalance',
@@ -60,6 +54,189 @@
         }
       )
     );
+  }
+
+  async function readServerBalance(){
+    const uid=getUid();
+
+    const r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/demo_balances?select=balance&uid=eq.'+
+      encodeURIComponent(uid)+
+      '&limit=1',
+      {
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY
+        },
+        cache:'no-store'
+      }
+    );
+
+    if(!r.ok){
+      throw new Error(
+        'Balance read failed: '+r.status
+      );
+    }
+
+    const rows=await r.json();
+
+    return (
+      Array.isArray(rows) &&
+      rows.length
+    )
+      ? Number(rows[0].balance)
+      : null;
+  }
+
+  async function writeServerBalance(v){
+    const uid=getUid();
+    const n=Number(v);
+
+    if(!Number.isFinite(n)){
+      return false;
+    }
+
+    const r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/demo_balances?on_conflict=uid',
+      {
+        method:'POST',
+
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          Prefer:'resolution=merge-duplicates,return=minimal'
+        },
+
+        body:JSON.stringify({
+          uid:uid,
+          balance:Number(n.toFixed(2)),
+          updated_at:new Date().toISOString()
+        })
+      }
+    );
+
+    if(!r.ok){
+      throw new Error(
+        'Balance write failed: '+r.status
+      );
+    }
+
+    return true;
+  }
+
+  function queueServerBalance(v){
+    const n=Number(v);
+
+    if(!Number.isFinite(n)){
+      return;
+    }
+
+    serverBalanceWrite=
+      serverBalanceWrite
+        .then(
+          ()=>writeServerBalance(n)
+        )
+        .catch(e=>{
+          console.warn(
+            'Server balance sync failed',
+            e
+          );
+        });
+  }
+
+  function setBalance(v){
+    const n=Number(v);
+
+    if(!Number.isFinite(n)){
+      return;
+    }
+
+    applyLocalBalance(n);
+
+    if(serverBalanceReady){
+      queueServerBalance(n);
+    }
+  }
+
+  async function initServerBalance(){
+    try{
+      const local=getBalance();
+      const remote=
+        await readServerBalance();
+
+      if(
+        remote===null ||
+        !Number.isFinite(remote)
+      ){
+        await writeServerBalance(local);
+        applyLocalBalance(local);
+      }else{
+        applyLocalBalance(remote);
+      }
+
+      serverBalanceReady=true;
+
+      window.dispatchEvent(
+        new CustomEvent(
+          'demoServerBalanceReady',
+          {
+            detail:{
+              balance:getBalance()
+            }
+          }
+        )
+      );
+
+      return true;
+
+    }catch(e){
+      console.warn(
+        'Server balance initialization failed',
+        e
+      );
+
+      serverBalanceReady=false;
+      return false;
+    }
+  }
+
+  async function pollServerBalance(){
+    if(
+      serverBalancePolling ||
+      !serverBalanceReady
+    ){
+      return;
+    }
+
+    serverBalancePolling=true;
+
+    try{
+      await serverBalanceWrite;
+
+      const remote=
+        await readServerBalance();
+
+      if(
+        Number.isFinite(remote) &&
+        Math.abs(
+          remote-getBalance()
+        )>0.004
+      ){
+        applyLocalBalance(remote);
+      }
+
+    }catch(e){
+      console.warn(
+        'Server balance poll failed',
+        e
+      );
+
+    }finally{
+      serverBalancePolling=false;
+    }
   }
 
   function ensureToast(){
@@ -229,6 +406,7 @@
       return Array.isArray(x)
         ? x.map(String)
         : [];
+
     }catch(_){
       return [];
     }
@@ -342,11 +520,13 @@
           processed
         );
       }
+
     }catch(e){
       console.warn(
         'Deposit status check failed',
         e
       );
+
     }finally{
       polling=false;
     }
@@ -369,6 +549,7 @@
       return Array.isArray(x)
         ? x.map(String)
         : [];
+
     }catch(_){
       return [];
     }
@@ -464,8 +645,7 @@
               'no-store'
           }
         );
-
-      if(!r.ok){
+            if(!r.ok){
         return;
       }
 
@@ -1065,11 +1245,13 @@
           ledger
         );
       }
+
     }catch(e){
       console.warn(
         'Withdrawal status check failed',
         e
       );
+
     }finally{
       withdrawalPolling=
         false;
@@ -1134,6 +1316,7 @@
       return Array.isArray(x)
         ? x.map(String)
         : [];
+
     }catch(_){
       return [];
     }
@@ -1149,8 +1332,7 @@
       )
     );
   }
-
-  function acquireSettlementLock(
+    function acquireSettlementLock(
     id
   ){
     const key=
@@ -1217,6 +1399,7 @@
               token
           }
         : null;
+
     }catch(_){
       return {
         key:
@@ -1253,6 +1436,7 @@
           lock.key
         );
       }
+
     }catch(_){
       localStorage.removeItem(
         lock.key
@@ -1281,6 +1465,7 @@
       ){
         history=[];
       }
+
     }catch(_){
       history=[];
     }
@@ -1343,12 +1528,14 @@
         pnl=
           amount*
           rate;
+
       }else if(
         result===
         'LOSS'
       ){
         pnl=
           -amount;
+
       }else{
         pnl=0;
       }
@@ -1483,6 +1670,7 @@
       )
         ? rows[0]
         : null;
+
     }catch(_){
       return null;
     }
@@ -1533,6 +1721,7 @@
       )
         ? rows[0]
         : null;
+
     }catch(_){
       return null;
     }
@@ -1586,6 +1775,7 @@
       )
         ? rows[0]
         : null;
+
     }catch(_){
       return null;
     }
@@ -1788,6 +1978,7 @@
         credit=
           amount+
           profit;
+
       }else if(
         result===
         'DRAW'
@@ -1851,14 +2042,14 @@
           }
         )
       );
+
     }finally{
       releaseSettlementLock(
         lock
       );
     }
   }
-
-  async function pollTradeStatus(){
+    async function pollTradeStatus(){
     if(tradePolling){
       return;
     }
@@ -1989,11 +2180,13 @@
           row
         )
       );
+
     }catch(e){
       console.warn(
         'Trade status check failed',
         e
       );
+
     }finally{
       tradePolling=
         false;
@@ -2055,29 +2248,89 @@
       getBalance
   };
 
-  function start(){
+  /*
+   * Unified Supabase balance bridge.
+   *
+   * demo_balances is now the central balance record.
+   * demoBalance remains as a local compatibility cache
+   * for the existing Trading / Assets / Profile pages.
+   */
+  window.DemoBalanceSync={
+    getUid:
+      getUid,
+
+    getBalance:
+      getBalance,
+
+    setBalance:
+      setBalance,
+
+    init:
+      initServerBalance,
+
+    poll:
+      pollServerBalance,
+
+    readServerBalance:
+      readServerBalance
+  };
+
+  async function start(){
     ensureToast();
+
+    /*
+     * IMPORTANT:
+     * Initialize/migrate the central balance first.
+     *
+     * If demo_balances does not yet contain this UID,
+     * the existing local demoBalance is uploaded.
+     *
+     * If a row already exists, the Supabase balance
+     * becomes the source of truth.
+     */
+    await initServerBalance();
 
     pollDepositStatus();
     pollAccountAdjustments();
     pollWithdrawalStatus();
     pollTradeStatus();
 
+    /*
+     * Keep local compatibility balance synchronized
+     * with demo_balances.
+     */
+    setInterval(
+      pollServerBalance,
+      3000
+    );
+
+    /*
+     * Existing deposit approval synchronization.
+     */
     setInterval(
       pollDepositStatus,
       5000
     );
 
+    /*
+     * Existing Admin manual balance credits.
+     */
     setInterval(
       pollAccountAdjustments,
       3000
     );
 
+    /*
+     * Existing withdrawal status / refund sync.
+     */
     setInterval(
       pollWithdrawalStatus,
       3000
     );
 
+    /*
+     * Existing seconds-contract settlement sync.
+     */
     setInterval(
       pollTradeStatus,
       POLL_MS

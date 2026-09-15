@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Reset PIN - Crypto Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#080c12;--panel:#10161f;--line:#243040;--text:#f5f7fb;--muted:#8492a5;--blue:#4b92ff;--red:#ff6475;--green:#22c98b}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+body{min-height:100vh;display:grid;place-items:center;padding:22px;overflow:hidden}
+.bg{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 18%,rgba(75,146,255,.13),transparent 34%),linear-gradient(180deg,#0a1019 0%,#080c12 70%)}
+.grid{position:fixed;inset:0;opacity:.13;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:42px 42px;transform:perspective(500px) rotateX(62deg) scale(1.6);transform-origin:center bottom}
+.wrap{position:relative;width:min(430px,100%);z-index:2}
+.brand{text-align:center;margin-bottom:22px}.logo{width:48px;height:48px;border-radius:14px;margin:0 auto 12px;display:grid;place-items:center;background:linear-gradient(145deg,#347cff,#65a7ff);font-weight:950;font-size:22px;box-shadow:0 10px 35px rgba(75,146,255,.3)}
+.brand b{font-size:18px;letter-spacing:.08em}.brand div:last-child{font-size:12px;color:var(--muted);margin-top:5px}
+.card{background:rgba(16,22,31,.94);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:0 24px 70px rgba(0,0,0,.42);backdrop-filter:blur(16px)}
+h1{font-size:25px;margin:0 0 7px}.desc{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:22px}
+.field{margin-bottom:14px}.field label{display:block;color:#aab5c3;font-size:12px;font-weight:700;margin:0 0 7px}
+.pinbox{position:relative}.field input{width:100%;height:50px;border:1px solid #2a3748;background:#0a1018;color:#fff;border-radius:12px;padding:0 48px 0 13px;outline:none;font-size:16px;letter-spacing:.15em}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,146,255,.09)}
+.eye{position:absolute;right:8px;top:7px;width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:#91a0b2;cursor:pointer}
+.btn{width:100%;height:50px;border:0;border-radius:12px;background:var(--blue);color:white;font-weight:850;font-size:15px;cursor:pointer;margin-top:5px}.btn:disabled{opacity:.55;cursor:not-allowed}
+.msg{display:none;border-radius:11px;padding:11px 12px;font-size:12px;line-height:1.45;margin-bottom:14px}.msg.show{display:block}.msg.error{background:rgba(255,100,117,.1);border:1px solid rgba(255,100,117,.28);color:#ff9aa6}.msg.ok{background:rgba(34,201,139,.1);border:1px solid rgba(34,201,139,.28);color:#71e2b8}
+.back{text-align:center;margin-top:17px;font-size:13px;color:var(--muted)}.back a{color:#82b2ff;text-decoration:none;font-weight:750}
+.note{font-size:11px;color:#667486;line-height:1.5;margin-top:14px;text-align:center}
+@media(max-width:480px){body{padding:14px}.card{padding:22px 18px;border-radius:18px}}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="grid"></div>
+<div class="wrap">
+  <div class="brand"><div class="logo">T</div><b>TRADING PLATFORM</b><div>Secure account recovery</div></div>
+  <div class="card">
+    <h1>Reset PIN</h1>
+    <div class="desc">Enter a new 6-digit PIN for your account. You must open this page from the password recovery email.</div>
+    <div id="message" class="msg"></div>
+    <form id="resetForm">
+      <div class="field">
+        <label>New 6-digit PIN</label>
+        <div class="pinbox"><input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••" required><button class="eye" type="button" data-target="pin">Show</button></div>
+      </div>
+      <div class="field">
+        <label>Confirm PIN</label>
+        <div class="pinbox"><input id="confirmPin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••" required><button class="eye" type="button" data-target="confirmPin">Show</button></div>
+      </div>
+      <button class="btn" id="submitBtn" type="submit">Update PIN</button>
+    </form>
+    <div class="back"><a href="login.html">Back to Login</a></div>
+    <div class="note">Never share your PIN or recovery email link with anyone.</div>
+  </div>
+</div>
+<script>
+const SUPABASE_URL="https://cyvquivolvkxzcseyhvk.supabase.co";
+const SUPABASE_KEY="sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const msg=document.getElementById("message");
+const form=document.getElementById("resetForm");
+const btn=document.getElementById("submitBtn");
+
+function showMessage(text,type){
+  msg.textContent=text; msg.className="msg show "+type;
+}
+function busy(on){
+  btn.disabled=on; btn.textContent=on?"Updating...":"Update PIN";
+}
+function recoveryError(){
+  showMessage("This recovery link is invalid or has expired. Return to Login and request a new Forgot PIN email.","error");
+  form.style.display="none";
+}
+document.querySelectorAll(".eye").forEach(b=>{
+  b.addEventListener("click",()=>{
+    const input=document.getElementById(b.dataset.target);
+    const show=input.type==="password";
+    input.type=show?"text":"password";
+    b.textContent=show?"Hide":"Show";
+  });
+});
+document.querySelectorAll('input[inputmode="numeric"]').forEach(input=>{
+  input.addEventListener("input",()=>{ input.value=input.value.replace(/\D/g,"").slice(0,6); });
+});
+
+let recoveryReady=false;
+
+async function initializeRecovery(){
+  try{
+    const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+    const accessToken=hash.get("access_token");
+    const refreshToken=hash.get("refresh_token");
+    const type=hash.get("type");
+
+    if(accessToken && refreshToken && type==="recovery"){
+      const {error}=await sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
+      if(error) throw error;
+    }
+
+    const {data,error}=await sb.auth.getSession();
+    if(error || !data?.session?.user){
+      recoveryError();
+      return;
+    }
+    recoveryReady=true;
+  }catch(e){
+    console.error(e);
+    recoveryError();
+  }
+}
+
+sb.auth.onAuthStateChange((event)=>{
+  if(event==="PASSWORD_RECOVERY") recoveryReady=true;
+});
+
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!recoveryReady){ recoveryError(); return; }
+
+  const pin=document.getElementById("pin").value.trim();
+  const confirmPin=document.getElementById("confirmPin").value.trim();
+
+  if(!/^\d{6}$/.test(pin)){
+    showMessage("PIN must contain exactly 6 numbers.","error"); return;
+  }
+  if(pin!==confirmPin){
+    showMessage("The two PINs do not match.","error"); return;
+  }
+
+  try{
+    busy(true);
+    const {error}=await sb.auth.updateUser({password:pin});
+    if(error) throw error;
+
+    showMessage("PIN updated successfully. Redirecting to Login...","ok");
+    form.style.display="none";
+    await sb.auth.signOut();
+    localStorage.removeItem("demoUid");
+    localStorage.removeItem("demoCustomerUid");
+    localStorage.removeItem("customerEmail");
+    localStorage.removeItem("demoAccountScore");
+    setTimeout(()=>window.location.replace("login.html"),1500);
+  }catch(err){
+    console.error(err);
+    showMessage(err?.message || "Unable to update PIN. Please request a new recovery email.","error");
+  }finally{
+    busy(false);
+  }
+});
+
+initializeRecovery();
+</script>
+</body>
+</html>

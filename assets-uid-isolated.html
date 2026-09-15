@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assets - Crypto Demo</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===== Customer authentication gate ===== */
+window.__customerAuthReady = (async function () {
+  const authClient = window.supabase.createClient(
+    "https://cyvquivolvkxzcseyhvk.supabase.co",
+    "sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU"
+  );
+
+  const { data, error } = await authClient.auth.getSession();
+
+  if (error || !data || !data.session || !data.session.user) {
+    window.location.replace("login.html");
+    return false;
+  }
+
+  const user = data.session.user;
+  const { data: profile, error: profileError } = await authClient
+    .from("customer_profiles")
+    .select("uid,email,account_score")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  if (profileError || !profile || !profile.uid) {
+    await authClient.auth.signOut();
+    window.location.replace("login.html");
+    return false;
+  }
+
+  localStorage.setItem("demoUid", profile.uid);
+  localStorage.setItem("demoCustomerUid", profile.uid);
+  localStorage.setItem("customerEmail", profile.email || user.email || "");
+  localStorage.setItem("demoAccountScore", String(profile.account_score ?? 100));
+
+  window.customerAuth = { client: authClient, user, profile };
+  document.documentElement.classList.add("auth-ready");
+  return true;
+})();
+</script>
+<script>
+/* ===== Per-customer localStorage isolation ===== */
+function demoScopedKey(key){
+  const uid=String(localStorage.getItem('demoCustomerUid')||localStorage.getItem('demoUid')||'').trim();
+  return key+'::'+(/^DEMO-\d{6}$/.test(uid)?uid:'__NO_AUTH__');
+}
+window.demoScopedKey=demoScopedKey;
+</script>
+<style id="customer-auth-gate-style">
+html:not(.auth-ready) body{visibility:hidden!important}
+</style>
+
+<style>
+:root{--bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#252d38;--text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;--blue:#4b8cff;--nav:74px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom))}button,input{font:inherit}a{text-decoration:none;color:inherit}.container{width:min(760px,100%);margin:0 auto;padding:18px 14px 28px}.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.header h1{font-size:26px;margin:0}.badge{font-size:11px;font-weight:800;border:1px solid rgba(34,201,139,.35);color:var(--green);padding:6px 9px;border-radius:999px;background:rgba(34,201,139,.08)}.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.18)}.label{font-size:12px;color:var(--muted)}.balance{font-size:34px;font-weight:900;margin-top:6px}.balance small{font-size:13px;color:var(--muted);font-weight:700}
+.btc-equivalent{margin-top:5px;font-size:12px;color:#6f7b88;font-weight:600;letter-spacing:.01em}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.btn{height:46px;border-radius:11px;border:1px solid var(--line);font-weight:800;cursor:pointer}.primary{background:var(--blue);color:#fff;border-color:transparent}.secondary{background:#161d26;color:#fff}.section-title{font-weight:800;margin-bottom:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid #202831;font-size:13px}.row:first-of-type{border-top:0}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.empty{text-align:center;color:var(--muted);padding:18px 0}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;z-index:5000}.overlay.show{display:flex}.modal{width:min(430px,100%);background:#111820;border:1px solid #2a3542;border-radius:18px;padding:18px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.modal-head h2{margin:0;font-size:20px}.close{width:36px;height:36px;border-radius:9px;border:1px solid #2b3744;background:#171f28;color:#fff;cursor:pointer}.field{margin-bottom:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input{width:100%;height:46px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:10px;padding:0 12px;outline:none}.hint{font-size:12px;color:var(--muted);line-height:1.55}.msg{display:none;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:13px}.msg.show{display:block}.msg.ok{background:rgba(34,201,139,.1);color:var(--green);border:1px solid rgba(34,201,139,.25)}.msg.err{background:rgba(240,91,106,.1);color:var(--red);border:1px solid rgba(240,91,106,.25)}.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));background:#0d1218;border-top:1px solid #232c37;display:grid;grid-template-columns:repeat(5,1fr);z-index:1000;padding-bottom:env(safe-area-inset-bottom)}.nav-item{display:flex;align-items:center;justify-content:center;color:#8290a0;font-size:12px}
+.nav-item.active{color:#4b8cff;font-weight:800}
+.type-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.type-tab{height:42px;border:1px solid #2b3744;border-radius:10px;background:#141b23;color:#9aa7b6;font-weight:800;cursor:pointer}
+.type-tab.active{background:#1a2b46;border-color:#315b95;color:#7fb0ff}
+.field select{width:100%;height:46px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:10px;padding:0 12px;outline:none}
+.rate-box{margin:0 0 14px;padding:11px 12px;border-radius:10px;border:1px solid #26303b;background:#0d131a;font-size:12px;color:#9eabb9;line-height:1.6}
+.rate-box b{color:#fff}
+.hidden{display:none!important}
+.withdraw-main{font-weight:800}
+.withdraw-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.status-pill{font-size:11px;font-weight:800}
+
+.list-toggle{
+  display:none;
+  width:100%;
+  margin-top:10px;
+  height:38px;
+  border:1px solid #28333f;
+  border-radius:10px;
+  background:#121922;
+  color:#8f9cab;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.list-toggle.show{display:block}
+.list-toggle:active{background:#17202a}
+
+/* Guaranteed withdrawal success overlay */
+#withdrawSuccessPopup{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.68)}
+#withdrawSuccessPopup.show{display:flex!important}
+#withdrawSuccessPopup .withdraw-success-card{width:min(360px,92vw);background:#111820;border:1px solid #2a3542;border-radius:20px;padding:28px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+#withdrawSuccessPopup .withdraw-success-check{width:70px;height:70px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:rgba(34,201,139,.13);border:2px solid rgba(34,201,139,.55);color:var(--green);font-size:40px;font-weight:900}
+#withdrawSuccessPopup .withdraw-success-title{font-size:20px;font-weight:900;margin-bottom:8px}
+#withdrawSuccessPopup .withdraw-success-text{font-size:13px;color:var(--muted);line-height:1.65}
+
+
+/* ===== Unified premium bottom navigation ===== */
+.bottom-nav{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:100% !important;
+  height:calc(74px + env(safe-area-inset-bottom)) !important;
+  padding:0 4px env(safe-area-inset-bottom) !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  grid-template-rows:1fr !important;
+  align-items:stretch !important;
+  background:rgba(10,15,22,.97) !important;
+  border-top:1px solid #202b38 !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+  box-shadow:0 -10px 30px rgba(0,0,0,.22) !important;
+  z-index:9999 !important;
+  overflow:hidden !important;
+}
+.bottom-nav .nav-item,
+.bottom-nav > a{
+  position:relative !important;
+  min-width:0 !important;
+  height:74px !important;
+  padding:9px 2px 7px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  color:#7f8c9f !important;
+  text-decoration:none !important;
+  font-size:10.5px !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+.bottom-nav .nav-icon{
+  width:23px !important;
+  height:23px !important;
+  display:grid !important;
+  place-items:center !important;
+  flex:0 0 23px !important;
+}
+.bottom-nav .nav-icon svg{
+  width:23px !important;
+  height:23px !important;
+  display:block !important;
+  fill:none !important;
+  stroke:currentColor !important;
+  stroke-width:1.8 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+}
+.bottom-nav .nav-label{
+  display:block !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.bottom-nav .nav-item.active,
+.bottom-nav > a.active{
+  color:#4b92ff !important;
+  font-weight:800 !important;
+}
+.bottom-nav .nav-item.active::before,
+.bottom-nav > a.active::before{
+  content:"" !important;
+  position:absolute !important;
+  top:0 !important;
+  left:50% !important;
+  width:28px !important;
+  height:2px !important;
+  border-radius:0 0 999px 999px !important;
+  background:#4b92ff !important;
+  transform:translateX(-50%) !important;
+  box-shadow:0 0 10px rgba(75,146,255,.7) !important;
+}
+.bottom-nav .nav-item.active .nav-icon,
+.bottom-nav > a.active .nav-icon{
+  filter:drop-shadow(0 0 7px rgba(75,146,255,.35)) !important;
+}
+@media(max-width:380px){
+  .bottom-nav .nav-item,
+  .bottom-nav > a{
+    font-size:9.5px !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .bottom-nav .nav-icon,
+  .bottom-nav .nav-icon svg{
+    width:21px !important;
+    height:21px !important;
+  }
+}
+
+
+/* ===== Assets trading overview ===== */
+.pnl-card{padding:14px 16px}
+.pnl-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pnl-title{font-size:13px;color:var(--muted);font-weight:700}
+.pnl-value{font-size:22px;font-weight:900;margin-top:5px}
+.pnl-note{font-size:11px;color:#6f7b88;margin-top:4px}
+.spot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.spot-stat{background:#0d131a;border:1px solid #202a35;border-radius:12px;padding:12px}
+.spot-stat .k{font-size:11px;color:var(--muted);margin-bottom:6px}
+.spot-stat .v{font-size:14px;font-weight:800;word-break:break-word}
+.asset-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid #202831}
+.asset-row:first-child{border-top:0}
+.asset-name{font-weight:900}.asset-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.asset-right{text-align:right}.asset-value{font-weight:800}.asset-pnl{font-size:12px;margin-top:3px}
+
+
+/* ===== Trading asset breakdown ===== */
+.trading-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.trading-box{background:#0d131a;border:1px solid #202a35;border-radius:12px;padding:12px;min-width:0}
+.trading-box .tb-title{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:7px}
+.trading-box .tb-value{font-size:15px;font-weight:900;word-break:break-word}
+.trading-box .tb-sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.45}
+@media(max-width:520px){.trading-breakdown{grid-template-columns:1fr}.trading-box{padding:11px 12px}}
+
+
+.trading-assets-head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.trading-assets-head .section-title{margin-bottom:0}
+.trading-assets-toggle{border:0;background:transparent;color:#7f8c9f;font-size:12px;font-weight:800;cursor:pointer;padding:5px 0}
+.trading-assets-body{display:none;margin-top:14px}
+.trading-assets-body.show{display:block}
+.trading-assets-chevron{display:inline-block;margin-left:5px;transition:transform .18s ease}
+.trading-assets-body.show~*{}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><h1>Assets</h1><div class="badge">DEMO</div></div>
+  <section class="card">
+    <div class="label">Total Assets</div>
+    <div class="balance"><span id="balanceValue">0.00</span> <small>USDT</small></div>
+    <div id="btcEquivalent" class="btc-equivalent">≈ Loading BTC equivalent...</div>
+    <div class="actions"><button class="btn primary" onclick="location.href='deposit.html'">Deposit</button><button class="btn secondary" onclick="openWithdraw()">Withdraw</button></div>
+  </section>
+
+  <section class="card pnl-card">
+    <div class="pnl-head">
+      <div>
+        <div class="pnl-title">Today's P&amp;L</div>
+        <div id="todayPnlValue" class="pnl-value">0.00 USDT</div>
+        <div id="todayPnlNote" class="pnl-note">Realized trading P&amp;L today + current unrealized P&amp;L</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="trading-assets-head" onclick="toggleTradingAssets()">
+      <div class="section-title">Trading Assets</div>
+      <button id="tradingAssetsToggle" class="trading-assets-toggle" type="button" onclick="event.stopPropagation();toggleTradingAssets()">View all <span class="trading-assets-chevron">⌄</span></button>
+    </div>
+
+    <div id="tradingAssetsBody" class="trading-assets-body">
+      <div class="trading-breakdown">
+        <div class="trading-box">
+          <div class="tb-title">Available USDT</div>
+          <div id="availableUsdtValue" class="tb-value">0.00 USDT</div>
+          <div class="tb-sub">Spendable demo balance</div>
+        </div>
+        <div class="trading-box">
+          <div class="tb-title">Spot</div>
+          <div id="spotEquityValue" class="tb-value">0.00 USDT</div>
+          <div id="spotPnlValue" class="tb-sub">Unrealized P&amp;L: 0.00 USDT</div>
+        </div>
+        <div class="trading-box">
+          <div class="tb-title">Contract</div>
+          <div id="contractEquityValue" class="tb-value">0.00 USDT</div>
+          <div id="contractPnlValue" class="tb-sub">Unrealized P&amp;L: 0.00 USDT</div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+      <div class="section-title">Spot Assets</div>
+      <div id="spotAssetsList" class="empty">No spot assets yet.</div>
+
+      <div style="height:14px;border-top:1px solid #202831;margin-top:14px"></div>
+      <div class="section-title">Contract Assets</div>
+      <div id="contractAssetsList" class="empty">No open contract positions.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">Deposit Requests</div>
+    <div id="depositList" class="empty">No deposit requests yet.</div>
+    <button id="depositToggle" class="list-toggle" type="button" onclick="toggleDepositList()">View all</button>
+  </section>
+
+  <section class="card">
+    <div class="section-title">Withdraw History</div>
+    <div id="withdrawList" class="empty">No withdrawal requests yet.</div>
+    <button id="withdrawToggle" class="list-toggle" type="button" onclick="toggleWithdrawList()">View all</button>
+  </section>
+
+  <section class="card">
+    <div class="section-title">Demo Trading History</div>
+    <div id="historyList" class="empty">No demo trades yet.</div>
+    <button id="historyToggle" class="list-toggle" type="button" onclick="toggleHistoryList()">View all</button>
+  </section>
+  <div class="hint">Demo only. Deposits and withdrawals affect demo USDT credits only. No real-money transfer is processed by this page.</div>
+</div>
+
+<div id="depositModal" class="overlay" onclick="if(event.target===this)closeDeposit()">
+  <div class="modal">
+    <div class="modal-head"><h2>Deposit Request</h2><button class="close" onclick="closeDeposit()">✕</button></div>
+    <form id="depositForm">
+      <div class="field"><label>Amount (USDT)</label><input id="depositAmount" type="number" min="1" step="0.01" placeholder="100" required></div>
+      <div class="hint">Submit a request first. An administrator can mark it approved or rejected in Supabase. Once approved, this page will automatically add the demo credit and show a success popup.</div>
+      <div id="depositMsg" class="msg"></div>
+      <button id="depositSubmit" class="btn primary" style="width:100%;margin-top:14px" type="submit">Submit Request</button>
+    </form>
+  </div>
+</div>
+
+<div id="withdrawModal" class="overlay" onclick="if(event.target===this)closeWithdraw()">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Withdraw</h2>
+      <button class="close" onclick="closeWithdraw()">✕</button>
+    </div>
+
+    <div class="type-tabs">
+      <button id="withdrawUsdtTab" class="type-tab active" type="button" onclick="setWithdrawType('USDT')">USDT</button>
+      <button id="withdrawMyrTab" class="type-tab" type="button" onclick="setWithdrawType('MYR')">MYR</button>
+    </div>
+
+    <form id="withdrawForm">
+      <div id="withdrawUsdtFields">
+        <div class="field">
+          <label>Amount (USDT)</label>
+          <input id="withdrawUsdtAmount" type="number" min="0.01" step="0.01" placeholder="100">
+        </div>
+        <div class="field">
+          <label>USDT TRC20 Wallet (Demo)</label>
+          <input id="withdrawWallet" type="text" maxlength="100" placeholder="Wallet address">
+        </div>
+      </div>
+
+      <div id="withdrawMyrFields" class="hidden">
+        <div class="field">
+          <label>Amount (MYR)</label>
+          <input id="withdrawMyrAmount" type="number" min="1" step="0.01" placeholder="500">
+        </div>
+
+        <div class="field">
+          <label>Bank</label>
+          <select id="withdrawBank">
+            <option value="">Select bank</option>
+            <option>Maybank</option>
+            <option>CIMB Bank</option>
+            <option>Public Bank</option>
+            <option>RHB Bank</option>
+            <option>Hong Leong Bank</option>
+            <option>AmBank</option>
+            <option>Bank Islam</option>
+            <option>Bank Rakyat</option>
+            <option>BSN</option>
+            <option>Affin Bank</option>
+            <option>Alliance Bank</option>
+            <option>UOB Malaysia</option>
+            <option>OCBC Malaysia</option>
+            <option>HSBC Malaysia</option>
+            <option>Standard Chartered Malaysia</option>
+            <option>GXBank</option>
+            <option>Ryt Bank</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Account Holder</label>
+          <input id="withdrawBankHolder" type="text" maxlength="80" placeholder="Account holder name">
+        </div>
+
+        <div class="field">
+          <label>Bank Account Number</label>
+          <input id="withdrawBankAccount" type="text" inputmode="numeric" maxlength="30" placeholder="Account number">
+        </div>
+      </div>
+
+      <div id="withdrawRateBox" class="rate-box">
+        <b>USDT / MYR rate:</b> Loading...
+      </div>
+
+      <div class="hint">
+        Demo only. After a request is submitted, the equivalent USDT is reserved from the demo balance.
+        If the administrator rejects the request, the reserved demo USDT is automatically returned.
+      </div>
+
+      <div id="withdrawMsg" class="msg"></div>
+
+      <button id="withdrawSubmit" class="btn primary" style="width:100%;margin-top:14px" type="submit">
+        Submit Withdrawal
+      </button>
+
+      <a class="btn secondary" style="display:grid;place-items:center;margin-top:10px" href="https://t.me/Kath02210" target="_blank" rel="noopener">
+        Contact Support
+      </a>
+    </form>
+  </div>
+</div>
+
+<div id="withdrawSuccessPopup" role="status" aria-live="polite" onclick="if(event.target===this)hideWithdrawSuccess()">
+  <div class="withdraw-success-card">
+    <div class="withdraw-success-check">✓</div>
+    <div class="withdraw-success-title">Withdrawal Successful</div>
+    <div id="withdrawSuccessText" class="withdraw-success-text">Your withdrawal has been completed successfully.</div>
+    <button type="button" class="btn primary" style="width:100%;margin-top:18px" onclick="hideWithdrawSuccess()">OK</button>
+  </div>
+</div>
+
+<nav class="bottom-nav" aria-label="Primary navigation">
+  <a class="nav-item" href="index.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></svg></span><span class="nav-label">Markets</span></a>
+  <a class="nav-item" href="trading.html?symbol=BTC"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M19 4v16M12 4v16"/><path d="M2.8 8h4.4M9.8 15h4.4M16.8 10h4.4"/></svg></span><span class="nav-label">Trading</span></a>
+  <a class="nav-item" href="news.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="nav-label">News</span></a>
+  <a class="nav-item active" href="assets.html" aria-current="page"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M15.5 11.5H21v4h-5.5a2 2 0 1 1 0-4Z"/></svg></span><span class="nav-label">Assets</span></a>
+  <a class="nav-item" href="profile.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6"/></svg></span><span class="nav-label">Profile</span></a>
+</nav>
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+let withdrawType='USDT';
+let usdtMyrRate=null;
+let btcUsdtPrice=null;
+
+function uid(){
+  let v=localStorage.getItem('demoUid');
+  if(!v){
+    v='DEMO-'+String(Math.floor(100000+Math.random()*900000));
+    localStorage.setItem('demoUid',v);
+  }
+  return v;
+}
+
+function fmt(v,digits=2){
+  return Number(v||0).toLocaleString(undefined,{
+    minimumFractionDigits:digits,
+    maximumFractionDigits:digits
+  });
+}
+
+function getBalance(){
+  // Central balance comes from balance-sync.js / Supabase demo_balances.
+  // localStorage is only the fast local cache used by that bridge.
+  if(window.DemoBalanceSync && typeof window.DemoBalanceSync.getBalance==='function'){
+    const live=Number(window.DemoBalanceSync.getBalance());
+    if(Number.isFinite(live)) return live;
+  }
+  const n=Number(localStorage.getItem(demoScopedKey('demoBalance')));
+  return Number.isFinite(n)?n:0;
+}
+
+function setBalance(v){
+  const n=Math.max(0,Number(v)||0);
+  // Withdrawal reservations and every Assets balance mutation use the
+  // same central bridge as Trading/Admin.
+  if(window.DemoBalanceSync && typeof window.DemoBalanceSync.setBalance==='function'){
+    window.DemoBalanceSync.setBalance(n);
+    return;
+  }
+  localStorage.setItem(demoScopedKey('demoBalance'),String(n));
+  renderBalance();
+  window.dispatchEvent(new CustomEvent('demoBalanceUpdated',{detail:{balance:n}}));
+}
+
+let cachedContractPositionsForEquity=[];
+
+function spotMarketValueForEquity(){
+  const px=Number(btcUsdtPrice)||0;
+  if(px<=0) return 0;
+  return (cachedSpotHoldings||[]).reduce((sum,x)=>{
+    if(String(x.symbol||'').toUpperCase()!=='BTC') return sum;
+    return sum+(Number(x.quantity)||0)*px;
+  },0);
+}
+
+function contractEquityForDisplay(){
+  const px=Number(btcUsdtPrice)||0;
+  if(px<=0) return 0;
+  return (cachedContractPositionsForEquity||[]).reduce((sum,p)=>{
+    if(String(p.symbol||'').toUpperCase()!=='BTC') return sum;
+    const entry=Number(p.entry_price)||0;
+    const qty=Number(p.qty)||0;
+    const margin=Number(p.margin)||0;
+    if(entry<=0 || qty<=0) return sum+margin;
+    const upnl=String(p.side||'').toUpperCase()==='SHORT'
+      ? (entry-px)*qty
+      : (px-entry)*qty;
+    return sum+margin+upnl;
+  },0);
+}
+
+
+function spotUnrealizedForDisplay(){
+  const px=Number(btcUsdtPrice)||0;
+  if(px<=0) return 0;
+  return (cachedSpotHoldings||[]).reduce((sum,x)=>{
+    if(String(x.symbol||'').toUpperCase()!=='BTC') return sum;
+    const qty=Number(x.quantity)||0;
+    const avg=Number(x.avg_price)||0;
+    return sum+(avg>0?(px-avg)*qty:0);
+  },0);
+}
+
+function contractUnrealizedForDisplay(){
+  const px=Number(btcUsdtPrice)||0;
+  if(px<=0) return 0;
+  return (cachedContractPositionsForEquity||[]).reduce((sum,p)=>{
+    if(String(p.symbol||'').toUpperCase()!=='BTC') return sum;
+    const entry=Number(p.entry_price)||0;
+    const qty=Number(p.qty)||0;
+    if(entry<=0||qty<=0) return sum;
+    return sum+(String(p.side||'').toUpperCase()==='SHORT'
+      ? (entry-px)*qty
+      : (px-entry)*qty);
+  },0);
+}
+
+
+function toggleTradingAssets(){
+  const body=document.getElementById('tradingAssetsBody');
+  const btn=document.getElementById('tradingAssetsToggle');
+  if(!body||!btn) return;
+  const open=body.classList.toggle('show');
+  btn.innerHTML=(open?'Show less':'View all')+
+    ' <span class="trading-assets-chevron" style="transform:rotate('+(open?'180':'0')+'deg)">⌄</span>';
+}
+
+function renderTradingAssetsBreakdown(){
+  const available=getBalance();
+  const spot=spotMarketValueForEquity();
+  const contract=contractEquityForDisplay();
+  const spotPnl=spotUnrealizedForDisplay();
+  const contractPnl=contractUnrealizedForDisplay();
+
+  const a=document.getElementById('availableUsdtValue');
+  const s=document.getElementById('spotEquityValue');
+  const c=document.getElementById('contractEquityValue');
+  const sp=document.getElementById('spotPnlValue');
+  const cp=document.getElementById('contractPnlValue');
+
+  if(a) a.textContent=fmt(available)+' USDT';
+  if(s) s.textContent=fmt(spot)+' USDT';
+  if(c) c.textContent=fmt(contract)+' USDT';
+
+  if(sp){
+    sp.textContent='Unrealized P&L: '+signedMoney(spotPnl);
+    sp.className='tb-sub '+pnlClass(spotPnl);
+  }
+  if(cp){
+    cp.textContent='Unrealized P&L: '+signedMoney(contractPnl);
+    cp.className='tb-sub '+pnlClass(contractPnl);
+  }
+}
+
+function totalAssetsForDisplay(){
+  return getBalance()+spotMarketValueForEquity()+contractEquityForDisplay();
+}
+
+function publishSharedTotalAssets(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return;
+  localStorage.setItem(demoScopedKey('demoTotalAssets'), String(n));
+  localStorage.setItem(demoScopedKey('demoTotalAssetsUpdatedAt'), String(Date.now()));
+  window.dispatchEvent(new CustomEvent('demoTotalAssetsUpdated',{detail:{total:n}}));
+}
+
+function renderBalance(){
+  const total=totalAssetsForDisplay();
+  publishSharedTotalAssets(total);
+  document.getElementById('balanceValue').textContent=fmt(total);
+  renderBtcEquivalent();
+  renderTradingAssetsBreakdown();
+}
+
+function renderBtcEquivalent(){
+  const el=document.getElementById('btcEquivalent');
+  if(!el) return;
+
+  const total=totalAssetsForDisplay();
+
+  if(!Number.isFinite(btcUsdtPrice)||btcUsdtPrice<=0){
+    el.textContent='≈ — BTC';
+    return;
+  }
+
+  const btc=total/btcUsdtPrice;
+  el.textContent='≈ '+btc.toLocaleString(undefined,{
+    minimumFractionDigits:0,
+    maximumFractionDigits:8
+  })+' BTC';
+}
+
+
+function renderContractAssets(){
+  const el=document.getElementById('contractAssetsList');
+  if(!el) return;
+
+  const rows=(cachedContractPositionsForEquity||[]).filter(p=>
+    String(p.status||'open').toLowerCase()==='open' && Number(p.qty)>0
+  );
+
+  if(!rows.length){
+    el.className='empty';
+    el.textContent='No open contract positions.';
+    return;
+  }
+
+  const px=Number(btcUsdtPrice)||0;
+  el.className='';
+  el.innerHTML=rows.map(p=>{
+    const symbol=String(p.symbol||'').toUpperCase();
+    const side=String(p.side||'LONG').toUpperCase();
+    const mode=String(p.margin_mode||'isolated').toUpperCase();
+    const leverage=Math.max(1,Number(p.leverage)||1);
+    const entry=Number(p.entry_price)||0;
+    const qty=Number(p.qty)||0;
+    const margin=Number(p.margin)||0;
+    const notional=Number(p.notional)||entry*qty;
+    const mark=symbol==='BTC' ? px : 0;
+    const upnl=mark>0 && entry>0
+      ? (side==='SHORT' ? (entry-mark)*qty : (mark-entry)*qty)
+      : 0;
+    const roe=margin>0 ? upnl/margin*100 : 0;
+
+    return '<div class="asset-row">'+
+      '<div>'+
+        '<div class="asset-name">'+esc(symbol)+'/USDT</div>'+
+        '<div class="asset-sub">'+
+          '<span class="'+(side==='LONG'?'green':'red')+'">'+esc(side)+'</span>'+
+          ' · '+esc(mode)+' · '+fmt(leverage,0)+'x'+
+          '<br>Qty '+qty.toLocaleString(undefined,{maximumFractionDigits:8})+
+          ' · Entry '+fmt(entry)+
+          (mark>0?' · Mark '+fmt(mark):'')+
+        '</div>'+
+      '</div>'+
+      '<div class="asset-right">'+
+        '<div class="asset-value">'+fmt(margin)+' USDT margin</div>'+
+        '<div class="asset-sub">Position '+fmt(notional)+' USDT</div>'+
+        '<div class="asset-pnl '+pnlClass(upnl)+'">'+
+          (mark>0 ? signedMoney(upnl)+' · '+(roe>0?'+':'')+fmt(roe)+'%' : 'Price unavailable')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+async function loadContractEquityPositions(){
+  try{
+    const rows=await sbGet(
+      'contract_positions?select=id,symbol,side,margin_mode,leverage,entry_price,qty,margin,notional,liq_price,tp_price,sl_price,status&uid=eq.'+
+      encodeURIComponent(uid())+'&status=eq.open&limit=200'
+    );
+    cachedContractPositionsForEquity=Array.isArray(rows)?rows:[];
+  }catch(_){
+    cachedContractPositionsForEquity=[];
+  }
+  renderContractAssets();
+  renderBalance();
+}
+
+async function fetchBtcPrice(){
+  const endpoints=[
+    'https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT',
+    'https://api1.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
+    'https://api2.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
+    'https://api3.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
+  ];
+
+  for(const url of endpoints){
+    try{
+      const r=await fetch(url,{cache:'no-store'});
+      if(!r.ok) continue;
+
+      const data=await r.json();
+      const price=Number(data && data.price);
+
+      if(Number.isFinite(price) && price>0){
+        btcUsdtPrice=price;
+        localStorage.setItem('cachedBtcUsdtPrice',String(price));
+        renderBalance();
+        renderSpotAssets();
+        renderContractAssets();
+        loadTodayPnl();
+        return;
+      }
+    }catch(_){}
+  }
+
+  try{
+    const r=await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+      {cache:'no-store'}
+    );
+
+    if(r.ok){
+      const data=await r.json();
+      const price=Number(data && data.bitcoin && data.bitcoin.usd);
+
+      if(Number.isFinite(price) && price>0){
+        btcUsdtPrice=price;
+        localStorage.setItem('cachedBtcUsdtPrice',String(price));
+        renderBalance();
+        renderSpotAssets();
+        renderContractAssets();
+        loadTodayPnl();
+        return;
+      }
+    }
+  }catch(_){}
+
+  const cached=Number(localStorage.getItem('cachedBtcUsdtPrice'));
+  if(Number.isFinite(cached) && cached>0){
+    btcUsdtPrice=cached;
+    renderBtcEquivalent();
+    renderContractAssets();
+  }else{
+    const el=document.getElementById('btcEquivalent');
+    if(el) el.textContent='≈ BTC price unavailable';
+  }
+}
+
+function esc(s){
+  return String(s??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function openDeposit(){
+  document.getElementById('depositModal').classList.add('show');
+}
+
+function closeDeposit(){
+  document.getElementById('depositModal').classList.remove('show');
+}
+
+function openWithdraw(){
+  document.getElementById('withdrawModal').classList.add('show');
+  fetchUsdtMyrRate();
+  updateWithdrawEstimate();
+}
+
+function closeWithdraw(){
+  document.getElementById('withdrawModal').classList.remove('show');
+}
+
+function setMsg(text,ok){
+  const el=document.getElementById('depositMsg');
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function setWithdrawMsg(text,ok){
+  const el=document.getElementById('withdrawMsg');
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function hideWithdrawSuccess(){
+  const popup=document.getElementById('withdrawSuccessPopup');
+  if(!popup) return;
+  popup.classList.remove('show');
+  popup.style.display='none';
+}
+
+function showWithdrawSuccess(row){
+  const popup=document.getElementById('withdrawSuccessPopup');
+  const text=document.getElementById('withdrawSuccessText');
+  if(!popup) return;
+
+  const type=String(row?.withdrawal_type||'USDT').toUpperCase();
+  const amountText=type==='MYR'
+    ? 'RM '+fmt(row?.myr_amount)
+    : fmt(row?.usdt_amount)+' USDT';
+
+  if(text){
+    text.innerHTML='Your <b style="color:#fff">'+esc(amountText)+'</b> withdrawal has been completed successfully.';
+  }
+
+  popup.classList.add('show');
+  popup.style.display='flex';
+}
+
+function readWithdrawalPopupState(){
+  try{
+    const x=JSON.parse(localStorage.getItem(demoScopedKey('withdrawalApprovalPopupState'))||'{}');
+    return x && typeof x==='object' && !Array.isArray(x) ? x : {};
+  }catch(_){
+    return {};
+  }
+}
+
+function writeWithdrawalPopupState(x){
+  localStorage.setItem(demoScopedKey('withdrawalApprovalPopupState'),JSON.stringify(x));
+}
+
+function checkWithdrawalApprovalPopups(rows){
+  if(!Array.isArray(rows)||!rows.length) return;
+
+  const state=readWithdrawalPopupState();
+  let changed=false;
+  let approvedRow=null;
+
+  for(const row of rows.slice().reverse()){
+    const id=String(row.id);
+    const status=String(row.status||'pending').toLowerCase();
+    const previous=state[id];
+
+    if(!previous){
+      // Only start watching an existing request while it is still pending.
+      // This prevents old approved withdrawals from popping up again.
+      if(status==='pending'){
+        state[id]='pending';
+        changed=true;
+      }
+      continue;
+    }
+
+    if(previous==='pending' && status==='approved'){
+      state[id]='approved';
+      changed=true;
+      approvedRow=row;
+    }else if(previous==='pending' && status==='rejected'){
+      state[id]='rejected';
+      changed=true;
+    }else if(previous!==status){
+      state[id]=status;
+      changed=true;
+    }
+  }
+
+  if(changed) writeWithdrawalPopupState(state);
+  if(approvedRow) showWithdrawSuccess(approvedRow);
+}
+
+function setWithdrawType(type){
+  withdrawType=type==='MYR'?'MYR':'USDT';
+
+  document.getElementById('withdrawUsdtTab').classList.toggle('active',withdrawType==='USDT');
+  document.getElementById('withdrawMyrTab').classList.toggle('active',withdrawType==='MYR');
+
+  document.getElementById('withdrawUsdtFields').classList.toggle('hidden',withdrawType!=='USDT');
+  document.getElementById('withdrawMyrFields').classList.toggle('hidden',withdrawType!=='MYR');
+
+  document.getElementById('withdrawMsg').className='msg';
+  updateWithdrawEstimate();
+}
+
+async function fetchUsdtMyrRate(){
+  const box=document.getElementById('withdrawRateBox');
+
+  try{
+    const r=await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=myr',
+      {cache:'no-store'}
+    );
+
+    if(!r.ok) throw new Error('rate unavailable');
+
+    const data=await r.json();
+    const rate=Number(data?.tether?.myr);
+
+    if(!Number.isFinite(rate)||rate<=0) throw new Error('invalid rate');
+
+    usdtMyrRate=rate;
+    updateWithdrawEstimate();
+  }catch(_){
+    usdtMyrRate=null;
+    box.innerHTML='<b>USDT / MYR rate:</b> Temporarily unavailable.';
+  }
+}
+
+function updateWithdrawEstimate(){
+  const box=document.getElementById('withdrawRateBox');
+
+  if(!Number.isFinite(usdtMyrRate)||usdtMyrRate<=0){
+    box.innerHTML='<b>USDT / MYR rate:</b> Loading or temporarily unavailable.';
+    return;
+  }
+
+  if(withdrawType==='USDT'){
+    const usdt=Number(document.getElementById('withdrawUsdtAmount').value)||0;
+    const myr=usdt*usdtMyrRate;
+
+    box.innerHTML=
+      '<b>Live rate:</b> 1 USDT = RM '+fmt(usdtMyrRate,4)+
+      '<br><b>Estimated MYR:</b> RM '+fmt(myr);
+  }else{
+    const myr=Number(document.getElementById('withdrawMyrAmount').value)||0;
+    const usdt=myr/usdtMyrRate;
+
+    box.innerHTML=
+      '<b>Live rate:</b> 1 USDT = RM '+fmt(usdtMyrRate,4)+
+      '<br><b>USDT required:</b> '+fmt(usdt)+' USDT';
+  }
+}
+
+let depositExpanded=false;
+let withdrawExpanded=false;
+let historyExpanded=false;
+let cachedDepositRows=[];
+let cachedWithdrawalRows=[];
+
+function updateListToggle(id, expanded, total){
+  const btn=document.getElementById(id);
+  if(!btn) return;
+
+  if(total<=4){
+    btn.className='list-toggle';
+    btn.textContent='View all';
+    return;
+  }
+
+  btn.className='list-toggle show';
+  btn.textContent=expanded ? 'Show less' : 'View all ('+total+')';
+}
+
+function toggleDepositList(){
+  depositExpanded=!depositExpanded;
+  renderDeposits(cachedDepositRows);
+}
+
+function toggleWithdrawList(){
+  withdrawExpanded=!withdrawExpanded;
+  renderWithdrawals(cachedWithdrawalRows);
+}
+
+function toggleHistoryList(){
+  historyExpanded=!historyExpanded;
+  loadHistory();
+loadSpotAssets();
+loadContractEquityPositions();
+}
+
+function renderDeposits(rows){
+  const el=document.getElementById('depositList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    el.className='empty';
+    el.textContent='No deposit requests yet.';
+    updateListToggle('depositToggle',false,0);
+    return;
+  }
+
+  const visible=depositExpanded ? rows : rows.slice(0,4);
+
+  el.className='';
+  el.innerHTML=visible.map(x=>
+    '<div class="row">'+
+      '<div>'+
+        '<b>'+fmt(x.amount)+' USDT</b>'+
+        '<div class="muted">#'+x.id+' · '+new Date(x.created_at).toLocaleString()+'</div>'+
+      '</div>'+
+      '<div class="'+(x.status==='approved'?'green':x.status==='rejected'?'red':'muted')+'">'+
+        String(x.status).toUpperCase()+
+      '</div>'+
+    '</div>'
+  ).join('');
+
+  updateListToggle('depositToggle',depositExpanded,rows.length);
+}
+
+function renderWithdrawals(rows){
+  const el=document.getElementById('withdrawList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    el.className='empty';
+    el.textContent='No withdrawal requests yet.';
+    updateListToggle('withdrawToggle',false,0);
+    return;
+  }
+
+  const visible=withdrawExpanded ? rows : rows.slice(0,4);
+  el.className='';
+
+  el.innerHTML=visible.map(x=>{
+    const type=String(x.withdrawal_type||'USDT').toUpperCase();
+    const status=String(x.status||'pending').toLowerCase();
+    const statusClass=status==='approved'?'green':status==='rejected'?'red':'muted';
+
+    const main=
+      type==='MYR'
+        ? 'RM '+fmt(x.myr_amount)
+        : fmt(x.usdt_amount)+' USDT';
+
+    const equivalent=
+      type==='MYR'
+        ? fmt(x.usdt_amount)+' USDT'
+        : (
+            x.myr_amount!=null
+              ? 'RM '+fmt(x.myr_amount)
+              : 'MYR estimate unavailable'
+          );
+
+    return (
+      '<div class="row">'+
+        '<div>'+
+          '<div class="withdraw-main">'+esc(type)+' · '+esc(main)+'</div>'+
+          '<div class="withdraw-sub">'+
+            '≈ '+esc(equivalent)+
+            ' · '+esc(x.method||'Withdrawal')+
+            '<br>'+esc(maskDestinationForCustomer(x.destination||''))+
+            '<br>#'+esc(x.id)+' · '+new Date(x.created_at).toLocaleString()+
+          '</div>'+
+        '</div>'+
+        '<div class="status-pill '+statusClass+'">'+esc(status.toUpperCase())+'</div>'+
+      '</div>'
+    );
+  }).join('');
+
+  updateListToggle('withdrawToggle',withdrawExpanded,rows.length);
+}
+
+async function loadDeposits(){
+  try{
+    const r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/deposit_requests?select=id,amount,status,created_at&uid=eq.'+
+      encodeURIComponent(uid())+
+      '&order=id.desc&limit=20',
+      {
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY
+        },
+        cache:'no-store'
+      }
+    );
+
+    if(!r.ok) return;
+
+    const rows=await r.json();
+    cachedDepositRows=Array.isArray(rows)?rows:[];
+    renderDeposits(cachedDepositRows);
+  }catch(_){}
+}
+
+async function loadWithdrawals(){
+  try{
+    const fields='id,withdrawal_type,usdt_amount,myr_amount,exchange_rate,method,destination,status,created_at,reviewed_at';
+
+    const r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/withdrawal_requests?select='+fields+
+      '&uid=eq.'+encodeURIComponent(uid())+
+      '&order=id.desc&limit=30',
+      {
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY
+        },
+        cache:'no-store'
+      }
+    );
+
+    if(!r.ok) return;
+
+    const rows=await r.json();
+    cachedWithdrawalRows=Array.isArray(rows)?rows:[];
+    renderWithdrawals(cachedWithdrawalRows);
+    checkWithdrawalApprovalPopups(cachedWithdrawalRows);
+  }catch(_){}
+}
+
+function loadHistory(){
+  let h=[];
+  try{
+    h=JSON.parse(localStorage.getItem(demoScopedKey('demoHistory'))||'[]');
+  }catch(_){}
+
+  const el=document.getElementById('historyList');
+
+  if(!Array.isArray(h)||!h.length){
+    el.className='empty';
+    el.textContent='No demo trades yet.';
+    updateListToggle('historyToggle',false,0);
+    return;
+  }
+
+  const available=h.slice(0,100);
+  const visible=historyExpanded ? available : available.slice(0,4);
+
+  el.className='';
+  el.innerHTML=visible.map(x=>
+    '<div class="row">'+
+      '<div>'+
+        '<b>'+(x.symbol||'')+' '+(x.side||'')+'</b>'+
+        '<div class="muted">'+new Date(x.time||Date.now()).toLocaleString()+'</div>'+
+      '</div>'+
+      '<div class="'+(x.result==='WIN'?'green':x.result==='LOSS'?'red':'muted')+'">'+
+        (x.result||'--')+
+      '</div>'+
+    '</div>'
+  ).join('');
+
+  updateListToggle('historyToggle',historyExpanded,available.length);
+}
+
+function readWithdrawalLedgerState(){
+  try{
+    const x=JSON.parse(localStorage.getItem(demoScopedKey('withdrawalLedgerState'))||'{}');
+    return x && typeof x==='object' && !Array.isArray(x) ? x : {};
+  }catch(_){
+    return {};
+  }
+}
+
+function writeWithdrawalLedgerState(x){
+  localStorage.setItem(demoScopedKey('withdrawalLedgerState'),JSON.stringify(x));
+}
+
+
+function maskDestinationForCustomer(value){
+  const s=String(value||'').trim();
+
+  if(!s){
+    return '—';
+  }
+
+  if(s.includes(' · ')){
+    const parts=s.split(' · ');
+
+    if(parts.length>=3){
+      const bank=parts[0];
+      const holder=parts[1];
+      const account=parts.slice(2).join(' · ').replace(/\s+/g,'');
+
+      const masked=
+        account.length<=4
+          ? account
+          : '••••'+account.slice(-4);
+
+      return bank+' · '+holder+' · '+masked;
+    }
+  }
+
+  if(s.length<=10){
+    return s;
+  }
+
+  return s.slice(0,5)+'••••••'+s.slice(-5);
+}
+
+function maskWallet(value){
+  const s=String(value||'').trim();
+  if(s.length<=10) return s;
+  return s.slice(0,5)+'••••••'+s.slice(-5);
+}
+
+function maskAccount(value){
+  const s=String(value||'').replace(/\s+/g,'');
+  if(s.length<=4) return s;
+  return '••••'+s.slice(-4);
+}
+
+document.getElementById('withdrawUsdtAmount').addEventListener('input',updateWithdrawEstimate);
+document.getElementById('withdrawMyrAmount').addEventListener('input',updateWithdrawEstimate);
+
+document.getElementById('withdrawForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  let usdtAmount=0;
+  let myrAmount=null;
+  let exchangeRate=null;
+  let method='';
+  let destination='';
+
+  if(withdrawType==='USDT'){
+    usdtAmount=Number(document.getElementById('withdrawUsdtAmount').value);
+
+    const wallet=document.getElementById('withdrawWallet').value.trim();
+
+    if(!Number.isFinite(usdtAmount)||usdtAmount<=0){
+      setWithdrawMsg('Enter a valid USDT amount.',false);
+      return;
+    }
+
+    if(wallet.length<8){
+      setWithdrawMsg('Enter a valid demo wallet address.',false);
+      return;
+    }
+
+    method='USDT TRC20';
+    destination=wallet;
+
+    if(Number.isFinite(usdtMyrRate)&&usdtMyrRate>0){
+      exchangeRate=usdtMyrRate;
+      myrAmount=usdtAmount*exchangeRate;
+    }
+  }else{
+    myrAmount=Number(document.getElementById('withdrawMyrAmount').value);
+
+    const bank=document.getElementById('withdrawBank').value;
+    const holder=document.getElementById('withdrawBankHolder').value.trim();
+    const account=document.getElementById('withdrawBankAccount').value.replace(/\s+/g,'');
+
+    if(!Number.isFinite(myrAmount)||myrAmount<=0){
+      setWithdrawMsg('Enter a valid MYR amount.',false);
+      return;
+    }
+
+    if(!Number.isFinite(usdtMyrRate)||usdtMyrRate<=0){
+      setWithdrawMsg('MYR withdrawal needs the live USDT/MYR rate. Please try again shortly.',false);
+      return;
+    }
+
+    if(!bank||!holder||!/^\d{5,30}$/.test(account)){
+      setWithdrawMsg('Check the bank, account holder and account number.',false);
+      return;
+    }
+
+    exchangeRate=usdtMyrRate;
+    usdtAmount=myrAmount/exchangeRate;
+    method='Bank Transfer';
+    destination=bank+' · '+holder+' · '+account;
+  }
+
+  usdtAmount=Number(usdtAmount.toFixed(2));
+  if(myrAmount!=null) myrAmount=Number(myrAmount.toFixed(2));
+  if(exchangeRate!=null) exchangeRate=Number(exchangeRate.toFixed(6));
+
+  const currentBalance=getBalance();
+
+  if(usdtAmount>currentBalance){
+    setWithdrawMsg(
+      'Insufficient demo balance. Available: '+fmt(currentBalance)+' USDT.',
+      false
+    );
+    return;
+  }
+
+  const btn=document.getElementById('withdrawSubmit');
+  btn.disabled=true;
+  btn.textContent='Submitting...';
+
+  try{
+    const payload={
+      uid:uid(),
+      withdrawal_type:withdrawType,
+      usdt_amount:usdtAmount,
+      myr_amount:myrAmount,
+      exchange_rate:exchangeRate,
+      method,
+      destination,
+      status:'pending'
+    };
+
+    const r=await fetch(
+      SUPABASE_URL+'/rest/v1/withdrawal_requests',
+      {
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          Prefer:'return=representation'
+        },
+        body:JSON.stringify(payload)
+      }
+    );
+
+    if(!r.ok) throw new Error(await r.text());
+
+    const rows=await r.json();
+    const created=Array.isArray(rows)?rows[0]:null;
+
+    if(!created || created.id==null){
+      throw new Error('Withdrawal request was created without an ID.');
+    }
+
+    // Reserve the equivalent demo USDT immediately.
+    setBalance(currentBalance-usdtAmount);
+
+    // Mark this withdrawal as already reserved so balance-sync.js
+    // does not deduct it again after admin approval.
+    const ledger=readWithdrawalLedgerState();
+    ledger[String(created.id)]={
+      applied:true,
+      amount:usdtAmount,
+      lastStatus:'pending'
+    };
+    writeWithdrawalLedgerState(ledger);
+
+    const popupState=readWithdrawalPopupState();
+    popupState[String(created.id)]='pending';
+    writeWithdrawalPopupState(popupState);
+
+    setWithdrawMsg(
+      'Withdrawal submitted. '+fmt(usdtAmount)+' USDT has been reserved from the demo balance.',
+      true
+    );
+
+
+    document.getElementById('withdrawUsdtAmount').value='';
+    document.getElementById('withdrawWallet').value='';
+    document.getElementById('withdrawMyrAmount').value='';
+    document.getElementById('withdrawBank').value='';
+    document.getElementById('withdrawBankHolder').value='';
+    document.getElementById('withdrawBankAccount').value='';
+
+    updateWithdrawEstimate();
+    renderBalance();
+    loadWithdrawals();
+  }catch(err){
+    console.error(err);
+    setWithdrawMsg('Withdrawal submission failed. Please try again.',false);
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Submit Withdrawal';
+  }
+});
+
+document.getElementById('depositForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const amount=Number(document.getElementById('depositAmount').value);
+
+  if(!Number.isFinite(amount)||amount<=0){
+    setMsg('Enter a valid amount.',false);
+    return;
+  }
+
+  const btn=document.getElementById('depositSubmit');
+  btn.disabled=true;
+  btn.textContent='Submitting...';
+
+  try{
+    const r=await fetch(
+      SUPABASE_URL+'/rest/v1/deposit_requests',
+      {
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          Prefer:'return=minimal'
+        },
+        body:JSON.stringify({
+          uid:uid(),
+          amount:Number(amount.toFixed(2)),
+          status:'pending'
+        })
+      }
+    );
+
+    if(!r.ok) throw new Error(await r.text());
+
+    setMsg('Deposit request submitted. Waiting for review.',true);
+    document.getElementById('depositAmount').value='';
+    loadDeposits();
+  }catch(err){
+    console.error(err);
+    setMsg('Submission failed. Please try again.',false);
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Submit Request';
+  }
+});
+
+window.addEventListener('demoBalanceUpdated',()=>{
+  renderBalance();
+  loadDeposits();
+  loadWithdrawals();
+});
+
+window.addEventListener('demoWithdrawalUpdated',()=>{
+  renderBalance();
+  loadWithdrawals();
+});
+
+window.addEventListener('load',()=>{
+  renderBalance();
+  loadSpotAssets();
+  loadContractEquityPositions();
+});
+
+
+/* ===== Trading asset / P&L sync ===== */
+let cachedSpotHoldings=[];
+
+async function sbGet(path){
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
+    headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY},
+    cache:'no-store'
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function pnlClass(v){
+  const n=Number(v)||0;
+  return n>0?'green':n<0?'red':'muted';
+}
+
+function signedMoney(v){
+  const n=Number(v)||0;
+  return (n>0?'+':'')+fmt(n)+' USDT';
+}
+
+function localDayStartIso(){
+  const d=new Date();
+  d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+
+function renderSpotAssets(){
+  const el=document.getElementById('spotAssetsList');
+  if(!el) return;
+  const rows=(cachedSpotHoldings||[]).filter(x=>Number(x.quantity)>0.000000000001);
+  if(!rows.length){
+    el.className='empty';
+    el.textContent='No spot assets yet.';
+    return;
+  }
+  el.className='';
+  el.innerHTML=rows.map(x=>{
+    const symbol=String(x.symbol||'').toUpperCase();
+    const qty=Number(x.quantity)||0;
+    const avg=Number(x.avg_price)||0;
+    const px=symbol==='BTC' ? Number(btcUsdtPrice)||0 : 0;
+    const value=px>0 ? qty*px : 0;
+    const upnl=px>0 && avg>0 ? (px-avg)*qty : 0;
+    return '<div class="asset-row">'+
+      '<div><div class="asset-name">'+esc(symbol)+'</div>'+
+      '<div class="asset-sub">'+qty.toLocaleString(undefined,{maximumFractionDigits:8})+' '+esc(symbol)+
+      ' · Avg '+fmt(avg)+' USDT</div></div>'+
+      '<div class="asset-right"><div class="asset-value">'+(px>0?fmt(value)+' USDT':'—')+'</div>'+
+      '<div class="asset-pnl '+pnlClass(upnl)+'">'+(px>0?signedMoney(upnl):'Price unavailable')+'</div></div>'+
+      '</div>';
+  }).join('');
+}
+
+async function loadSpotAssets(){
+  try{
+    const rows=await sbGet(
+      'spot_holdings?select=id,symbol,quantity,avg_price,total_cost,updated_at&uid=eq.'+
+      encodeURIComponent(uid())+'&order=id.asc'
+    );
+    cachedSpotHoldings=Array.isArray(rows)?rows:[];
+    renderSpotAssets();
+    renderBalance();
+    await loadContractEquityPositions();
+    await loadTodayPnl();
+  }catch(err){
+    console.warn('spot assets load failed',err);
+  }
+}
+
+async function loadTodayPnl(){
+  const el=document.getElementById('todayPnlValue');
+  if(!el) return;
+  try{
+    const since=encodeURIComponent(localDayStartIso());
+    const who=encodeURIComponent(uid());
+    const [spotHist,contractHist]=await Promise.all([
+      sbGet('spot_history?select=realized_pnl,filled_at&uid=eq.'+who+'&filled_at=gte.'+since+'&limit=500'),
+      sbGet('contract_history?select=profit_loss,closed_at&uid=eq.'+who+'&closed_at=gte.'+since+'&limit=500')
+    ]);
+
+    const spotRealized=(spotHist||[]).reduce((s,x)=>s+(Number(x.realized_pnl)||0),0);
+    const contractRealized=(contractHist||[]).reduce((s,x)=>s+(Number(x.profit_loss)||0),0);
+
+    let spotUnrealized=0;
+    for(const x of cachedSpotHoldings||[]){
+      if(String(x.symbol||'').toUpperCase()!=='BTC') continue;
+      const q=Number(x.quantity)||0, avg=Number(x.avg_price)||0, px=Number(btcUsdtPrice)||0;
+      if(q>0 && avg>0 && px>0) spotUnrealized+=(px-avg)*q;
+    }
+
+    // Current contract unrealized P&L is calculated from the persisted open positions.
+    let contractUnrealized=0;
+    try{
+      const positions=await sbGet(
+        'contract_positions?select=symbol,side,entry_price,qty,status&uid=eq.'+who+'&status=eq.open&limit=200'
+      );
+      for(const p of positions||[]){
+        if(String(p.symbol||'').toUpperCase()!=='BTC') continue;
+        const entry=Number(p.entry_price)||0, q=Number(p.qty)||0, px=Number(btcUsdtPrice)||0;
+        if(entry>0 && q>0 && px>0){
+          contractUnrealized += String(p.side||'').toUpperCase()==='SHORT'
+            ? (entry-px)*q : (px-entry)*q;
+        }
+      }
+    }catch(_){}
+
+    // 秒合约 realized P&L remains in the existing local history/balance flow.
+    let secondsRealized=0;
+    try{
+      const h=JSON.parse(localStorage.getItem(demoScopedKey('demoHistory'))||'[]');
+      const start=new Date(); start.setHours(0,0,0,0);
+      for(const x of Array.isArray(h)?h:[]){
+        const t=new Date(x.time||x.settled_at||x.created_at||0);
+        if(!Number.isFinite(t.getTime()) || t<start) continue;
+        const raw=Number(x.profit_loss ?? x.pnl ?? x.profitLoss);
+        if(Number.isFinite(raw)) secondsRealized+=raw;
+      }
+    }catch(_){}
+
+    const total=spotRealized+contractRealized+spotUnrealized+contractUnrealized+secondsRealized;
+    el.textContent=signedMoney(total);
+    el.className='pnl-value '+pnlClass(total);
+
+    const note=document.getElementById('todayPnlNote');
+    if(note){
+      note.textContent='Realized trading P&L today + current unrealized P&L';
+    }
+  }catch(err){
+    console.warn('today pnl load failed',err);
+    el.textContent='—';
+    el.className='pnl-value muted';
+  }
+}
+
+const cachedBtcAtStart=Number(localStorage.getItem('cachedBtcUsdtPrice'));
+if(Number.isFinite(cachedBtcAtStart) && cachedBtcAtStart>0){
+  btcUsdtPrice=cachedBtcAtStart;
+}
+renderBalance();
+fetchBtcPrice();
+loadDeposits();
+loadWithdrawals();
+loadHistory();
+
+setInterval(fetchBtcPrice,30000);
+setInterval(loadDeposits,5000);
+setInterval(loadWithdrawals,4000);
+setInterval(loadSpotAssets,5000);
+setInterval(loadTodayPnl,5000);
+</script>
+
+<script src="balance-sync.js"></script>
+<script src="floating-widget.js"></script>
+</body>
+</html>

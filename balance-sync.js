@@ -1584,127 +1584,175 @@
   }
 
   function addTradeHistory(row){
-    let history=
-      readTradeHistory();
+  let history=
+    readTradeHistory();
 
-    const exists=
-      history.some(
-        x=>
-          String(
-            x.orderId ??
-            x.id ??
-            ''
-          )===
-          String(row.id)
-      );
-
-    if(exists){
-      return;
-    }
-
-    const result=
-      String(
-        row.result ||
-        'DRAW'
-      ).toUpperCase();
-
-    const amount=
-      Number(
-        row.amount
-      ) ||
-      0;
-
-    const payoutRate=
-      Number(
-        row.payout_rate
-      );
-
-    const rate=
-      Number.isFinite(
-        payoutRate
-      )
-        ? payoutRate
-        : 0.8;
-
-    let pnl=
-      Number(
-        row.profit_loss
-      );
-
-    if(!Number.isFinite(pnl)){
-      if(result==='WIN'){
-        pnl=
-          amount*
-          rate;
-
-      }else if(result==='LOSS'){
-        pnl=
-          -amount;
-
-      }else{
-        pnl=0;
-      }
-    }
-
-    const item={
-      orderId:row.id,
-      id:row.id,
-
-      time:
-        row.settled_at ||
-        row.created_at ||
-        new Date().toISOString(),
-
-      symbol:
-        row.symbol,
-
-      side:
-        row.side,
-
-      direction:
-        row.side,
-
-      duration:
-        Number(
-          row.duration_seconds
-        ) ||
-        0,
-
-      amount:
-        amount,
-
-      entry:
-        Number(
-          row.entry_price
-        ) ||
-        0,
-
-      exit:null,
-
-      result:
-        result,
-
-      pnl:
-        pnl,
-
-      payoutRate:
-        rate
-    };
-
-    history.unshift(item);
-
-    if(history.length>100){
-      history=
-        history.slice(
-          0,
-          100
-        );
-    }
-
-    writeTradeHistory(
-      history
+  const exists=
+    history.some(
+      x=>
+        String(
+          x.orderId ??
+          x.id ??
+          ''
+        )===
+        String(row.id)
     );
+
+  if(exists){
+    return;
   }
+
+  const result=
+    String(
+      row.result ||
+      'DRAW'
+    ).toUpperCase();
+
+  const amount=
+    Number(row.amount) || 0;
+
+  const payoutRate=
+    Number(row.payout_rate);
+
+  const rate=
+    Number.isFinite(payoutRate)
+      ? payoutRate
+      : 0.8;
+
+  let pnl=
+    Number(row.profit_loss);
+
+  if(!Number.isFinite(pnl)){
+    if(result==='WIN'){
+      pnl=
+        amount*
+        rate;
+
+    }else if(result==='LOSS'){
+      pnl=
+        -amount;
+
+    }else{
+      pnl=0;
+    }
+  }
+
+  /*
+   * Seconds settlement price
+   *
+   * Support several possible server column names so the
+   * history/share card can use the real settled price.
+   */
+  const exitCandidates=[
+    row.exit_price,
+    row.settlement_price,
+    row.settled_price,
+    row.close_price,
+    row.result_price
+  ];
+
+  let exitPrice=null;
+
+  for(const value of exitCandidates){
+    const n=Number(value);
+
+    if(
+      Number.isFinite(n) &&
+      n>0
+    ){
+      exitPrice=n;
+      break;
+    }
+  }
+
+  /*
+   * Real settlement time from Supabase.
+   */
+  const settledTime=
+    row.settled_at ||
+    row.closed_at ||
+    row.updated_at ||
+    row.created_at ||
+    new Date().toISOString();
+
+  const item={
+    orderId:row.id,
+    id:row.id,
+
+    time:settledTime,
+
+    /* Also save explicit aliases for Share P&L */
+    settledAt:settledTime,
+    settled_at:settledTime,
+    closedAt:settledTime,
+    closed_at:settledTime,
+
+    symbol:row.symbol,
+
+    side:row.side,
+    direction:row.side,
+
+    duration:
+      Number(
+        row.duration_seconds
+      ) ||
+      0,
+
+    amount:amount,
+
+    entry:
+      Number(
+        row.entry_price
+      ) ||
+      0,
+
+    entryPrice:
+      Number(
+        row.entry_price
+      ) ||
+      0,
+
+    entry_price:
+      Number(
+        row.entry_price
+      ) ||
+      0,
+
+    /*
+     * IMPORTANT:
+     * No longer hard-code exit:null.
+     */
+    exit:exitPrice,
+    exitPrice:exitPrice,
+    exit_price:exitPrice,
+    settlementPrice:exitPrice,
+    settlement_price:exitPrice,
+
+    result:result,
+
+    pnl:pnl,
+
+    profitLoss:pnl,
+    profit_loss:pnl,
+
+    payoutRate:rate,
+    payout_rate:rate
+  };
+
+  history.unshift(item);
+
+  if(history.length>100){
+    history=
+      history.slice(
+        0,
+        100
+      );
+  }
+
+  writeTradeHistory(
+    history
+  );
+}
 
   /*
    * ==================================================

@@ -2302,89 +2302,71 @@
     return false;
   }
 
-  async function pollTradeStatus(){
-    if(tradePolling){
-      return;
-    }
+async function pollTradeStatus(){
+  if(tradePolling){
+    return;
+  }
 
-    tradePolling=true;
+  tradePolling=true;
 
-    try{
-      /*
-       * First repair any stale browser active state.
-       */
-      await recoverActiveTrade();
+  try{
+    /*
+     * 先检查本地是否有残留 active order。
+     */
+    await recoverActiveTrade();
 
-      let active=
-        getActiveTrade();
+    let active=
+      getActiveTrade();
 
-      if(
-        !active ||
-        !(
-          active.id ??
-          active.orderId
-        )
-      ){
-        const open=
-          await findOpenTrade();
-
-        if(open){
-          active=
-            tradeSnapshot(open);
-
-          setActiveTrade(active);
-
-        }else{
-          /*
-           * No pending order exists on the server.
-           * Make sure neither local active key survives.
-           */
-          setActiveTrade(null);
-          return;
-        }
-      }
-
-      const id=
+    /*
+     * 本地没有 active order 时，
+     * 再检查 Supabase 是否真的存在 pending order。
+     */
+    if(
+      !active ||
+      !(
         active.id ??
-        active.orderId;
+        active.orderId
+      )
+    ){
+      const open=
+        await findOpenTrade();
 
-      let row=
-        await getTrade(id);
+      if(open){
+        active=
+          tradeSnapshot(open);
 
-      if(!row){
+        setActiveTrade(active);
+
+      }else{
         setActiveTrade(null);
         return;
       }
+    }
 
-      if(
-        row.status==='settled'
-      ){
-        const expiresAt=
-          row.expires_at
-            ? new Date(
-                row.expires_at
-              ).getTime()
-            : 0;
+    const id=
+      active.id ??
+      active.orderId;
 
-        if(
-          expiresAt &&
-          Date.now()<
-          expiresAt
-        ){
-          setActiveTrade(
-            tradeSnapshot(row)
-          );
+    let row=
+      await getTrade(id);
 
-          return;
-        }
+    /*
+     * 数据库已经找不到这笔订单，
+     * 直接清理本地 active 状态。
+     */
+    if(!row){
+      setActiveTrade(null);
+      return;
+    }
 
-        await processSettledTrade(
-          row
-        );
+    /*
+     * ================================================
+     * 已经 settled
+     * ================================================
+     */
 
-        return;
-      }
-
+    if(row.status==='settled'){
       const expiresAt=
         row.expires_at
           ? new Date(
@@ -2392,98 +2374,251 @@
             ).getTime()
           : 0;
 
+      /*
+       * Admin 可能提前设置 Result。
+       * 即使 status 已经 settled，
+       * 原倒计时没有结束之前仍然继续显示订单。
+       */
       if(
         expiresAt &&
-        Date.now()>=
+        Date.now()<
         expiresAt
       ){
-        /*
-         * Give the server-side exit-price worker a brief
-         * opportunity to record exit_price first.
-         *
-         * The existing RPC remains the fallback settlement
-         * path. Result is NOT calculated from Exit Price.
-         */
-        await new Promise(
-          resolve=>
-            setTimeout(
-              resolve,
-              1200
-            )
-        );
-
-        row=
-          await getTrade(
-            row.id
-          );
-
-        if(
-          row &&
-          row.status===
-          'settled'
-        ){
-          await processSettledTrade(
-            row
-          );
-
-          return;
-        }
-
-        const settled=
-          await settleExpiredTrade(
-            row.id
-          );
-
-        if(settled){
-          row=settled;
-
-        }else{
-          row=
-            await getTrade(
-              row.id
-            );
-        }
-
-        if(
-          row &&
-          row.status===
-          'settled'
-        ){
-          /*
-           * Re-read once more so a newly written
-           * exit_price can enter Demo History.
-           */
-          const finalRow=
-            await getTrade(
-              row.id
-            );
-
-          await processSettledTrade(
-            finalRow ||
-            row
-          );
-
-          return;
-        }
-      }
-
-      if(row){
         setActiveTrade(
           tradeSnapshot(row)
         );
+
+        return;
       }
 
-    }catch(e){
-      console.warn(
-        'Trade status check failed',
-        e
+      /*
+       * ------------------------------------------------
+       * 关键修复：
+       *
+       * 倒计时结束后，如果 exit_price 还没有写入，
+       * 不马上保存 0 到 History。
+       *
+       * 等服务器 settle-seconds-trades 写真实 Exit。
+       * ------------------------------------------------
+       */
+
+      let exitPrice=
+        Number(
+          row.exit_price
+        );
+
+      if(
+        !Number.isFinite(exitPrice) ||
+        exitPrice<=0
+      ){
+        /*
+         * 最多等待约 8 秒。
+         *
+         * 服务器 Cron 每 5 秒执行一次，
+         * 正常情况下这里足够等到 exit_price。
+         */
+        for(let i=0;i<8;i++){
+          await new Promise(
+            resolve=>
+              setTimeout(
+                resolve,
+                1000
+              )
+          );
+
+          const refreshed=
+            await getTrade(
+              row.id
+            );
+
+          if(refreshed){
+            row=refreshed;
+          }
+
+          exitPrice=
+            Number(
+              row.exit_price
+            );
+
+          if(
+            Number.isFinite(exitPrice) &&
+            exitPrice>0
+          ){
+            break;
+          }
+        }
+      }
+
+      /*
+       * 无论 Result 是 WIN / LOSS / DRAW，
+       * 都不使用 Exit Price 判断结果。
+       *
+       * Result / P&L 继续使用数据库 Admin 结果。
+       */
+      await processSettledTrade(
+        row
       );
 
-    }finally{
-      tradePolling=false;
+      return;
     }
-  }
 
+    /*
+     * ================================================
+     * PENDING ORDER
+     * ================================================
+     */
+
+    const expiresAt=
+      row.expires_at
+        ? new Date(
+            row.expires_at
+          ).getTime()
+        : 0;
+
+    /*
+     * 订单还没有到期。
+     */
+    if(
+      !expiresAt ||
+      Date.now()<
+      expiresAt
+    ){
+      setActiveTrade(
+        tradeSnapshot(row)
+      );
+
+      return;
+    }
+
+    /*
+     * ================================================
+     * COUNTDOWN FINISHED
+     * ================================================
+     *
+     * 这里不再调用：
+     *
+     * settleExpiredTrade()
+     *
+     * 因为旧 RPC 会自动：
+     *
+     * result = DRAW
+     * profit_loss = 0
+     *
+     * 这和现在的规则冲突。
+     *
+     * 现在 Result 完全由 Admin 控制。
+     */
+
+    let finalRow=row;
+
+    /*
+     * 等服务器处理：
+     *
+     * settle-seconds-trades
+     *
+     * 它负责记录真实 exit_price，
+     * 不负责决定 WIN / LOSS / DRAW。
+     */
+    for(let i=0;i<10;i++){
+      await new Promise(
+        resolve=>
+          setTimeout(
+            resolve,
+            1000
+          )
+      );
+
+      const refreshed=
+        await getTrade(
+          row.id
+        );
+
+      if(refreshed){
+        finalRow=refreshed;
+      }
+
+      const exitPrice=
+        Number(
+          finalRow.exit_price
+        );
+
+      /*
+       * 如果 Admin 已经设置 Result，
+       * 并且服务器已经记录 Exit Price，
+       * 就可以正式完成客户端 History。
+       */
+      if(
+        finalRow.status==='settled' &&
+        Number.isFinite(exitPrice) &&
+        exitPrice>0
+      ){
+        await processSettledTrade(
+          finalRow
+        );
+
+        return;
+      }
+
+      /*
+       * 如果 status 已 settled，
+       * 但是 Exit 还没写入，
+       * 继续等，不要写 0。
+       */
+    }
+
+    /*
+     * ================================================
+     * SERVER STILL WAITING
+     * ================================================
+     *
+     * 不制造 DRAW。
+     * 不制造 Exit 0。
+     * 不改变 Admin Result。
+     *
+     * 保持订单状态，下一轮 POLL_MS 再检查。
+     */
+
+    const latest=
+      await getTrade(
+        row.id
+      );
+
+    if(latest){
+      const exitPrice=
+        Number(
+          latest.exit_price
+        );
+
+      if(
+        latest.status==='settled' &&
+        Number.isFinite(exitPrice) &&
+        exitPrice>0
+      ){
+        await processSettledTrade(
+          latest
+        );
+
+        return;
+      }
+
+      setActiveTrade(
+        tradeSnapshot(latest)
+      );
+
+    }else{
+      setActiveTrade(null);
+    }
+
+  }catch(e){
+    console.warn(
+      'Trade status check failed',
+      e
+    );
+
+  }finally{
+    tradePolling=false;
+  }
+}
   /*
    * ==================================================
    * CONTRACT / SPOT UID LOCAL STORAGE BRIDGE

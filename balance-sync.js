@@ -1754,6 +1754,153 @@
    * ==================================================
    */
 
+  /*
+   * ==================================================
+   * SECONDS HISTORY SERVER REPAIR
+   * ==================================================
+   *
+   * Always refresh recent settled Seconds orders from
+   * Supabase into local demoHistory.
+   *
+   * This fixes cases where:
+   *
+   * - server already has exit_price
+   * - local History still shows Exit 0.00000
+   * - order is already inside processedTradeIds
+   * - there is no active order anymore
+   *
+   * IMPORTANT:
+   * This function ONLY repairs History.
+   * It NEVER changes customer balance.
+   * It NEVER decides WIN / LOSS / DRAW.
+   */
+
+  let secondsHistoryRepairRunning=false;
+
+  async function syncRecentSecondsHistory(){
+    if(secondsHistoryRepairRunning){
+      return;
+    }
+
+    secondsHistoryRepairRunning=true;
+
+    try{
+      const uid=
+        requireUid();
+
+      const r=
+        await fetch(
+          SUPABASE_URL+
+          '/rest/v1/trade_orders'+
+          '?select=*'+
+          '&uid=eq.'+
+          encodeURIComponent(uid)+
+          '&status=eq.settled'+
+          '&order=created_at.desc'+
+          '&limit=30',
+          {
+            headers:{
+              apikey:
+                SUPABASE_KEY,
+
+              Authorization:
+                'Bearer '+
+                SUPABASE_KEY
+            },
+
+            cache:
+              'no-store'
+          }
+        );
+
+      if(!r.ok){
+        return;
+      }
+
+      const rows=
+        await r.json();
+
+      if(
+        !Array.isArray(rows) ||
+        !rows.length
+      ){
+        return;
+      }
+
+      /*
+       * Process oldest -> newest.
+       *
+       * addTradeHistory() moves refreshed rows
+       * to the top, so this keeps newest first.
+       */
+      const ordered=
+        rows.slice().reverse();
+
+      for(const row of ordered){
+        if(
+          !row ||
+          row.status!=='settled'
+        ){
+          continue;
+        }
+
+        const exitPrice=
+          Number(
+            row.exit_price
+          );
+
+        /*
+         * Do not overwrite History with 0/null.
+         * Wait until the server has a real Exit Price.
+         */
+        if(
+          !Number.isFinite(exitPrice) ||
+          exitPrice<=0
+        ){
+          continue;
+        }
+
+        /*
+         * IMPORTANT:
+         *
+         * Directly update History.
+         * DO NOT call financial settlement here.
+         *
+         * This means an already processed order can
+         * receive its newest exit_price without ever
+         * receiving balance credit a second time.
+         */
+        addTradeHistory(
+          row
+        );
+      }
+
+      /*
+       * Tell trading.html that local customer data
+       * has been refreshed.
+       */
+      window.dispatchEvent(
+        new CustomEvent(
+          'demoSecondsHistorySynced',
+          {
+            detail:{
+              uid:uid,
+              count:rows.length
+            }
+          }
+        )
+      );
+
+    }catch(e){
+      console.warn(
+        'Seconds History repair failed',
+        e
+      );
+
+    }finally{
+      secondsHistoryRepairRunning=false;
+    }
+  }  
   async function getTrade(id){
     if(
       id===undefined ||
@@ -2310,7 +2457,12 @@ async function pollTradeStatus(){
   tradePolling=true;
 
   try{
-    /*
+ /*
+ * Sync settled Seconds orders back into local Demo History.
+ * This repairs Exit Price / Result / P&L / Closed time
+ * without changing the Admin-controlled result.
+ */
+await syncRecentSecondsHistory();   /*
      * 先检查本地是否有残留 active order。
      */
     await recoverActiveTrade();

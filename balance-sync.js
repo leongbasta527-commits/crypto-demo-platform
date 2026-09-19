@@ -246,9 +246,7 @@
 
         body:JSON.stringify({
           uid:uid,
-          balance:Number(
-            n.toFixed(2)
-          ),
+          balance:n,
           updated_at:
             new Date().toISOString()
         })
@@ -598,7 +596,7 @@
 
       if(!r.ok){
         return;
-      }
+              }
 
       const rows=
         await r.json();
@@ -628,14 +626,33 @@
         const amount=
           Number(row.amount);
 
+        /*
+         * Deposit approval is server-owned and atomic.
+         *
+         * approve_deposit_atomic() has already updated:
+         * - demo_balances
+         * - balance_transactions
+         *
+         * Browser MUST NOT add the deposit amount again.
+         * Only refresh the authoritative server balance.
+         */
         if(
           Number.isFinite(amount) &&
           amount>0
         ){
-          setBalance(
-            getBalance()+
-            amount
-          );
+          try{
+            const remote=
+              await readServerBalance();
+
+            if(Number.isFinite(remote)){
+              applyLocalBalance(remote);
+            }
+          }catch(e){
+            console.warn(
+              'Approved deposit balance refresh failed',
+              e
+            );
+          }
 
           showApprovedToast(
             amount
@@ -1158,24 +1175,56 @@
           // and localStorage flags are not reliable across devices.
           let changed=false;
 
-          if(status==='approved' && oldStatus!=='approved'){
-            showWithdrawalToast('approved',amount);
+          if(
+            status==='approved' &&
+            oldStatus!=='approved'
+          ){
+            showWithdrawalToast(
+              'approved',
+              amount
+            );
           }
 
-          if(status==='rejected' && oldStatus!=='rejected'){
+          if(
+            status==='rejected' &&
+            oldStatus!=='rejected'
+          ){
             // Do not claim funds were returned until a server ledger
             // entry confirms the refund.
             ensureToast();
-            const wrap=document.getElementById('depositStatusToast');
-            const icon=document.getElementById('depositToastIcon');
-            const title=document.getElementById('depositToastTitle');
-            const msg=document.getElementById('depositToastMsg');
+
+            const wrap=
+              document.getElementById(
+                'depositStatusToast'
+              );
+
+            const icon=
+              document.getElementById(
+                'depositToastIcon'
+              );
+
+            const title=
+              document.getElementById(
+                'depositToastTitle'
+              );
+
+            const msg=
+              document.getElementById(
+                'depositToastMsg'
+              );
+
             icon.textContent='↩';
             icon.style.color='#f2b742';
-            icon.style.background='rgba(242,183,66,.12)';
-            title.textContent='Withdrawal Rejected';
-            msg.textContent=Number(amount).toFixed(2)+
+            icon.style.background=
+              'rgba(242,183,66,.12)';
+
+            title.textContent=
+              'Withdrawal Rejected';
+
+            msg.textContent=
+              Number(amount).toFixed(2)+
               ' USDT withdrawal was rejected. Check your balance for the refund status.';
+
             wrap.style.display='flex';
           }
 
@@ -1197,8 +1246,7 @@
 
           state.amount=
             amount;
-
-          ledger[id]=state;
+                    ledger[id]=state;
 
           if(changed){
             writeWithdrawalLedgerState(
@@ -1798,7 +1846,7 @@
        * to the top, so this keeps newest first.
        */
       const ordered=
-        rows.slice().reverse();
+                rows.slice().reverse();
 
       for(const row of ordered){
         if(
@@ -1865,6 +1913,7 @@
       secondsHistoryRepairRunning=false;
     }
   }  
+
   async function getTrade(id){
     if(
       id===undefined ||
@@ -2398,8 +2447,7 @@
        * but explicitly clear both caches as a final guard.
        */
       setActiveTrade(null);
-
-      return true;
+            return true;
     }
 
     /*
@@ -2735,11 +2783,13 @@ await syncRecentSecondsHistory();   /*
     tradePolling=false;
   }
 }
+
   /*
    * ==================================================
    * CONTRACT / SPOT UID LOCAL STORAGE BRIDGE
    * ==================================================
    */
+
    const CUSTOMER_LOCAL_KEYS=[
     'demoContractPositionsV1',
     'demoContractOrdersV1',
@@ -2998,7 +3048,7 @@ await syncRecentSecondsHistory();   /*
    */
 
   window.DemoCustomerStorage={
-    getUid:getUid,
+        getUid:getUid,
 
     key:function(baseKey){
       return scopedCustomerKey(
@@ -3380,3 +3430,7 @@ await syncRecentSecondsHistory();   /*
   }
 
 })();
+    
+        
+          
+        

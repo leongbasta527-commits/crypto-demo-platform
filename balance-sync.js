@@ -5,6 +5,7 @@
 
   let polling=false;
   let tradePolling=false;
+  let adjustmentPolling=false;
 
   function getUid(){
     const customerUid=String(
@@ -47,46 +48,27 @@
 
     const auth=window.customerAuth;
 
-    if(
-      !auth ||
-      !auth.client ||
-      !auth.user ||
-      !auth.profile
-    ){
-      throw new Error(
-        'Authenticated customer session is not ready.'
-      );
+    if(!auth || !auth.client || !auth.user || !auth.profile){
+      throw new Error('Authenticated customer session is not ready.');
     }
 
     const uid=requireUid();
+    const profileUid=String(auth.profile.uid || '').trim();
 
-    const profileUid=String(
-      auth.profile.uid || ''
-    ).trim();
-
-    if(
-      !profileUid ||
-      profileUid!==uid
-    ){
-      throw new Error(
-        'Authenticated customer UID mismatch.'
-      );
+    if(!profileUid || profileUid!==uid){
+      throw new Error('Authenticated customer UID mismatch.');
     }
 
-    const {data,error}=
-      await auth.client.auth.getSession();
+    const {data,error}=await auth.client.auth.getSession();
 
     if(error){
       throw error;
     }
 
-    const token=
-      data?.session?.access_token;
+    const token=data?.session?.access_token;
 
     if(!token){
-      throw new Error(
-        'Authenticated customer access token is unavailable.'
-      );
+      throw new Error('Authenticated customer access token is unavailable.');
     }
 
     return {
@@ -849,8 +831,7 @@
           processed
         );
       }
-
-    }catch(e){
+          }catch(e){
       console.warn(
         'Account adjustment check failed',
         e
@@ -860,7 +841,8 @@
       adjustmentPolling=false;
     }
   }
-    /*
+
+  /*
    * ==================================================
    * WITHDRAWAL BALANCE SYNC
    * ==================================================
@@ -1682,83 +1664,174 @@
           null,
 
         settlement_price:
-          exitPrice ??
+                    exitPrice ??
           existing.settlement_price ??
-          existing.exit_price ??
+          existing.settlementPrice ??
           existing.exitPrice ??
           existing.exit ??
           null
       };
 
-      const refreshed=
-        history.splice(
-          existingIndex,
-          1
-        )[0];
-
-      history.unshift(
-        refreshed
-      );
-
     }else{
-      history.unshift(
-        item
-      );
+      history.unshift(item);
     }
 
-    if(history.length>100){
-      history=
-        history.slice(
-          0,
-          100
-        );
-    }
+    history.sort((a,b)=>{
+      const ta=
+        new Date(
+          a.settledAt ||
+          a.settled_at ||
+          a.time ||
+          0
+        ).getTime();
+
+      const tb=
+        new Date(
+          b.settledAt ||
+          b.settled_at ||
+          b.time ||
+          0
+        ).getTime();
+
+      return tb-ta;
+    });
 
     writeTradeHistory(
       history
     );
+
+    window.dispatchEvent(
+      new CustomEvent(
+        'demoHistoryUpdated',
+        {
+          detail:item
+        }
+      )
+    );
+
+    return item;
   }
-      /*
+
+  /*
    * ==================================================
-   * SECONDS HISTORY SERVER REPAIR
+   * SERVER TRADE READS
    * ==================================================
-   *
-   * Refresh recent settled Seconds orders from
-   * Supabase into local demoHistory.
-   *
-   * IMPORTANT:
-   * This is display/history synchronization only.
-   * It NEVER changes customer balance.
    */
 
-  let secondsHistoryRepairRunning=false;
+  async function getTrade(id){
+    const uid=requireUid();
+
+    const url=
+      SUPABASE_URL+
+      '/rest/v1/trade_orders'+
+      '?select=*'+
+      '&id=eq.'+
+      encodeURIComponent(id)+
+      '&uid=eq.'+
+      encodeURIComponent(uid)+
+      '&limit=1';
+
+    const r=
+      await fetch(
+        url,
+        {
+          headers:await getAuthenticatedHeaders(),
+          cache:'no-store'
+        }
+      );
+
+    if(!r.ok){
+      throw new Error(
+        'Trade read failed: '+
+        r.status
+      );
+    }
+
+    const rows=
+      await r.json();
+
+    return (
+      Array.isArray(rows) &&
+      rows.length
+    )
+      ? rows[0]
+      : null;
+  }
+
+  async function findOpenTrade(){
+    const uid=requireUid();
+
+    const url=
+      SUPABASE_URL+
+      '/rest/v1/trade_orders'+
+      '?select=*'+
+      '&uid=eq.'+
+      encodeURIComponent(uid)+
+      '&status=eq.pending'+
+      '&order=id.desc'+
+      '&limit=1';
+
+    const r=
+      await fetch(
+        url,
+        {
+          headers:await getAuthenticatedHeaders(),
+          cache:'no-store'
+        }
+      );
+
+    if(!r.ok){
+      throw new Error(
+        'Open trade read failed: '+
+        r.status
+      );
+    }
+
+    const rows=
+      await r.json();
+
+    return (
+      Array.isArray(rows) &&
+      rows.length
+    )
+      ? rows[0]
+      : null;
+  }
+
+  /*
+   * ==================================================
+   * RECENT SECONDS HISTORY SYNC
+   * ==================================================
+   */
+
+  let historySyncPolling=false;
 
   async function syncRecentSecondsHistory(){
-    if(secondsHistoryRepairRunning){
+    if(historySyncPolling){
       return;
     }
 
-    secondsHistoryRepairRunning=true;
+    historySyncPolling=true;
 
     try{
-      const uid=
-        requireUid();
+      const uid=requireUid();
+
+      const url=
+        SUPABASE_URL+
+        '/rest/v1/trade_orders'+
+        '?select=*'+
+        '&uid=eq.'+
+        encodeURIComponent(uid)+
+        '&status=eq.settled'+
+        '&order=id.desc'+
+        '&limit=100';
 
       const r=
         await fetch(
-          SUPABASE_URL+
-          '/rest/v1/trade_orders'+
-          '?select=*'+
-          '&uid=eq.'+
-          encodeURIComponent(uid)+
-          '&status=eq.settled'+
-          '&order=created_at.desc'+
-          '&limit=30',
+          url,
           {
             headers:await getAuthenticatedHeaders(),
-
-            cache:
-              'no-store'
+            cache:'no-store'
           }
         );
 
@@ -1776,618 +1849,306 @@
         return;
       }
 
-      /*
-       * Process oldest -> newest.
-       *
-       * addTradeHistory() moves refreshed rows
-       * to the top, so newest remains first.
-       */
-      const ordered=
-        rows.slice().reverse();
+      const processed=
+        readProcessedTrades();
 
-      for(const row of ordered){
-        if(
-          !row ||
-          row.status!=='settled'
-        ){
-          continue;
+      let processedChanged=false;
+
+      for(const row of rows){
+        const id=
+          String(row.id);
+
+        addTradeHistory(row);
+
+        if(!processed.includes(id)){
+          processed.push(id);
+          processedChanged=true;
         }
+      }
 
-        const exitPrice=
-          Number(
-            row.exit_price
-          );
-
-        /*
-         * Don't overwrite History with a temporary
-         * null / zero exit price.
-         */
-        if(
-          !Number.isFinite(exitPrice) ||
-          exitPrice<=0
-        ){
-          continue;
-        }
-
-        /*
-         * HISTORY ONLY.
-         *
-         * Never perform financial settlement here.
-         */
-        addTradeHistory(
-          row
+      if(processedChanged){
+        writeProcessedTrades(
+          processed
         );
       }
 
-      window.dispatchEvent(
-        new CustomEvent(
-          'demoSecondsHistorySynced',
-          {
-            detail:{
-              uid:uid,
-              count:rows.length
-            }
-          }
-        )
-      );
-
     }catch(e){
       console.warn(
-        'Seconds History repair failed',
+        'Recent seconds history sync failed',
         e
       );
 
     }finally{
-      secondsHistoryRepairRunning=false;
+      historySyncPolling=false;
     }
   }
 
   /*
    * ==================================================
-   * SECONDS TRADING SERVER LOOKUP
+   * ACTIVE TRADE RESTORE
    * ==================================================
    */
 
-  async function getTrade(id){
-    if(
-      id===undefined ||
-      id===null
-    ){
-      return null;
-    }
-
+  async function restoreActiveTrade(){
     try{
-      const uid=
-        requireUid();
-
-      const r=
-        await fetch(
-          SUPABASE_URL+
-          '/rest/v1/trade_orders'+
-          '?select=*'+
-          '&id=eq.'+
-          encodeURIComponent(id)+
-          '&uid=eq.'+
-          encodeURIComponent(uid)+
-          '&limit=1',
-          {
-            headers:await getAuthenticatedHeaders(),
-
-            cache:
-              'no-store'
-          }
-        );
-
-      if(!r.ok){
-        return null;
-      }
-
-      const rows=
-        await r.json();
-
-      return (
-        Array.isArray(rows) &&
-        rows.length
-      )
-        ? rows[0]
-        : null;
-
-    }catch(e){
-      console.warn(
-        'Trade lookup failed',
-        e
-      );
-
-      return null;
-    }
-  }
-
-  async function findOpenTrade(){
-    try{
-      const uid=
-        requireUid();
-
-      const r=
-        await fetch(
-          SUPABASE_URL+
-          '/rest/v1/trade_orders'+
-          '?select=*'+
-          '&uid=eq.'+
-          encodeURIComponent(uid)+
-          '&status=eq.pending'+
-          '&order=created_at.desc'+
-          '&limit=1',
-          {
-            headers:await getAuthenticatedHeaders(),
-
-            cache:
-              'no-store'
-          }
-        );
-
-      if(!r.ok){
-        return null;
-      }
-
-      const rows=
-        await r.json();
-
-      return (
-        Array.isArray(rows) &&
-        rows.length
-      )
-        ? rows[0]
-        : null;
-
-    }catch(e){
-      console.warn(
-        'Open trade lookup failed',
-        e
-      );
-
-      return null;
-    }
-  }
-
-  /*
-   * ==================================================
-   * LEGACY EXPIRED TRADE RPC
-   * ==================================================
-   *
-   * Kept only as a compatibility function so older
-   * pages do not crash if they reference it.
-   *
-   * It is intentionally NOT used by the current
-   * Seconds Trading flow.
-   *
-   * Expiry / result / financial settlement must be
-   * handled by the server.
-   */
-
-  async function settleExpiredTrade(){
-    console.warn(
-      'Client-side expired trade settlement is disabled.'
-    );
-
-    return null;
-  }
-
-  function tradeSnapshot(row){
-    if(!row){
-      return null;
-    }
-
-    const end=
-      row.expires_at
-        ? new Date(
-            row.expires_at
-          ).getTime()
-        : (
-            new Date(
-              row.created_at
-            ).getTime()+
-            Number(
-              row.duration_seconds ||
-              0
-            )*
-            1000
-          );
-
-    return {
-      id:row.id,
-      orderId:row.id,
-      uid:row.uid,
-      symbol:row.symbol,
-      side:row.side,
-      direction:row.side,
-
-      amount:
-        Number(
-          row.amount
-        ) ||
-        0,
-
-      entry:
-        Number(
-          row.entry_price
-        ) ||
-        0,
-
-      duration:
-        Number(
-          row.duration_seconds
-        ) ||
-        0,
-
-      payoutRate:
-        Number(
-          row.payout_rate
-        ) ||
-        0.8,
-
-      status:
-        row.status,
-
-      result:
-        row.result,
-
-      created_at:
-        row.created_at,
-
-      expires_at:
-        row.expires_at,
-
-      end:end
-    };
-  }
-
-  /*
-   * ==================================================
-   * SECONDS TRADE SETTLEMENT
-   * ==================================================
-   *
-   * IMPORTANT SECURITY CHANGE:
-   *
-   * The browser NO LONGER calculates or credits:
-   *
-   * WIN  -> stake + profit
-   * DRAW -> stake refund
-   * LOSS -> 0
-   *
-   * admin_settle_seconds_trade_atomic() is now the
-   * authority for:
-   *
-   * - trade result
-   * - profit_loss
-   * - demo_balances
-   * - balance_transactions
-   *
-   * This function only:
-   *
-   * - refreshes authoritative balance
-   * - writes local History
-   * - clears active-order cache
-   * - dispatches UI events
-   */
-
-  async function processSettledTrade(row){
-    if(
-      !row ||
-      row.status!=='settled'
-    ){
-      return;
-    }
-
-    /*
-     * Re-read the final server row so History receives
-     * the latest result / P&L / exit price.
-     */
-    const refreshed=
-      await getTrade(
-        row.id
-      );
-
-    if(
-      refreshed &&
-      refreshed.status==='settled'
-    ){
-      row=refreshed;
-    }
-
-    const id=
-      String(row.id);
-
-    let processed=
-      readProcessedTrades();
-
-    /*
-     * Already processed financially/display-wise.
-     *
-     * Still refresh History because exit_price may have
-     * arrived later.
-     */
-    if(
-      processed.includes(id)
-    ){
-      addTradeHistory(
-        row
-      );
-
-      const active=
+      const local=
         getActiveTrade();
 
       if(
-        active &&
-        String(
-          active.id ??
-          active.orderId
-        )===id
+        local &&
+        local.id
       ){
-        setActiveTrade(null);
-      }
-
-      /*
-       * Server balance remains authoritative.
-       */
-      try{
-        const remote=
-          await readServerBalance();
-
-        if(Number.isFinite(remote)){
-          applyLocalBalance(remote);
-        }
-      }catch(e){
-        console.warn(
-          'Settled trade balance refresh failed',
-          e
-        );
-      }
-
-      return;
-    }
-
-    const lock=
-      acquireSettlementLock(id);
-
-    if(!lock){
-      return;
-    }
-
-    try{
-      processed=
-        readProcessedTrades();
-
-      /*
-       * Another tab may already have processed this
-       * local event while this tab waited for the lock.
-       */
-      if(
-        processed.includes(id)
-      ){
-        addTradeHistory(
-          row
-        );
-
-        const active=
-          getActiveTrade();
-
-        if(
-          active &&
-          String(
-            active.id ??
-            active.orderId
-          )===id
-        ){
-          setActiveTrade(null);
-        }
-
         try{
           const remote=
-            await readServerBalance();
+            await getTrade(
+              local.id
+            );
 
-          if(Number.isFinite(remote)){
-            applyLocalBalance(remote);
+          if(remote){
+            const status=
+              String(
+                remote.status ||
+                ''
+              ).toLowerCase();
+
+            if(status==='pending'){
+              const merged={
+                ...local,
+
+                id:remote.id,
+
+                uid:
+                  remote.uid ||
+                  local.uid,
+
+                symbol:
+                  remote.symbol ||
+                  local.symbol,
+
+                side:
+                  remote.side ||
+                  local.side,
+
+                amount:
+                  Number(
+                    remote.amount
+                  ) ||
+                  Number(
+                    local.amount
+                  ) ||
+                  0,
+
+                entryPrice:
+                  Number(
+                    remote.entry_price
+                  ) ||
+                  Number(
+                    local.entryPrice
+                  ) ||
+                  0,
+
+                entry_price:
+                  Number(
+                    remote.entry_price
+                  ) ||
+                  Number(
+                    local.entry_price
+                  ) ||
+                  0,
+
+                duration:
+                  Number(
+                    remote.duration_seconds
+                  ) ||
+                  Number(
+                    local.duration
+                  ) ||
+                  0,
+
+                duration_seconds:
+                  Number(
+                    remote.duration_seconds
+                  ) ||
+                  Number(
+                    local.duration_seconds
+                  ) ||
+                  0,
+
+                expiresAt:
+                  remote.expires_at ||
+                  local.expiresAt ||
+                  local.expires_at,
+
+                expires_at:
+                  remote.expires_at ||
+                  local.expires_at ||
+                  local.expiresAt,
+
+                createdAt:
+                  remote.created_at ||
+                  local.createdAt ||
+                  local.created_at,
+
+                created_at:
+                  remote.created_at ||
+                  local.created_at ||
+                  local.createdAt,
+
+                status:'pending'
+              };
+
+              setActiveTrade(
+                merged
+              );
+
+              return merged;
+            }
+
+            if(status==='settled'){
+              addTradeHistory(
+                remote
+              );
+
+              const processed=
+                readProcessedTrades();
+
+              const id=
+                String(remote.id);
+
+              if(!processed.includes(id)){
+                processed.push(id);
+
+                writeProcessedTrades(
+                  processed
+                );
+              }
+
+              setActiveTrade(
+                null
+              );
+
+              try{
+                const remoteBalance=
+                  await readServerBalance();
+
+                if(
+                  Number.isFinite(
+                    remoteBalance
+                  )
+                ){
+                  applyLocalBalance(
+                    remoteBalance
+                  );
+                }
+              }catch(e){
+                console.warn(
+                  'Settled trade balance refresh failed',
+                  e
+                );
+              }
+
+              return null;
+            }
           }
+
         }catch(e){
           console.warn(
-            'Settled trade balance refresh failed',
+            'Stored active trade restore failed',
             e
           );
         }
-
-        return;
       }
 
-      const result=
-        String(
-          row.result ||
-          'DRAW'
-        ).toUpperCase();
+      const remote=
+        await findOpenTrade();
 
-      /*
-       * ==============================================
-       * NO CLIENT-SIDE MONEY MOVEMENT
-       * ==============================================
-       *
-       * OLD CODE:
-       *
-       * if(result==='WIN'){
-       *   credit=amount+profit;
-       * }
-       *
-       * if(result==='DRAW'){
-       *   credit=amount;
-       * }
-       *
-       * setBalance(getBalance()+credit);
-       *
-       * That logic has been removed.
-       */
-
-      let remoteBalance=null;
-
-      try{
-        remoteBalance=
-          await readServerBalance();
-
-        if(Number.isFinite(remoteBalance)){
-          applyLocalBalance(
-            remoteBalance
+      if(!remote){
+        if(local){
+          setActiveTrade(
+            null
           );
         }
 
-      }catch(e){
-        console.warn(
-          'Seconds settlement balance refresh failed',
-          e
-        );
+        return null;
       }
 
-      addTradeHistory(
-        row
+      const trade={
+        id:remote.id,
+
+        uid:remote.uid,
+
+        symbol:remote.symbol,
+
+        side:remote.side,
+
+        amount:
+          Number(
+            remote.amount
+          ) ||
+          0,
+
+        entryPrice:
+          Number(
+            remote.entry_price
+          ) ||
+          0,
+
+        entry_price:
+          Number(
+            remote.entry_price
+          ) ||
+          0,
+
+        duration:
+          Number(
+            remote.duration_seconds
+          ) ||
+          0,
+
+        duration_seconds:
+          Number(
+            remote.duration_seconds
+          ) ||
+          0,
+
+        expiresAt:
+          remote.expires_at,
+
+        expires_at:
+          remote.expires_at,
+
+        createdAt:
+          remote.created_at,
+
+        created_at:
+          remote.created_at,
+
+        status:'pending'
+      };
+
+      setActiveTrade(
+        trade
       );
 
-      processed.push(id);
-
-      writeProcessedTrades(
-        processed
-      );
-
-      const active=
-        getActiveTrade();
-
-      if(
-        active &&
-        String(
-          active.id ??
-          active.orderId
-        )===id
-      ){
-        setActiveTrade(null);
-      }
-
-      window.dispatchEvent(
-        new CustomEvent(
-          'demoTradeSettled',
-          {
-            detail:{
-              uid:getUid(),
-              order:row,
-              result:result,
-
-              /*
-               * Compatibility field only.
-               * Browser did NOT credit this amount.
-               */
-              credit:0,
-
-              balance:
-                Number.isFinite(remoteBalance)
-                  ? remoteBalance
-                  : getBalance(),
-
-              serverOwned:true
-            }
-          }
-        )
-      );
+      return trade;
 
     }catch(e){
       console.warn(
-        'Trade settlement processing failed',
+        'Active trade restore failed',
         e
       );
 
-    }finally{
-      releaseSettlementLock(
-        lock
-      );
+      return null;
     }
   }
 
   /*
    * ==================================================
-   * ACTIVE SECONDS RECOVERY
+   * ACTIVE TRADE SETTLEMENT POLL
    * ==================================================
    */
 
-  async function recoverActiveTrade(){
-    const active=
-      getActiveTrade();
-
-    if(
-      !active ||
-      !(
-        active.id ??
-        active.orderId
-      )
-    ){
-      return false;
-    }
-
-    const id=
-      active.id ??
-      active.orderId;
-
-    const row=
-      await getTrade(id);
-
-    /*
-     * Local cache references an order that no longer
-     * exists for this UID.
-     */
-    if(!row){
-      setActiveTrade(null);
-      return true;
-    }
-
-    if(row.status==='settled'){
-      const expiresAt=
-        row.expires_at
-          ? new Date(
-              row.expires_at
-            ).getTime()
-          : 0;
-
-      /*
-       * Admin may set the result before the original
-       * countdown finishes.
-       *
-       * Keep displaying the active order until expiry.
-       */
-      if(
-        expiresAt &&
-        Date.now()<
-        expiresAt
-      ){
-        setActiveTrade(
-          tradeSnapshot(row)
-        );
-
-        return false;
-      }
-
-      await processSettledTrade(
-        row
-      );
-
-      setActiveTrade(null);
-
-      return true;
-    }
-
-    /*
-     * Still pending:
-     * refresh browser snapshot from the server.
-     */
-    setActiveTrade(
-      tradeSnapshot(row)
-    );
-
-    return false;
-  }
-
-  async function pollTradeStatus(){
+  async function pollActiveTrade(){
     if(tradePolling){
       return;
     }
@@ -2395,260 +2156,244 @@
     tradePolling=true;
 
     try{
-      /*
-       * Repair local History from authoritative
-       * settled server orders.
-       *
-       * This does NOT mutate balance.
-       */
-      await syncRecentSecondsHistory();
-
-      /*
-       * First clear/refresh stale local active state.
-       */
-      await recoverActiveTrade();
-
-      let active=
+      let trade=
         getActiveTrade();
 
-      /*
-       * No local active order:
-       * check whether Supabase has a real pending order.
-       */
       if(
-        !active ||
-        !(
-          active.id ??
-          active.orderId
-        )
+        !trade ||
+        !trade.id
       ){
-        const open=
-          await findOpenTrade();
+        trade=
+          await restoreActiveTrade();
 
-        if(open){
-          active=
-            tradeSnapshot(open);
-
-          setActiveTrade(active);
-
-        }else{
-          setActiveTrade(null);
+        if(
+          !trade ||
+          !trade.id
+        ){
           return;
         }
+      }
+
+      const remote=
+        await getTrade(
+          trade.id
+        );
+
+      if(!remote){
+        return;
+      }
+
+      const status=
+        String(
+          remote.status ||
+          ''
+        ).toLowerCase();
+
+      if(status==='pending'){
+        /*
+         * Keep local copy synchronized with
+         * authoritative server values.
+         */
+        const merged={
+          ...trade,
+
+          id:remote.id,
+
+          uid:
+            remote.uid ||
+            trade.uid,
+
+          symbol:
+            remote.symbol ||
+            trade.symbol,
+
+          side:
+            remote.side ||
+            trade.side,
+
+          amount:
+            Number(
+              remote.amount
+            ) ||
+            Number(
+              trade.amount
+            ) ||
+            0,
+
+          entryPrice:
+            Number(
+              remote.entry_price
+            ) ||
+            Number(
+              trade.entryPrice
+            ) ||
+            0,
+
+          entry_price:
+            Number(
+              remote.entry_price
+            ) ||
+            Number(
+              trade.entry_price
+            ) ||
+            0,
+
+          duration:
+            Number(
+              remote.duration_seconds
+            ) ||
+            Number(
+              trade.duration
+            ) ||
+            0,
+
+          duration_seconds:
+            Number(
+              remote.duration_seconds
+            ) ||
+            Number(
+              trade.duration_seconds
+            ) ||
+            0,
+
+          expiresAt:
+            remote.expires_at ||
+            trade.expiresAt ||
+            trade.expires_at,
+
+          expires_at:
+            remote.expires_at ||
+            trade.expires_at ||
+            trade.expiresAt,
+
+          status:'pending'
+        };
+
+        setActiveTrade(
+          merged
+        );
+
+        return;
+      }
+
+      if(status!=='settled'){
+        return;
       }
 
       const id=
-        active.id ??
-        active.orderId;
+        String(remote.id);
 
-      let row=
-        await getTrade(id);
+      const processed=
+        readProcessedTrades();
 
-      /*
-       * Order disappeared from server.
-       */
-      if(!row){
-        setActiveTrade(null);
-        return;
-      }
-
-      /*
-       * ==============================================
-       * ALREADY SETTLED
-       * ==============================================
-       */
-
-      if(row.status==='settled'){
-        const expiresAt=
-          row.expires_at
-            ? new Date(
-                row.expires_at
-              ).getTime()
-            : 0;
-
-        /*
-         * Result can be assigned before countdown ends.
-         * Keep order visible until its original expiry.
-         */
-        if(
-          expiresAt &&
-          Date.now()<
-          expiresAt
-        ){
-          setActiveTrade(
-            tradeSnapshot(row)
-          );
-
-          return;
-        }
-
-        let exitPrice=
-          Number(
-            row.exit_price
-          );
-
-        /*
-         * Give server a short window to write
-         * the final exit price.
-         */
-        if(
-          !Number.isFinite(exitPrice) ||
-          exitPrice<=0
-        ){
-          for(let i=0;i<8;i++){
-            await new Promise(
-              resolve=>
-                setTimeout(
-                  resolve,
-                  1000
-                )
-            );
-
-            const latest=
-              await getTrade(
-                row.id
-              );
-
-            if(latest){
-              row=latest;
-            }
-
-            exitPrice=
-              Number(
-                row.exit_price
-              );
-
-            if(
-              Number.isFinite(exitPrice) &&
-              exitPrice>0
-            ){
-              break;
-            }
-          }
-        }
-
-        /*
-         * Server has already performed the financial
-         * settlement.
-         *
-         * Browser only synchronizes UI/history.
-         */
-        await processSettledTrade(
-          row
-        );
-
-        return;
-      }
-
-      /*
-       * ==============================================
-       * PENDING ORDER
-       * ==============================================
-       */
-
-      const expiresAt=
-        row.expires_at
-          ? new Date(
-              row.expires_at
-            ).getTime()
-          : 0;
-
-      /*
-       * Countdown still running.
-       */
-      if(
-        !expiresAt ||
-        Date.now()<
-        expiresAt
-      ){
+      if(processed.includes(id)){
         setActiveTrade(
-          tradeSnapshot(row)
+          null
         );
 
-        return;
-      }
+        try{
+          const remoteBalance=
+            await readServerBalance();
 
-      /*
-       * ==============================================
-       * COUNTDOWN FINISHED
-       * ==============================================
-       *
-       * IMPORTANT:
-       *
-       * Browser DOES NOT call settle_expired_trade().
-       * Browser DOES NOT create DRAW.
-       * Browser DOES NOT refund stake.
-       * Browser DOES NOT decide result.
-       *
-       * Wait for the server/admin settlement path.
-       */
-
-      let finalRow=row;
-
-      for(let i=0;i<10;i++){
-        await new Promise(
-          resolve=>
-            setTimeout(
-              resolve,
-              1000
+          if(
+            Number.isFinite(
+              remoteBalance
             )
-        );
-
-        const latest=
-          await getTrade(
-            row.id
+          ){
+            applyLocalBalance(
+              remoteBalance
+            );
+          }
+        }catch(e){
+          console.warn(
+            'Processed trade balance refresh failed',
+            e
           );
-
-        if(latest){
-          finalRow=latest;
         }
 
-        const exitPrice=
-          Number(
-            finalRow.exit_price
-          );
-
-        if(
-          finalRow.status==='settled' &&
-          Number.isFinite(exitPrice) &&
-          exitPrice>0
-        ){
-          await processSettledTrade(
-            finalRow
-          );
-
-          return;
-        }
+        return;
       }
 
-      /*
-       * Server still hasn't settled it.
-       *
-       * Keep the active order instead of manufacturing
-       * a DRAW or changing money locally.
-       */
-      const latest=
-        await getTrade(
-          row.id
+      const lock=
+        acquireSettlementLock(
+          id
         );
 
-      if(latest){
-        if(latest.status==='settled'){
-          await processSettledTrade(
-            latest
-          );
+      if(!lock){
+        return;
+      }
 
-          return;
+      try{
+        /*
+         * Settlement money is handled by the
+         * server-side admin settlement RPC.
+         *
+         * Browser only consumes the result and
+         * refreshes authoritative balance.
+         */
+        addTradeHistory(
+          remote
+        );
+
+        const latestProcessed=
+          readProcessedTrades();
+
+        if(
+          !latestProcessed.includes(id)
+        ){
+          latestProcessed.push(id);
+
+          writeProcessedTrades(
+            latestProcessed
+          );
         }
 
         setActiveTrade(
-          tradeSnapshot(latest)
+          null
+        );
+
+        try{
+          const remoteBalance=
+            await readServerBalance();
+
+          if(
+            Number.isFinite(
+              remoteBalance
+            )
+          ){
+            applyLocalBalance(
+              remoteBalance
+            );
+          }
+        }catch(e){
+          console.warn(
+            'Trade settlement balance refresh failed',
+            e
+          );
+        }
+
+        window.dispatchEvent(
+          new CustomEvent(
+            'demoTradeSettled',
+            {
+              detail:{
+                ...remote,
+                balance:
+                  getBalance()
+              }
+            }
+          )
+        );
+
+      }finally{
+        releaseSettlementLock(
+          lock
         );
       }
 
     }catch(e){
       console.warn(
-        'Trade status polling failed',
+        'Active trade polling failed',
         e
       );
 
@@ -2656,34 +2401,357 @@
       tradePolling=false;
     }
   }
-    /*
-   * ==================================================
-   * ACTIVE TRADE PUBLIC HELPERS
-   * ==================================================
-   */
-
-  function clearActiveTrade(){
-    setActiveTrade(null);
-  }
-
-  function refreshActiveTrade(){
-    return recoverActiveTrade();
-  }
 
   /*
    * ==================================================
-   * BALANCE REFRESH
+   * SECONDS TRADE PLACEMENT RPC
    * ==================================================
    */
 
-  async function refreshServerBalance(){
+  let placingSecondsTrade=false;
+
+  async function placeSecondsTradeAtomic(
+    symbol,
+    side,
+    amount,
+    durationSeconds,
+    entryPrice
+  ){
+    if(placingSecondsTrade){
+      throw new Error(
+        'A trade request is already being processed.'
+      );
+    }
+
+    placingSecondsTrade=true;
+
+    try{
+      if(window.__customerAuthReady){
+        const ready=
+          await window.__customerAuthReady;
+
+        if(!ready){
+          throw new Error(
+            'Customer authentication required.'
+          );
+        }
+      }
+
+      const auth=
+        window.customerAuth;
+
+      if(
+        !auth ||
+        !auth.client ||
+        !auth.user ||
+        !auth.profile
+      ){
+        throw new Error(
+          'Customer authentication required.'
+        );
+      }
+
+      const uid=
+        requireUid();
+
+      const profileUid=
+        String(
+          auth.profile.uid ||
+          ''
+        ).trim();
+
+      if(
+        !profileUid ||
+        profileUid!==uid
+      ){
+        throw new Error(
+          'Customer UID mismatch.'
+        );
+      }
+
+      const cleanSymbol=
+        String(
+          symbol ||
+          ''
+        ).trim();
+
+      const cleanSide=
+        String(
+          side ||
+          ''
+        )
+          .trim()
+          .toLowerCase();
+
+      const cleanAmount=
+        Number(amount);
+
+      const cleanDuration=
+        Number(
+          durationSeconds
+        );
+
+      const cleanEntry=
+        Number(
+          entryPrice
+        );
+
+      if(!cleanSymbol){
+        throw new Error(
+          'Invalid symbol.'
+        );
+      }
+
+      if(
+        cleanSide!=='up' &&
+        cleanSide!=='down'
+      ){
+        throw new Error(
+          'Invalid trade direction.'
+        );
+      }
+
+      if(
+        !Number.isFinite(
+          cleanAmount
+        ) ||
+        cleanAmount<=0
+      ){
+        throw new Error(
+          'Invalid trade amount.'
+        );
+      }
+
+      if(
+        !Number.isFinite(
+          cleanDuration
+        ) ||
+        cleanDuration<=0
+      ){
+        throw new Error(
+          'Invalid trade duration.'
+        );
+      }
+
+      if(
+        !Number.isFinite(
+          cleanEntry
+        ) ||
+        cleanEntry<=0
+      ){
+        throw new Error(
+          'Invalid entry price.'
+        );
+      }
+
+      const {
+        data,
+        error
+      }=
+        await auth.client.rpc(
+          'place_seconds_trade_atomic',
+          {
+            p_symbol:
+              cleanSymbol,
+
+            p_side:
+              cleanSide,
+
+            p_amount:
+              cleanAmount,
+
+            p_duration_seconds:
+              Math.round(
+                cleanDuration
+              ),
+
+            p_entry_price:
+              cleanEntry
+          }
+        );
+
+      if(error){
+        throw error;
+      }
+
+      if(!data){
+        throw new Error(
+          'Trade placement returned no data.'
+        );
+      }
+
+      /*
+       * RPC may return JSON directly or
+       * an array depending on the function
+       * return definition.
+       */
+      const result=
+        Array.isArray(data)
+          ? (
+              data[0] ||
+              null
+            )
+          : data;
+
+      if(!result){
+        throw new Error(
+          'Trade placement returned an empty result.'
+        );
+      }
+
+      const tradeRow=
+        result.trade ||
+        result.order ||
+        result.trade_order ||
+        result.row ||
+        result;
+
+      const tradeId=
+        tradeRow.id ??
+        result.trade_id ??
+        result.order_id;
+
+      if(
+        tradeId===undefined ||
+        tradeId===null
+      ){
+        throw new Error(
+          'Trade placement did not return an order id.'
+        );
+      }
+
+      const createdAt=
+        tradeRow.created_at ||
+        result.created_at ||
+        new Date()
+          .toISOString();
+
+      const expiresAt=
+        tradeRow.expires_at ||
+        result.expires_at ||
+        new Date(
+          new Date(
+            createdAt
+          ).getTime()+
+          Math.round(
+            cleanDuration
+          )*
+          1000
+        ).toISOString();
+
+      const trade={
+        id:tradeId,
+
+        uid:uid,
+
+        symbol:
+          tradeRow.symbol ||
+          cleanSymbol,
+
+        side:
+          tradeRow.side ||
+          cleanSide,
+
+        amount:
+          Number(
+            tradeRow.amount ??
+            cleanAmount
+          ),
+
+        entryPrice:
+          Number(
+            tradeRow.entry_price ??
+            cleanEntry
+          ),
+
+        entry_price:
+          Number(
+            tradeRow.entry_price ??
+            cleanEntry
+          ),
+
+        duration:
+          Number(
+            tradeRow.duration_seconds ??
+            cleanDuration
+          ),
+
+        duration_seconds:
+          Number(
+            tradeRow.duration_seconds ??
+            cleanDuration
+          ),
+
+        createdAt:createdAt,
+        created_at:createdAt,
+
+        expiresAt:expiresAt,
+        expires_at:expiresAt,
+
+        status:'pending'
+      };
+
+      setActiveTrade(
+        trade
+      );
+
+      /*
+       * RPC has already debited the stake.
+       * Refresh balance from server instead
+       * of subtracting locally.
+       */
+      try{
+        const remoteBalance=
+          await readServerBalance();
+
+        if(
+          Number.isFinite(
+            remoteBalance
+          )
+        ){
+          applyLocalBalance(
+            remoteBalance
+          );
+        }
+      }catch(e){
+        console.warn(
+          'Placed trade balance refresh failed',
+          e
+        );
+      }
+
+      window.dispatchEvent(
+        new CustomEvent(
+          'demoTradePlaced',
+          {
+            detail:{
+              trade:trade,
+              balance:
+                getBalance()
+            }
+          }
+        )
+      );
+
+      return trade;
+
+    }finally{
+      placingSecondsTrade=false;
+    }
+  }
+    /*
+   * ==================================================
+   * COMPATIBILITY HELPERS
+   * ==================================================
+   */
+
+  async function refreshBalanceFromServer(){
     try{
       const remote=
         await readServerBalance();
 
       if(Number.isFinite(remote)){
         applyLocalBalance(remote);
-
         return remote;
       }
 
@@ -2699,103 +2767,286 @@
     }
   }
 
+  async function waitForCustomerAuth(){
+    try{
+      if(window.__customerAuthReady){
+        const ready=
+          await window.__customerAuthReady;
+
+        if(!ready){
+          return false;
+        }
+      }
+
+      const auth=
+        window.customerAuth;
+
+      if(
+        !auth ||
+        !auth.client ||
+        !auth.user ||
+        !auth.profile
+      ){
+        return false;
+      }
+
+      const uid=
+        getUid();
+
+      const profileUid=
+        String(
+          auth.profile.uid ||
+          ''
+        ).trim();
+
+      return !!(
+        uid &&
+        profileUid &&
+        uid===profileUid
+      );
+
+    }catch(e){
+      console.warn(
+        'Customer authentication wait failed',
+        e
+      );
+
+      return false;
+    }
+  }
+
   /*
    * ==================================================
-   * PAGE VISIBILITY REFRESH
+   * INITIALIZATION
    * ==================================================
-   *
-   * When customer returns to the page:
-   *
-   * - refresh authoritative server balance
-   * - refresh deposit status
-   * - refresh withdrawal status
-   * - refresh Admin Credit notifications
-   * - refresh Seconds Trading state
-   *
-   * No financial mutation is performed here.
    */
 
-  async function refreshWhenVisible(){
-    if(document.hidden){
+  let initialized=false;
+  let initPromise=null;
+
+  async function initialize(){
+    if(initialized){
+      return true;
+    }
+
+    if(initPromise){
+      return initPromise;
+    }
+
+    initPromise=
+      (async()=>{
+        const authReady=
+          await waitForCustomerAuth();
+
+        if(!authReady){
+          console.warn(
+            'Balance sync initialization skipped: customer authentication is not ready.'
+          );
+
+          return false;
+        }
+
+        try{
+          requireUid();
+        }catch(e){
+          console.warn(
+            'Balance sync initialization skipped: UID is not ready.',
+            e
+          );
+
+          return false;
+        }
+
+        ensureToast();
+
+        await initServerBalance();
+
+        /*
+         * Restore server-side pending seconds trade
+         * after refresh/navigation.
+         */
+        await restoreActiveTrade();
+
+        /*
+         * Pull already-settled recent trades into
+         * local history.
+         */
+        await syncRecentSecondsHistory();
+
+        /*
+         * Initial status checks.
+         */
+        await pollDepositStatus();
+
+        await pollAccountAdjustments();
+
+        await pollWithdrawalStatus();
+
+        await pollActiveTrade();
+
+        initialized=true;
+
+        window.dispatchEvent(
+          new CustomEvent(
+            'demoBalanceSyncReady',
+            {
+              detail:{
+                uid:getUid(),
+                balance:getBalance()
+              }
+            }
+          )
+        );
+
+        return true;
+      })();
+
+    try{
+      return await initPromise;
+
+    }finally{
+      /*
+       * Allow another initialization attempt if
+       * customer authentication was not ready yet.
+       */
+      if(!initialized){
+        initPromise=null;
+      }
+    }
+  }
+
+  /*
+   * ==================================================
+   * POLLING
+   * ==================================================
+   */
+
+  let pollingTimer=null;
+
+  function startPolling(){
+    if(pollingTimer){
       return;
     }
 
-    try{
-      await refreshServerBalance();
-    }catch(_){}
+    pollingTimer=
+      setInterval(
+        async()=>{
+          if(!initialized){
+            await initialize();
 
-    try{
-      await pollDepositStatus();
-    }catch(_){}
+            if(!initialized){
+              return;
+            }
+          }
 
-    try{
-      await pollAccountAdjustments();
-    }catch(_){}
+          /*
+           * Run independently. One failed poll must
+           * not prevent the others.
+           */
+          try{
+            await pollServerBalance();
+          }catch(e){
+            console.warn(
+              'Balance polling cycle failed',
+              e
+            );
+          }
 
-    try{
-      await pollWithdrawalStatus();
-    }catch(_){}
+          try{
+            await pollDepositStatus();
+          }catch(e){
+            console.warn(
+              'Deposit polling cycle failed',
+              e
+            );
+          }
 
-    try{
-      await pollTradeStatus();
-    }catch(_){}
+          try{
+            await pollAccountAdjustments();
+          }catch(e){
+            console.warn(
+              'Account adjustment polling cycle failed',
+              e
+            );
+          }
+
+          try{
+            await pollWithdrawalStatus();
+          }catch(e){
+            console.warn(
+              'Withdrawal polling cycle failed',
+              e
+            );
+          }
+
+          try{
+            await pollActiveTrade();
+          }catch(e){
+            console.warn(
+              'Trade polling cycle failed',
+              e
+            );
+          }
+
+          try{
+            await syncRecentSecondsHistory();
+          }catch(e){
+            console.warn(
+              'Trade history polling cycle failed',
+              e
+            );
+          }
+        },
+        POLL_MS
+      );
   }
 
-  document.addEventListener(
-    'visibilitychange',
-    ()=>{
-      if(!document.hidden){
-        refreshWhenVisible();
-      }
+  function stopPolling(){
+    if(!pollingTimer){
+      return;
     }
-  );
 
-  window.addEventListener(
-    'focus',
-    ()=>{
-      refreshWhenVisible();
-    }
-  );
+    clearInterval(
+      pollingTimer
+    );
+
+    pollingTimer=null;
+  }
 
   /*
    * ==================================================
-   * STORAGE EVENT SYNC
+   * STORAGE / AUTH EVENTS
    * ==================================================
-   *
-   * Keep multiple tabs visually synchronized.
-   *
-   * IMPORTANT:
-   * storage events NEVER write server balances.
    */
 
   window.addEventListener(
     'storage',
     e=>{
       try{
-        const uid=getUid();
+        const uid=
+          getUid();
 
         if(!uid){
           return;
         }
 
-        const scopedBalanceKey=
-          'demoBalance::'+uid;
-
         if(
-          e.key===scopedBalanceKey ||
-          e.key==='demoBalance'
+          e.key===
+          'demoBalance::'+uid
         ){
-          const value=
-            Number(e.newValue);
+          const n=
+            Number(
+              e.newValue
+            );
 
-          if(Number.isFinite(value)){
+          if(Number.isFinite(n)){
             window.dispatchEvent(
               new CustomEvent(
                 'demoBalanceUpdated',
                 {
                   detail:{
                     uid:uid,
-                    balance:value
+                    balance:n
                   }
                 }
               )
@@ -2805,8 +3056,7 @@
 
         if(
           e.key===
-          'demoActiveTrade::'+uid ||
-          e.key==='demoActiveTrade'
+          'demoActiveTrade::'+uid
         ){
           let trade=null;
 
@@ -2833,264 +3083,105 @@
     }
   );
 
-  /*
-   * ==================================================
-   * LEGACY LOCAL STORAGE MIGRATION
-   * ==================================================
-   *
-   * Older versions stored:
-   *
-   * demoBalance
-   * demoHistory
-   * demoActiveTrade
-   *
-   * globally.
-   *
-   * Current version keeps a UID-scoped copy.
-   *
-   * This migration is LOCAL ONLY.
-   * It never sends the legacy balance to Supabase.
-   */
+  window.addEventListener(
+    'focus',
+    async()=>{
+      if(!initialized){
+        await initialize();
+      }
 
-  function migrateLegacyLocalState(){
-    const uid=getUid();
+      if(!initialized){
+        return;
+      }
 
-    if(!uid){
-      return;
+      try{
+        await pollServerBalance();
+      }catch(_){}
+
+      try{
+        await pollDepositStatus();
+      }catch(_){}
+
+      try{
+        await pollAccountAdjustments();
+      }catch(_){}
+
+      try{
+        await pollWithdrawalStatus();
+      }catch(_){}
+
+      try{
+        await pollActiveTrade();
+      }catch(_){}
+
+      try{
+        await syncRecentSecondsHistory();
+      }catch(_){}
     }
+  );
 
-    /*
-     * Balance
-     */
-    try{
-      const scoped=
-        localStorage.getItem(
-          'demoBalance::'+uid
-        );
-
-      const legacy=
-        localStorage.getItem(
-          'demoBalance'
-        );
-
-      if(
-        scoped===null &&
-        legacy!==null &&
-        Number.isFinite(
-          Number(legacy)
-        )
-      ){
-        localStorage.setItem(
-          'demoBalance::'+uid,
-          String(legacy)
-        );
+  window.addEventListener(
+    'pageshow',
+    async()=>{
+      if(!initialized){
+        await initialize();
       }
-    }catch(_){}
 
-    /*
-     * History
-     */
-    try{
-      const scoped=
-        localStorage.getItem(
-          'demoHistory::'+uid
-        );
+      if(initialized){
+        try{
+          await pollServerBalance();
+        }catch(_){}
 
-      const legacy=
-        localStorage.getItem(
-          'demoHistory'
-        );
-
-      if(
-        scoped===null &&
-        legacy
-      ){
-        const parsed=
-          JSON.parse(legacy);
-
-        if(Array.isArray(parsed)){
-          localStorage.setItem(
-            'demoHistory::'+uid,
-            JSON.stringify(parsed)
-          );
-        }
+        try{
+          await pollActiveTrade();
+        }catch(_){}
       }
-    }catch(_){}
-
-    /*
-     * Active Trade
-     */
-    try{
-      const scoped=
-        localStorage.getItem(
-          'demoActiveTrade::'+uid
-        );
-
-      const legacy=
-        localStorage.getItem(
-          'demoActiveTrade'
-        );
-
-      if(
-        scoped===null &&
-        legacy
-      ){
-        const parsed=
-          JSON.parse(legacy);
-
-        if(
-          parsed &&
-          typeof parsed==='object'
-        ){
-          localStorage.setItem(
-            'demoActiveTrade::'+uid,
-            JSON.stringify(parsed)
-          );
-        }
-      }
-    }catch(_){}
-  }
-
-  /*
-   * ==================================================
-   * SAFE LOCAL BALANCE DISPLAY API
-   * ==================================================
-   *
-   * Some older pages still call:
-   *
-   * DemoBalanceSync.setBalance(...)
-   *
-   * For compatibility we keep the method, but it is
-   * LOCAL DISPLAY ONLY.
-   *
-   * It cannot modify demo_balances.
-   */
-
-  function setLocalDisplayBalance(v){
-    const n=Number(v);
-
-    if(!Number.isFinite(n)){
-      return false;
     }
-
-    applyLocalBalance(n);
-
-    return true;
-  }
+  );
 
   /*
    * ==================================================
-   * PUBLIC API - BALANCE
+   * PUBLIC API
    * ==================================================
    */
 
   window.DemoBalanceSync={
     getUid:getUid,
 
+    requireUid:requireUid,
+
     getBalance:getBalance,
 
-    /*
-     * Compatibility only.
-     * Does NOT write to Supabase.
-     */
-    setBalance:setLocalDisplayBalance,
+    setBalance:setBalance,
 
-    refresh:
-      refreshServerBalance,
+    /*
+     * Kept for backwards compatibility.
+     * This now throws because direct financial
+     * table writes from browser are forbidden.
+     */
+    writeServerBalance:
+      writeServerBalance,
 
     readServerBalance:
       readServerBalance,
 
-    /*
-     * Explicitly expose this as disabled so an older
-     * page cannot silently perform a server write.
-     */
-    writeServerBalance:
-      async function(){
-        throw new Error(
-          'Direct balance writes are disabled. Use a server RPC.'
-        );
-      },
-
-    isServerReady:
-      function(){
-        return serverBalanceReady;
-      }
-  };
-
-  /*
-   * ==================================================
-   * PUBLIC API - DEPOSIT
-   * ==================================================
-   */
-
-  window.DemoDepositSync={
-    getUid:getUid,
-
-    getBalance:getBalance,
-
     refreshBalance:
-      refreshServerBalance,
+      refreshBalanceFromServer,
 
-    checkStatus:
-      pollDepositStatus
-  };
+    initServerBalance:
+      initServerBalance,
 
-  /*
-   * ==================================================
-   * PUBLIC API - WITHDRAWAL
-   * ==================================================
-   */
+    pollServerBalance:
+      pollServerBalance,
 
-  window.DemoWithdrawalSync={
-    getUid:getUid,
+    pollDepositStatus:
+      pollDepositStatus,
 
-    getBalance:getBalance,
+    pollAccountAdjustments:
+      pollAccountAdjustments,
 
-    refreshBalance:
-      refreshServerBalance,
-
-    checkStatus:
-      pollWithdrawalStatus
-  };
-
-  /*
-   * ==================================================
-   * PUBLIC API - ADMIN CREDIT NOTIFICATIONS
-   * ==================================================
-   */
-
-  window.DemoAdjustmentSync={
-    getUid:getUid,
-
-    getBalance:getBalance,
-
-    refreshBalance:
-      refreshServerBalance,
-
-    checkStatus:
-      pollAccountAdjustments
-  };
-
-  /*
-   * ==================================================
-   * PUBLIC API - SECONDS TRADING
-   * ==================================================
-   */
-
-  window.DemoTradeSync={
-    getUid:getUid,
-
-    getBalance:getBalance,
-
-    /*
-     * Compatibility only.
-     * Local display mutation; never server balance.
-     */
-    setBalance:setLocalDisplayBalance,
-
-    refreshBalance:
-      refreshServerBalance,
+    pollWithdrawalStatus:
+      pollWithdrawalStatus,
 
     getActiveTrade:
       getActiveTrade,
@@ -3098,243 +3189,51 @@
     setActiveTrade:
       setActiveTrade,
 
-    clearActiveTrade:
-      clearActiveTrade,
+    restoreActiveTrade:
+      restoreActiveTrade,
 
-    refreshActiveTrade:
-      refreshActiveTrade,
+    pollActiveTrade:
+      pollActiveTrade,
 
-    getTrade:
-      getTrade,
+    syncRecentSecondsHistory:
+      syncRecentSecondsHistory,
+
+    getTrade:getTrade,
 
     findOpenTrade:
       findOpenTrade,
 
-    poll:
-      pollTradeStatus,
+    placeSecondsTradeAtomic:
+      placeSecondsTradeAtomic,
 
-    syncHistory:
-      syncRecentSecondsHistory,
+    initialize:initialize,
 
-    getHistory:
-      readTradeHistory,
+    startPolling:startPolling,
 
-    /*
-     * Kept for old callers but deliberately disabled.
-     */
-    settleExpiredTrade:
-      settleExpiredTrade
+    stopPolling:stopPolling
   };
 
   /*
-   * ==================================================
-   * GENERIC COMPATIBILITY API
-   * ==================================================
+   * Compatibility aliases for pages that previously
+   * called these helpers directly.
    */
+  window.getDemoBalance=
+    getBalance;
 
-  window.DemoSync={
-    getUid:getUid,
+  window.setDemoBalance=
+    setBalance;
 
-    getBalance:getBalance,
+  window.refreshDemoBalance=
+    refreshBalanceFromServer;
 
-    /*
-     * UI compatibility only.
-     */
-    setBalance:setLocalDisplayBalance,
+  window.getDemoActiveTrade=
+    getActiveTrade;
 
-    refreshBalance:
-      refreshServerBalance,
+  window.setDemoActiveTrade=
+    setActiveTrade;
 
-    getActiveTrade:
-      getActiveTrade,
-
-    setActiveTrade:
-      setActiveTrade,
-
-    getHistory:
-      readTradeHistory
-  };
-
-  /*
-   * ==================================================
-   * SERVER BALANCE READY HELPER
-   * ==================================================
-   */
-
-  window.__demoBalanceReady=
-    (async function(){
-      try{
-        /*
-         * UID must already come from authenticated
-         * customer bootstrap.
-         */
-        const uid=requireUid();
-
-        if(!uid){
-          return false;
-        }
-
-        migrateLegacyLocalState();
-
-        const ok=
-          await initServerBalance();
-
-        return !!ok;
-
-      }catch(e){
-        console.warn(
-          'Demo balance bootstrap failed',
-          e
-        );
-
-        return false;
-      }
-    })();
-
-  /*
-   * ==================================================
-   * INITIAL STATUS SYNC
-   * ==================================================
-   */
-
-  async function initialStatusSync(){
-    try{
-      await window.__demoBalanceReady;
-    }catch(_){}
-
-    try{
-      await pollDepositStatus();
-    }catch(_){}
-
-    try{
-      await pollAccountAdjustments();
-    }catch(_){}
-
-    try{
-      await pollWithdrawalStatus();
-    }catch(_){}
-
-    try{
-      await pollTradeStatus();
-    }catch(_){}
-  }
-
-  /*
-   * ==================================================
-   * POLLING TIMERS
-   * ==================================================
-   */
-
-  let balanceTimer=null;
-  let depositTimer=null;
-  let adjustmentTimer=null;
-  let withdrawalTimer=null;
-  let tradeTimer=null;
-
-  function startPolling(){
-    /*
-     * Prevent duplicate timers if this script is
-     * accidentally initialized twice.
-     */
-    stopPolling();
-
-    balanceTimer=
-      setInterval(
-        ()=>{
-          if(!document.hidden){
-            pollServerBalance();
-          }
-        },
-        POLL_MS
-      );
-
-    depositTimer=
-      setInterval(
-        ()=>{
-          if(!document.hidden){
-            pollDepositStatus();
-          }
-        },
-        POLL_MS
-      );
-
-    adjustmentTimer=
-      setInterval(
-        ()=>{
-          if(!document.hidden){
-            pollAccountAdjustments();
-          }
-        },
-        POLL_MS
-      );
-
-    withdrawalTimer=
-      setInterval(
-        ()=>{
-          if(!document.hidden){
-            pollWithdrawalStatus();
-          }
-        },
-        POLL_MS
-      );
-
-    tradeTimer=
-      setInterval(
-        ()=>{
-          if(!document.hidden){
-            pollTradeStatus();
-          }
-        },
-        POLL_MS
-      );
-  }
-
-  function stopPolling(){
-    if(balanceTimer){
-      clearInterval(balanceTimer);
-      balanceTimer=null;
-    }
-
-    if(depositTimer){
-      clearInterval(depositTimer);
-      depositTimer=null;
-    }
-
-    if(adjustmentTimer){
-      clearInterval(adjustmentTimer);
-      adjustmentTimer=null;
-    }
-
-    if(withdrawalTimer){
-      clearInterval(withdrawalTimer);
-      withdrawalTimer=null;
-    }
-
-    if(tradeTimer){
-      clearInterval(tradeTimer);
-      tradeTimer=null;
-    }
-  }
-
-  /*
-   * ==================================================
-   * PAGE LIFECYCLE
-   * ==================================================
-   */
-
-  window.addEventListener(
-    'pageshow',
-    ()=>{
-      refreshWhenVisible();
-    }
-  );
-
-  window.addEventListener(
-    'beforeunload',
-    ()=>{
-      stopPolling();
-    }
-  );
+  window.placeSecondsTradeAtomic=
+    placeSecondsTradeAtomic;
 
   /*
    * ==================================================
@@ -3342,9 +3241,35 @@
    * ==================================================
    */
 
-  initialStatusSync()
-    .finally(()=>{
-      startPolling();
-    });
+  async function boot(){
+    try{
+      await initialize();
+    }catch(e){
+      console.warn(
+        'Balance sync boot failed',
+        e
+      );
+    }
+
+    startPolling();
+  }
+
+  if(
+    document.readyState===
+    'loading'
+  ){
+    document.addEventListener(
+      'DOMContentLoaded',
+      boot,
+      {
+        once:true
+      }
+    );
+
+  }else{
+    boot();
+  }
 
 })();
+  
+          

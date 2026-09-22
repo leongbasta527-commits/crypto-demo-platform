@@ -2442,7 +2442,13 @@ document.getElementById('reloadCustomersBtn').onclick=loadCustomerList;
 document.getElementById('customerSearchInput').addEventListener('input',renderCustomerList);
 document.getElementById('accountTabBtn').onclick=()=>switchMainTab('accounts');
 document.getElementById('copyTradingTabBtn').onclick=()=>switchMainTab('copyTrading');
-document.getElementById('copyStatusFilter').onchange=()=>{copyPlansShowAll=false;loadCopyCustomerPlans(ATLAS_STRATEGY_ID);};
+const copyStatusFilterEl=document.getElementById('copyStatusFilter');
+if(copyStatusFilterEl){
+  copyStatusFilterEl.onchange=()=>{
+    copyPlansShowAll=false;
+    loadCopyCustomerPlans(ATLAS_STRATEGY_ID);
+  };
+}
 document.getElementById('reloadCopyOrdersBtn').onclick=loadCopyOrders;
 document.getElementById('copyCustomerSearchBtn').onclick=async()=>{
   copyPlansShowAll=false;

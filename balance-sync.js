@@ -40,6 +40,61 @@
     return uid;
   }
 
+  async function getAuthenticatedHeaders(){
+    if(window.__customerAuthReady){
+      await window.__customerAuthReady;
+    }
+
+    const auth=window.customerAuth;
+
+    if(
+      !auth ||
+      !auth.client ||
+      !auth.user ||
+      !auth.profile
+    ){
+      throw new Error(
+        'Authenticated customer session is not ready.'
+      );
+    }
+
+    const uid=requireUid();
+
+    const profileUid=String(
+      auth.profile.uid || ''
+    ).trim();
+
+    if(
+      !profileUid ||
+      profileUid!==uid
+    ){
+      throw new Error(
+        'Authenticated customer UID mismatch.'
+      );
+    }
+
+    const {data,error}=
+      await auth.client.auth.getSession();
+
+    if(error){
+      throw error;
+    }
+
+    const token=
+      data?.session?.access_token;
+
+    if(!token){
+      throw new Error(
+        'Authenticated customer access token is unavailable.'
+      );
+    }
+
+    return {
+      apikey:SUPABASE_KEY,
+      Authorization:'Bearer '+token
+    };
+  }
+
   /*
    * ==================================================
    * UID-SCOPED LOCAL STORAGE
@@ -198,10 +253,7 @@
       encodeURIComponent(uid)+
       '&limit=1',
       {
-        headers:{
-          apikey:SUPABASE_KEY,
-          Authorization:'Bearer '+SUPABASE_KEY
-        },
+        headers:await getAuthenticatedHeaders(),
         cache:'no-store'
       }
     );
@@ -522,14 +574,7 @@
           '&status=eq.approved'+
           '&order=id.asc',
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'
@@ -688,6 +733,7 @@
     wrap.style.display=
       'flex';
   }
+
   async function pollAccountAdjustments(){
     if(adjustmentPolling){
       return;
@@ -707,14 +753,7 @@
           encodeURIComponent(uid)+
           '&order=id.asc',
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'
@@ -821,8 +860,7 @@
       adjustmentPolling=false;
     }
   }
-
-  /*
+    /*
    * ==================================================
    * WITHDRAWAL BALANCE SYNC
    * ==================================================
@@ -1045,14 +1083,7 @@
         await fetch(
           url,
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'
@@ -1687,7 +1718,7 @@
       history
     );
   }
-    /*
+      /*
    * ==================================================
    * SECONDS HISTORY SERVER REPAIR
    * ==================================================
@@ -1724,14 +1755,7 @@
           '&order=created_at.desc'+
           '&limit=30',
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'
@@ -1847,14 +1871,7 @@
           encodeURIComponent(uid)+
           '&limit=1',
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'
@@ -1901,14 +1918,7 @@
           '&order=created_at.desc'+
           '&limit=1',
           {
-            headers:{
-              apikey:
-                SUPABASE_KEY,
-
-              Authorization:
-                'Bearer '+
-                SUPABASE_KEY
-            },
+            headers:await getAuthenticatedHeaders(),
 
             cache:
               'no-store'

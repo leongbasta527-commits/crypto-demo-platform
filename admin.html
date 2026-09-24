@@ -2212,10 +2212,9 @@ async function emergencyCloseCopySubscription(subscriptionId,customerUid){
 
   setMsg('copyTradingMsg','Emergency closing '+customerUid+'...');
   try{
-    const data=await copyRpc('settle_copy_subscription_atomic',{
-      p_subscription_id:subscriptionId,
-      p_reason:'emergency_close'
-    });
+ const data=await copyRpc('admin_emergency_close_copy_subscription',{
+  p_subscription_id:subscriptionId
+});
     setMsg(
       'copyTradingMsg',
       'Emergency close completed for '+customerUid+

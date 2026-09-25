@@ -1,0 +1,2972 @@
+<!doctype html>
+<html lang="en">
+<head> 
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nexora Capital · Admin Portal</title>
+<style>
+:root{
+  --bg:#0b0e11;--panel:#11161c;--panel2:#151b23;--line:#27313c;
+  --text:#f4f7fb;--muted:#8f9cab;--green:#22c98b;--red:#f05b6a;
+  --blue:#4b8cff;--yellow:#d6ad4d;--purple:#a879ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1180px,100%);margin:0 auto;padding:18px 14px 42px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{font-size:20px;font-weight:900}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:linear-gradient(180deg,var(--panel),#0f141a);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.login-card{width:min(430px,100%);margin:8vh auto 0}
+.field{margin-top:13px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.field input{width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:11px;padding:0 13px;outline:none}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,140,255,.1)}
+.btn{height:42px;border:0;border-radius:10px;padding:0 14px;font-weight:850}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#151d26;color:#fff;border:1px solid #2d3946}
+.danger{background:rgba(240,91,106,.12);color:#ff8390;border:1px solid rgba(240,91,106,.28)}
+.success{background:rgba(34,201,139,.12);color:#47e0a9;border:1px solid rgba(34,201,139,.28)}
+.drawbtn{background:rgba(168,121,255,.12);color:#c5a6ff;border:1px solid rgba(168,121,255,.30)}
+.full{width:100%;margin-top:16px}
+.msg{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:13px}
+.msg.show{display:block}
+.msg.err{background:rgba(240,91,106,.1);border:1px solid rgba(240,91,106,.25);color:#ff8390}
+.msg.ok{background:rgba(34,201,139,.1);border:1px solid rgba(34,201,139,.25);color:#47e0a9}
+.hidden{display:none!important}
+.main-tabs{display:flex;gap:8px;margin-bottom:14px}
+.main-tab{flex:1;height:46px;border-radius:11px;border:1px solid #2a3542;background:#10171f;color:#9eabb9;font-weight:900}
+.main-tab.active{border-color:#4b8cff;background:rgba(75,140,255,.12);color:#fff}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{height:38px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#b7c0ca;padding:0 12px;font-weight:800}
+.filter.active{color:#fff;border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.list{display:grid;gap:12px;margin-top:14px}
+.entry{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.row-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.amount{font-size:22px;font-weight:900}
+.status{font-size:11px;font-weight:900;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.pending{color:var(--yellow);background:rgba(214,173,77,.10);border:1px solid rgba(214,173,77,.24)}
+.approved,.win{color:var(--green);background:rgba(34,201,139,.10);border:1px solid rgba(34,201,139,.24)}
+.rejected,.loss{color:var(--red);background:rgba(240,91,106,.10);border:1px solid rgba(240,91,106,.24)}
+.draw{color:#c5a6ff;background:rgba(168,121,255,.10);border:1px solid rgba(168,121,255,.24)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.item{background:#0a0f14;border:1px solid #202934;border-radius:10px;padding:10px;min-width:0}
+.item .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.item .v{font-size:13px;font-weight:750;margin-top:4px;word-break:break-word}
+.receipt-area{display:grid;grid-template-columns:170px 1fr;gap:12px;margin-top:12px}
+.receipt{height:140px;border:1px solid #26313d;border-radius:11px;background:#090d12;display:grid;place-items:center;overflow:hidden}
+.receipt img{width:100%;height:100%;object-fit:cover;cursor:pointer}
+.receipt-placeholder{font-size:12px;color:var(--muted);text-align:center;padding:10px}
+.actions{display:flex;gap:8px;align-items:flex-end;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.actions .btn{min-width:100px}
+.note{font-size:11px;color:var(--muted);line-height:1.55}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal img{max-width:95vw;max-height:90vh;border-radius:10px;border:1px solid #394553;background:#fff}
+.close{position:fixed;top:18px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #45515e;background:#111820;color:#fff;font-size:22px}
+.security{font-size:11px;color:var(--muted);line-height:1.55;margin-top:12px}
+.trade-side-buy{color:#47e0a9}
+.trade-side-sell{color:#ff8390}
+.payout-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.payout-input{width:90px;height:40px;border:1px solid #2b3744;background:#0b1118;color:#fff;border-radius:9px;padding:0 10px}
+.trade-warning{padding:10px 12px;border-radius:10px;background:rgba(214,173,77,.08);border:1px solid rgba(214,173,77,.18);color:#cbb77e;font-size:11px;line-height:1.55;margin-top:12px}
+@media(max-width:850px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr 1fr}
+  .receipt-area{grid-template-columns:1fr}
+  .receipt{height:210px}
+  .actions{justify-content:stretch}
+  .actions .btn{flex:1;min-width:0}
+  .topbar{align-items:flex-start}
+}
+
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.account-box{background:#0d131a;border:1px solid #27313c;border-radius:14px;padding:14px}
+.account-box h3{margin:0 0 10px;font-size:15px}
+.account-box .field{margin-top:10px}
+.account-result{margin-top:12px;padding:12px;border-radius:10px;background:#0a0f14;border:1px solid #202934}
+.account-result .big{font-size:22px;font-weight:900;margin-top:4px}
+.account-history{margin-top:14px;display:grid;gap:8px}
+.account-history-row{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #202934;border-radius:10px;background:#0a0f14}
+@media(max-width:700px){.account-grid{grid-template-columns:1fr}}
+
+.trading-data-search{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.trading-data-search .field{flex:1;min-width:230px;margin-top:0}
+.trade-data-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.trade-data-tab{height:36px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#9eabb9;padding:0 11px;font-weight:800}
+.trade-data-tab.active{color:#fff;border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.trade-data-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.trade-data-summary .item .v{font-size:16px}
+@media(max-width:760px){.trade-data-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== Vertical Admin Layout ===== */
+#adminView{position:relative}
+.admin-shell{display:block}
+@media(min-width:900px){
+  .wrap{width:min(1440px,100%);padding-left:230px}
+  .topbar{padding:0 4px}
+  .main-tabs{
+    position:fixed;left:0;top:0;bottom:0;width:210px;z-index:20;
+    display:flex;flex-direction:column;gap:7px;margin:0;padding:86px 14px 18px;
+    background:#0d131a;border-right:1px solid #202a35
+  }
+  .main-tabs:before{
+    content:"Admin Panel";position:absolute;left:18px;top:24px;
+    font-size:19px;font-weight:900;color:#f4f7fb
+  }
+  .main-tab{flex:none;width:100%;height:44px;text-align:left;padding:0 14px}
+  .main-tab.active{box-shadow:inset 3px 0 0 #4b8cff}
+}
+@media(max-width:899px){
+  .main-tabs{overflow-x:auto;justify-content:flex-start}
+  .main-tab{flex:0 0 auto;min-width:135px}
+}
+#tradingDataSection{padding:18px}
+.trading-data-search{
+  position:sticky;top:0;z-index:8;background:linear-gradient(180deg,#11161c 82%,rgba(17,22,28,0));
+  padding:4px 0 16px;margin-top:12px
+}
+.trading-data-search .field input{height:46px}
+.uid-input-wrap{display:flex;align-items:center;width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;border-radius:11px;overflow:hidden}
+.uid-input-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,140,255,.1)}
+.uid-prefix{height:100%;display:flex;align-items:center;padding:0 0 0 13px;color:#fff;font-weight:800;white-space:nowrap}
+.uid-input-wrap input{flex:1!important;width:auto!important;height:100%!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding-left:3px!important;background:transparent!important}
+.trade-data-tabs{display:none!important}
+#tradingDataSummary{margin-top:4px;margin-bottom:14px}
+.trading-vertical-sections{display:grid;gap:14px}
+.td-section{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.td-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.td-section-title{font-size:15px;font-weight:900}
+.td-section-count{font-size:11px;color:#8f9cab}
+.td-table-wrap{overflow:auto;border:1px solid #202934;border-radius:10px}
+.td-table{width:100%;border-collapse:collapse;min-width:720px}
+.td-table th,.td-table td{padding:10px 11px;border-bottom:1px solid #202934;text-align:left;font-size:12px;white-space:nowrap}
+.td-table th{background:#151d26;color:#8f9cab;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.td-table tr:last-child td{border-bottom:0}
+.td-empty{padding:22px;text-align:center;color:#8f9cab;font-size:12px}
+.td-pos{color:#47e0a9;font-weight:800}.td-neg{color:#ff8390;font-weight:800}
+
+
+.customer-overview{margin:14px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.customer-overview .ov-box{background:#0a0f14;border:1px solid #202934;border-radius:11px;padding:12px;min-width:0}
+.customer-overview .ov-k{font-size:10px;color:#8f9cab;text-transform:uppercase;letter-spacing:.04em}
+.customer-overview .ov-v{font-size:17px;font-weight:900;margin-top:6px;word-break:break-word}
+@media(max-width:1050px){.customer-overview{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.customer-overview{grid-template-columns:1fr 1fr}.customer-overview .ov-v{font-size:15px}}
+
+.td-section-toggle{height:34px;border-radius:9px;border:1px solid #2b3744;background:#111820;color:#fff;padding:0 12px;font-weight:800;font-size:12px}
+.td-section-toggle:hover{border-color:#4b8cff;background:rgba(75,140,255,.10)}
+.td-section-foot{display:flex;justify-content:center;padding-top:10px}
+
+
+/* ===== Customer List ===== */
+.customer-list-tools{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.customer-list-tools .field{flex:1;min-width:240px;margin-top:0}
+.customer-table-wrap{overflow:auto;border:1px solid #202934;border-radius:12px;margin-top:14px}
+.customer-table{width:100%;border-collapse:collapse;min-width:820px}
+.customer-table th,.customer-table td{padding:11px 12px;border-bottom:1px solid #202934;text-align:left;font-size:12px;white-space:nowrap}
+.customer-table th{background:#151d26;color:#8f9cab;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.customer-table tr:last-child td{border-bottom:0}
+.customer-table tbody tr{cursor:pointer}
+.customer-table tbody tr:hover{background:#111820}
+.customer-uid{font-weight:900;color:#fff}
+.customer-email{color:#c7d0da}
+
+/* ===== Copy Trading Admin ===== */
+.copy-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.copy-admin-box{background:#0d131a;border:1px solid #27313c;border-radius:14px;padding:14px}
+.copy-admin-box h3{margin:0 0 6px;font-size:15px}
+.copy-admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.copy-admin-orders{display:grid;gap:10px;margin-top:14px}
+@media(max-width:760px){.copy-admin-grid{grid-template-columns:1fr}}
+
+/* ===== Copy Trading Admin v2 ===== */
+.copy-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
+.copy-stat{background:#0a0f14;border:1px solid #202934;border-radius:11px;padding:12px}
+.copy-stat .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.copy-stat .v{font-size:20px;font-weight:900;margin-top:6px}
+.copy-progress{height:9px;background:#080c11;border:1px solid #202934;border-radius:999px;overflow:hidden;margin-top:9px}
+.copy-progress-fill{height:100%;background:var(--blue);width:0}
+.copy-price-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.copy-price-pill{font-size:12px;padding:7px 9px;border:1px solid #27313c;border-radius:999px;background:#0a0f14;color:#c7d0da}
+.copy-order-meta{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+.copy-order-meta .item{padding:9px}
+.copy-live{color:#47e0a9;font-weight:850}.copy-stale{color:#d6ad4d;font-weight:850}
+@media(max-width:1050px){.copy-stats{grid-template-columns:repeat(2,1fr)}.copy-order-meta{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.copy-stats{grid-template-columns:1fr 1fr}.copy-order-meta{grid-template-columns:1fr 1fr}}
+
+
+/* ===== Copy Trading Admin v3.4 · Read-only overview ===== */
+.copy-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+.copy-overview .item .v{font-size:17px;font-weight:900}
+.copy-filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.copy-filter-row select{height:40px;border:1px solid #2b3744;border-radius:9px;background:#0e141b;color:#fff;padding:0 10px}
+.copy-detail-toggle{margin-top:12px}
+.copy-plan-extra[hidden]{display:none!important}
+@media(max-width:850px){.copy-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* ===== Copy Trading Admin v3 · Customer Plans ===== */
+.copy-customer-panel{margin-top:14px}
+.copy-customer-tools{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.copy-customer-tools .field{flex:1;min-width:230px;margin-top:0}
+.copy-plan-list{display:grid;gap:12px;margin-top:14px}
+.copy-plan-card{border:1px solid #27313c;background:#0d131a;border-radius:14px;padding:14px}
+.copy-plan-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.copy-plan-title{font-size:16px;font-weight:900}
+.copy-plan-sub{font-size:11px;color:var(--muted);margin-top:4px;word-break:break-word}
+.copy-plan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+.copy-plan-grid .item{padding:9px}
+.copy-plan-section{margin-top:12px;border-top:1px solid #202934;padding-top:12px}
+.copy-plan-section-title{font-size:12px;font-weight:900;margin-bottom:8px}
+.copy-mini-table-wrap{overflow:auto;border:1px solid #202934;border-radius:10px}
+.copy-mini-table{width:100%;border-collapse:collapse;min-width:850px}
+.copy-mini-table th,.copy-mini-table td{padding:9px 10px;border-bottom:1px solid #202934;text-align:left;font-size:11px;white-space:nowrap}
+.copy-mini-table th{background:#151d26;color:#8f9cab;font-size:10px;text-transform:uppercase}
+.copy-mini-table tr:last-child td{border-bottom:0}
+.copy-plan-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px}
+.copy-status-active{color:#47e0a9}
+.copy-status-ended{color:#c5a6ff}
+.copy-status-risk{color:#ff8390}
+.copy-status-emergency{color:#d6ad4d}
+@media(max-width:1100px){.copy-plan-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.copy-plan-grid{grid-template-columns:1fr 1fr}}
+.copy-list-foot{display:flex;justify-content:center;margin-top:12px}
+.copy-list-foot .btn{min-width:120px}
+
+
+
+/* Nexora Capital Admin Portal */
+body{background:radial-gradient(circle at 85% -10%,rgba(61,141,255,.12),transparent 30rem),#070b11}
+.card{box-shadow:0 16px 45px rgba(0,0,0,.16)}
+.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.admin-login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}.admin-logo-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2878eb,#55a7ff);display:grid;place-items:center;font-weight:950;font-size:20px;box-shadow:0 10px 30px rgba(61,141,255,.25)}.admin-login-brand{font-size:16px;font-weight:950;letter-spacing:.055em}.admin-login-kicker{font-size:9px;color:#5fa4ff;font-weight:900;letter-spacing:.18em;margin-top:3px}.admin-login-title{font-size:28px;font-weight:950;letter-spacing:-.035em}.admin-login-sub{font-size:13px;margin:7px 0 20px}.login-card{padding:28px;border-color:#20344b}.login-card .field input{height:52px}.login-card .btn.full{height:50px}.portal-chip{font-size:9px;color:#78b4ff;border:1px solid rgba(75,156,255,.35);background:rgba(61,141,255,.09);padding:4px 6px;border-radius:6px;vertical-align:2px;margin-left:5px}.admin-top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.platform-link{height:42px}
+@media(min-width:900px){.wrap{padding-left:252px;padding-right:22px}.main-tabs{width:228px;padding-top:112px;background:linear-gradient(180deg,#09111a,#080d14)}.main-tabs:before{content:"NEXORA CAPITAL";top:25px;font-size:15px;letter-spacing:.055em}.main-tabs:after{content:"ADMIN PORTAL";position:absolute;left:18px;top:49px;font-size:9px;font-weight:900;letter-spacing:.18em;color:#5fa4ff}.main-tab{border-color:transparent;background:transparent}.main-tab:hover{background:#0e1924;color:#dce9f8}.main-tab.active{background:linear-gradient(90deg,rgba(61,141,255,.17),rgba(61,141,255,.04))}}
+@media(max-width:600px){.login-card{margin-top:3vh;padding:22px 18px}.admin-top-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.admin-top-actions .btn{padding:0 7px;font-size:11px;white-space:nowrap}}
+
+
+/* ===== Nexora Admin V2 · desktop-like mobile sidebar ===== */
+.mobile-menu-btn,.mobile-sidebar-close,.mobile-sidebar-footer,.admin-sidebar-overlay{display:none}
+
+@media(min-width:900px){
+  .mobile-menu-btn{display:none!important}
+}
+
+@media(max-width:899px){
+  body.admin-menu-open{overflow:hidden}
+  .wrap{width:100%;padding:12px 14px 34px}
+  .topbar.admin-topbar{display:flex;align-items:center;gap:10px}
+  .mobile-menu-btn{
+    display:inline-flex;order:-1;width:42px;min-width:42px;height:42px;padding:0;
+    font-size:20px;border-radius:10px
+  }
+  .admin-top-actions{margin-left:auto}
+  .admin-top-actions .platform-link{display:none}
+  .admin-top-actions #logoutBtn{display:none}
+
+  .main-tabs{
+    position:fixed!important;left:0;top:0;bottom:0;width:min(290px,84vw)!important;
+    height:100dvh;z-index:80;margin:0!important;padding:102px 14px 18px!important;
+    display:flex!important;flex-direction:column!important;gap:7px!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    background:linear-gradient(180deg,#09111a,#080d14)!important;
+    border:0!important;border-right:1px solid #1b2937!important;
+    box-shadow:18px 0 55px rgba(0,0,0,.45);
+    transform:translateX(-105%);transition:transform .22s ease;
+  }
+  body.admin-menu-open .main-tabs{transform:translateX(0)}
+  .main-tabs:before{
+    content:"NEXORA CAPITAL"!important;position:absolute;left:18px;top:25px;
+    font-size:15px!important;font-weight:950!important;letter-spacing:.055em;color:#fff!important
+  }
+  .main-tabs:after{
+    content:"ADMIN PORTAL";position:absolute;left:18px;top:49px;
+    font-size:9px;font-weight:900;letter-spacing:.18em;color:#5fa4ff
+  }
+  .main-tab{
+    flex:none!important;width:100%!important;min-width:0!important;height:46px!important;
+    text-align:left!important;padding:0 15px!important;border-color:transparent!important;
+    background:transparent!important;border-radius:10px!important;color:#8da0b6!important
+  }
+  .main-tab.active{
+    color:#fff!important;border-color:#203b59!important;
+    background:linear-gradient(90deg,rgba(61,141,255,.18),rgba(61,141,255,.04))!important;
+    box-shadow:inset 3px 0 0 #4b9cff!important
+  }
+  .mobile-sidebar-close{
+    display:grid;place-items:center;position:absolute;right:14px;top:20px;
+    width:38px;height:38px;border:1px solid #263648;border-radius:10px;
+    background:#0e1721;color:#fff;font-size:24px;line-height:1
+  }
+  .mobile-sidebar-footer{
+    display:grid;gap:8px;margin-top:auto;padding-top:18px;border-top:1px solid #1b2937
+  }
+  .mobile-sidebar-footer .btn{width:100%;height:44px}
+  .admin-sidebar-overlay{
+    display:block;position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.64);
+    opacity:0;visibility:hidden;transition:.2s ease
+  }
+  body.admin-menu-open .admin-sidebar-overlay{opacity:1;visibility:visible}
+}
+
+@media(max-width:600px){
+  .topbar.admin-topbar{display:flex!important;margin-bottom:14px}
+  .admin-top-brand{min-width:0;flex:1}
+  .admin-top-brand .brand{font-size:15px;line-height:1.15}
+  .admin-session-line{max-width:190px}
+  .admin-session-line .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .admin-top-actions{display:flex!important;margin-top:0!important;gap:7px}
+  .admin-top-actions #refreshBtn{height:42px;padding:0 11px;font-size:11px}
+  .card{width:100%;margin-left:0;margin-right:0}
+}
+
+/* True viewport centering for login/recovery on desktop and mobile. */
+body:has(#loginView:not(.hidden)) .wrap,
+body:has(#resetView:not(.hidden)) .wrap{
+  min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding-top:20px;padding-bottom:20px
+}
+body:has(#loginView:not(.hidden)) .login-card,
+body:has(#resetView:not(.hidden)) .login-card{
+  margin:0;width:min(430px,100%)
+}
+
+
+/* ===== Login centering fix =====
+   Desktop admin .wrap normally reserves 252px for the sidebar.
+   Login/reset must not inherit that offset. */
+body:has(#loginView:not(.hidden)) .wrap,
+body:has(#resetView:not(.hidden)) .wrap{
+  width:100%!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  padding:20px!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+body:has(#loginView:not(.hidden)) #loginView,
+body:has(#resetView:not(.hidden)) #resetView{
+  width:min(430px,calc(100vw - 40px))!important;
+  margin:0!important;
+  flex:0 0 auto;
+}
+
+
+/* ===== Nexora Admin V3 Dashboard ===== */
+.admin-dashboard{padding:20px}
+.dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.dashboard-eyebrow{font-size:9px;font-weight:950;letter-spacing:.16em;color:#5fa4ff;margin-bottom:7px}
+.dashboard-title{font-size:25px;font-weight:950;letter-spacing:-.035em}
+.dashboard-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.dash-stat{position:relative;text-align:left;min-width:0;padding:15px;border:1px solid #1d2a39;border-radius:14px;background:linear-gradient(180deg,#0c151f,#080f17);color:#fff;cursor:pointer}
+.dash-stat:hover{border-color:#315a86;background:#0d1925}.dash-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(61,141,255,.12);color:#78b4ff;font-weight:950;margin-bottom:15px}
+.dash-k{display:block;font-size:10px;color:#8da0b6;text-transform:uppercase;letter-spacing:.055em;font-weight:850}
+.dash-stat strong{display:block;font-size:26px;margin-top:5px;letter-spacing:-.035em}.dash-stat small{display:block;color:#64778d;font-size:10px;margin-top:4px}
+.dashboard-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin-top:12px}
+.dash-panel{border:1px solid #1d2a39;border-radius:14px;background:#09111a;padding:15px}
+.dash-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.dash-panel-head b{font-size:14px}.dash-operation-list{display:grid;gap:7px}
+.dash-operation-list button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:44px;padding:0 12px;border:1px solid #192735;border-radius:10px;background:#080e15;color:#c9d5e2;text-align:left;cursor:pointer}
+.dash-operation-list button:hover{border-color:#315a86}.dash-operation-list b{color:#fff}
+.dash-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dash-shortcuts .btn{height:46px}
+@media(max-width:1000px){.dashboard-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.admin-dashboard{padding:14px}.dashboard-head{align-items:flex-start}.dashboard-title{font-size:22px}.dashboard-grid{grid-template-columns:1fr}.dash-stat strong{font-size:23px}}
+@media(max-width:430px){.dashboard-stats{grid-template-columns:1fr 1fr;gap:8px}.dash-stat{padding:12px}.dash-shortcuts{grid-template-columns:1fr}}
+
+
+/* Dashboard is a standalone primary destination in the admin sidebar. */
+.dashboard-nav-slot{width:100%;padding-bottom:13px;margin-bottom:7px;border-bottom:1px solid #1b2937}
+.dashboard-nav-slot .dashboard-main-tab{width:100%;color:#fff!important;background:rgba(61,141,255,.08)!important;border:1px solid rgba(61,141,255,.18)!important}
+.dashboard-nav-slot .dashboard-main-tab.active{background:linear-gradient(90deg,rgba(61,141,255,.22),rgba(61,141,255,.06))!important;border-color:#315a86!important}
+.admin-nav-section-label{font-size:9px;font-weight:900;letter-spacing:.14em;color:#52677e;padding:7px 14px 3px}
+@media(max-width:899px){
+  .dashboard-nav-slot{display:block;flex:none}
+  .admin-nav-section-label{display:block;flex:none}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="loginView" class="card login-card">
+    <div class="admin-login-logo"><span class="admin-logo-mark">N</span><div><div class="admin-login-brand">NEXORA CAPITAL</div><div class="admin-login-kicker">ADMIN PORTAL</div></div></div>
+    <div class="admin-login-title">Welcome back</div>
+    <div class="sub admin-login-sub">Sign in with an authorized administrator account.</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" autocomplete="username" required placeholder="Admin email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="current-password" required placeholder="Admin password">
+      </div>
+      <div id="loginMsg" class="msg"></div>
+      <button id="loginBtn" class="btn primary full" type="submit">Login</button>
+    </form>
+
+    <div class="security">
+      Supabase Authentication is used for administrator access. Never place a service-role key or admin password inside this file.
+    </div>
+  </section>
+
+  <section id="resetView" class="card login-card hidden">
+    <div class="brand">Set New Password</div>
+    <div class="sub">Create a new password for this administrator account.</div>
+
+    <form id="resetForm">
+      <div class="field">
+        <label>New Password</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+      </div>
+      <div class="field">
+        <label>Confirm New Password</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter the new password again">
+      </div>
+      <div id="resetMsg" class="msg"></div>
+      <button id="resetBtn" class="btn primary full" type="submit">Save New Password</button>
+    </form>
+
+    <div class="security">
+      This form is shown only when Supabase redirects a valid password-recovery session to this page.
+    </div>
+  </section>
+
+  <div id="adminView" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="brand">NEXORA CAPITAL <span class="portal-chip">ADMIN</span></div>
+        <div id="adminEmail" class="sub"></div>
+      </div>
+      <button id="mobileAdminMenuBtn" class="btn secondary mobile-menu-btn" type="button" aria-label="Open admin menu">☰</button><div class="admin-top-actions"><a class="btn secondary platform-link" href="index.html" target="_blank" rel="noopener">Open Platform ↗</a>
+        <button id="refreshBtn" class="btn secondary" type="button">Refresh</button>
+        <button id="logoutBtn" class="btn danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <div id="adminSidebarOverlay" class="admin-sidebar-overlay"></div>
+    <div class="main-tabs" id="adminSidebar">
+      <button id="mobileAdminCloseBtn" class="mobile-sidebar-close" type="button" aria-label="Close admin menu">×</button>
+      <div class="dashboard-nav-slot">
+        <button id="dashboardTabBtn" class="main-tab dashboard-main-tab active" type="button">Dashboard</button>
+      </div>
+      <div class="admin-nav-section-label">MANAGEMENT</div>
+      <button id="depositTabBtn" class="main-tab" type="button">Deposits</button>
+      <button id="withdrawTabBtn" class="main-tab" type="button">Withdrawals</button>
+      <button id="tradeTabBtn" class="main-tab" type="button">Trading Orders</button>
+      <button id="tradingDataTabBtn" class="main-tab" type="button">Customer Trading</button>
+      <button id="customerListTabBtn" class="main-tab" type="button">Customer List</button>
+      <button id="accountTabBtn" class="main-tab" type="button">Account Management</button>
+      <button id="copyTradingTabBtn" class="main-tab" type="button">Copy Trading</button>
+      <div class="mobile-sidebar-footer">
+        <a class="btn secondary" href="index.html" target="_blank" rel="noopener">Open Platform ↗</a>
+        <button id="mobileRefreshBtn" class="btn secondary" type="button">Refresh</button>
+        <button id="mobileLogoutBtn" class="btn danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <section id="dashboardSection" class="card admin-dashboard">
+      <div class="dashboard-head">
+        <div>
+          <div class="dashboard-eyebrow">NEXORA CAPITAL · CONTROL CENTER</div>
+          <div class="dashboard-title">Platform Overview</div>
+          <div class="sub">Live operational summary from the existing Nexora platform data.</div>
+        </div>
+        <button id="dashboardRefreshBtn" class="btn secondary" type="button">Refresh Overview</button>
+      </div>
+
+      <div class="dashboard-stats">
+        <button class="dash-stat" type="button" data-open-tab="customers">
+          <span class="dash-icon">◎</span><span class="dash-k">Customers</span><strong id="dashCustomers">—</strong><small>Registered accounts</small>
+        </button>
+        <button class="dash-stat" type="button" data-open-tab="deposits">
+          <span class="dash-icon">↓</span><span class="dash-k">Pending Deposits</span><strong id="dashDeposits">—</strong><small>Awaiting review</small>
+        </button>
+        <button class="dash-stat" type="button" data-open-tab="withdrawals">
+          <span class="dash-icon">↑</span><span class="dash-k">Pending Withdrawals</span><strong id="dashWithdrawals">—</strong><small>Awaiting review</small>
+        </button>
+        <button class="dash-stat" type="button" data-open-tab="trades">
+          <span class="dash-icon">↗</span><span class="dash-k">Pending Orders</span><strong id="dashOrders">—</strong><small>Open admin actions</small>
+        </button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-panel">
+          <div class="dash-panel-head"><div><b>Operations</b><div class="sub">Current platform workflow</div></div><span id="dashUpdated" class="sub">—</span></div>
+          <div class="dash-operation-list">
+            <button type="button" data-open-tab="deposits"><span>Deposit Requests</span><b id="dashDepositAll">—</b></button>
+            <button type="button" data-open-tab="withdrawals"><span>Withdrawal Requests</span><b id="dashWithdrawalAll">—</b></button>
+            <button type="button" data-open-tab="trades"><span>Trading Orders</span><b id="dashOrderAll">—</b></button>
+            <button type="button" data-open-tab="copy"><span>Copy Trading Plans</span><b id="dashCopyPlans">—</b></button>
+          </div>
+        </div>
+        <div class="dash-panel">
+          <div class="dash-panel-head"><div><b>Admin Shortcuts</b><div class="sub">Jump directly into platform controls</div></div></div>
+          <div class="dash-shortcuts">
+            <button class="btn secondary" type="button" data-open-tab="customers">Customers</button>
+            <button class="btn secondary" type="button" data-open-tab="accounts">Account Management</button>
+            <button class="btn secondary" type="button" data-open-tab="activity">Customer Activity</button>
+            <button class="btn secondary" type="button" data-open-tab="copy">Copy Trading</button>
+          </div>
+        </div>
+      </div>
+      <div id="dashboardMsg" class="msg"></div>
+    </section>
+
+    <section id="depositSection" class="card hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter deposit-filter active" data-filter="pending" type="button">Pending</button>
+          <button class="filter deposit-filter" data-filter="all" type="button">All</button>
+          <button class="filter deposit-filter" data-filter="approved" type="button">Approved</button>
+          <button class="filter deposit-filter" data-filter="rejected" type="button">Rejected</button>
+        </div>
+        <div id="countText" class="sub">0 requests</div>
+      </div>
+      <div id="adminMsg" class="msg"></div>
+      <div id="depositList" class="list"></div>
+    </section>
+
+    <section id="tradeSection" class="card hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter trade-filter active" data-trade-filter="pending" type="button">Pending</button>
+          <button class="filter trade-filter" data-trade-filter="all" type="button">All</button>
+          <button class="filter trade-filter" data-trade-filter="WIN" type="button">WIN</button>
+          <button class="filter trade-filter" data-trade-filter="LOSS" type="button">LOSS</button>
+          <button class="filter trade-filter" data-trade-filter="DRAW" type="button">DRAW</button>
+        </div>
+        <div id="tradeCountText" class="sub">0 orders</div>
+      </div>
+
+      <div class="trade-warning">
+        Order control. If no administrator result is set before the customer order expires, the customer page settles it as DRAW and refunds the principal.
+      </div>
+
+      <div id="tradeMsg" class="msg"></div>
+      <div id="tradeList" class="list"></div>
+    </section>
+
+    <section id="tradingDataSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:19px">Customer Trading Data</div>
+          <div class="sub">Search a customer UID to view all trading activity in one page.</div>
+        </div>
+      </div>
+
+      <div class="trading-data-search">
+        <div class="field">
+          <label>Search Customer UID</label>
+          <div class="uid-input-wrap"><span class="uid-prefix">DEMO-</span><input id="tradingDataUid" type="text" inputmode="numeric" placeholder="729155" autocomplete="off"></div>
+        </div>
+        <button id="loadTradingDataBtn" class="btn primary" type="button">Search</button>
+        <button id="clearTradingDataBtn" class="btn secondary" type="button">Clear</button>
+      </div>
+
+      <div id="tradingDataMsg" class="msg"></div>
+      <div id="customerOverview" class="customer-overview">
+        <div class="ov-box"><div class="ov-k">Available USDT</div><div id="ovAvailable" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Spot Assets</div><div id="ovSpot" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Contract Equity</div><div id="ovContract" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Account Score</div><div id="ovScore" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Total Trading Records</div><div id="ovRecords" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Total Assets</div><div id="ovTotalAssets" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Total Deposits</div><div id="ovTotalDeposits" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Total Withdrawals</div><div id="ovTotalWithdrawals" class="ov-v">—</div></div>
+        <div class="ov-box"><div class="ov-k">Trading P/L</div><div id="ovTradingPnl" class="ov-v">—</div></div>
+      </div>
+      <div id="tradingDataSummary" class="trade-data-summary"></div>
+      <div id="tradingDataList" class="trading-vertical-sections">
+        <div class="empty">Search a customer UID to view trading data.</div>
+      </div>
+    </section>
+
+    <section id="withdrawSection" class="card hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter withdraw-filter active" data-withdraw-filter="pending" type="button">Pending</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="all" type="button">All</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="approved" type="button">Approved</button>
+          <button class="filter withdraw-filter" data-withdraw-filter="rejected" type="button">Rejected</button>
+        </div>
+        <div id="withdrawCountText" class="sub">0 requests</div>
+      </div>
+
+      <div class="trade-warning">
+        Review the customer UID, currency, amount and destination before changing the request status.
+      </div>
+
+      <div id="withdrawMsg" class="msg"></div>
+      <div id="withdrawList" class="list"></div>
+    </section>
+
+    <section id="customerListSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:19px">Customer List</div>
+          <div class="sub">Registered customer accounts. Click a customer to open Account Management.</div>
+        </div>
+        <div id="customerCountText" class="sub">0 customers</div>
+      </div>
+
+      <div class="customer-list-tools">
+        <div class="field">
+          <label>Search UID or Email</label>
+          <input id="customerSearchInput" type="text" placeholder="123456 or customer@email.com" autocomplete="off">
+        </div>
+        <button id="reloadCustomersBtn" class="btn secondary" type="button">Refresh List</button>
+      </div>
+
+      <div id="customerListMsg" class="msg"></div>
+      <div id="customerListHolder" class="customer-table-wrap">
+        <div class="empty">Open Customer List to load registered customers.</div>
+      </div>
+    </section>
+
+    <section id="accountSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:17px">Account Management</div>
+          <div class="sub">Manage the customer's platform balance and account score by UID.</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>Customer UID</label>
+        <div class="uid-input-wrap"><span class="uid-prefix">DEMO-</span><input id="accountUid" type="text" inputmode="numeric" placeholder="123456" autocomplete="off"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button id="lookupAccountBtn" class="btn primary" type="button">Load Account</button>
+        <button id="clearAccountBtn" class="btn secondary" type="button">Clear</button>
+      </div>
+
+      <div id="accountMsg" class="msg"></div>
+
+      <div class="account-grid">
+        <div class="account-box">
+          <h3>Available USDT</h3>
+          <div class="note">Reads and updates the customer's centralized platform balance. Customer pages synchronize the new value automatically.</div>
+
+          <div class="account-result">
+            <div class="sub">Current Available USDT</div>
+            <div id="currentBalance" class="big">—</div>
+          </div>
+
+          <div class="field">
+            <label>Add Credit (USDT)</label>
+            <input id="balanceInput" type="number" min="0.01" step="0.01" placeholder="1.00">
+          </div>
+
+          <div class="field">
+            <label>Note (optional)</label>
+            <input id="creditNote" type="text" maxlength="120" placeholder="Admin manual credit">
+          </div>
+
+          <button id="saveBalanceBtn" class="btn success full" type="button">Add Credit</button>
+        </div>
+
+        <div class="account-box">
+          <h3>Account Score</h3>
+          <div class="note">Score is stored in Supabase and controlled from Admin only.</div>
+
+          <div class="account-result">
+            <div class="sub">Current Score</div>
+            <div id="currentScore" class="big">—</div>
+          </div>
+
+          <div class="field">
+            <label>New Score (0–100)</label>
+            <input id="scoreInput" type="number" min="0" max="100" step="1" placeholder="100">
+          </div>
+
+          <button id="saveScoreBtn" class="btn primary full" type="button">Save Score</button>
+        </div>
+      </div>
+
+      <div class="account-box" style="margin-top:14px">
+        <h3>Recent Manual Credits</h3>
+        <div id="accountHistory" class="account-history"><div class="empty">Enter a UID and load the account.</div></div>
+      </div>
+    </section>
+
+    <section id="copyTradingSection" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <div class="brand" style="font-size:19px">Copy Trading</div>
+          <div class="sub">Server-side copy trading strategy management.</div>
+        </div>
+        <button id="reloadCopyOrdersBtn" class="btn secondary" type="button">Refresh</button>
+      </div>
+
+      <div id="copyTradingMsg" class="msg"></div>
+
+      <div class="copy-stats">
+        <div class="copy-stat"><div class="k">Active Followers</div><div id="copyActiveFollowers" class="v">—</div></div>
+        <div class="copy-stat"><div class="k">Open Orders</div><div id="copyOpenOrders" class="v">—</div></div>
+        <div class="copy-stat"><div class="k">Used Allocation</div><div id="copyUsedAllocation" class="v">—</div><div class="copy-progress"><div id="copyAllocationBar" class="copy-progress-fill"></div></div></div>
+        <div class="copy-stat"><div class="k">Remaining Allocation</div><div id="copyRemainingAllocation" class="v">—</div></div>
+      </div>
+
+      <div class="copy-admin-box" style="margin-top:14px">
+        <h3>Customer Plans Overview <span style="font-size:10px;color:var(--muted)">· Read only</span></h3>
+        <div class="note">Summary of plans for the selected strategy returned by the admin read APIs. Figures are virtual USDT; current value excludes unrealized P/L and is not a guaranteed payout.</div>
+        <div id="copyPlanOverview" class="copy-overview"><div class="empty">Loading overview...</div></div>
+      </div>
+
+      <div class="copy-admin-grid">
+        <div class="copy-admin-box">
+          <h3><span id="copyOpenStrategyTitle">Selected Strategy</span> · Open Order</h3>
+          <div class="field"><label>Strategy</label><select id="copyStrategySelect" style="width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:11px;padding:0 13px"><option value="">Loading strategies...</option></select></div>
+          <div class="note">The database enforces the total open allocation limit. Entry/exit P/L is calculated server-side.</div>
+          <div class="field"><label>Symbol</label><input id="copySymbol" type="text" value="BTC" placeholder="BTC"></div>
+          <div class="copy-price-row"><span class="copy-price-pill">Live price: <b id="copyLivePrice">—</b></span><span class="copy-price-pill">Updated: <b id="copyLivePriceTime">—</b></span><button id="useCopyLivePriceBtn" class="btn secondary" type="button">Use Live Price</button></div>
+          <div class="field"><label>Direction</label><select id="copySide" style="width:100%;height:48px;border:1px solid #2b3744;background:#0e141b;color:#fff;border-radius:11px;padding:0 13px"><option value="long">Long</option><option value="short">Short</option></select></div>
+          <div class="field"><label>Allocation (%)</label><input id="copyAllocation" type="number" min="0.01" max="100" step="0.01" value="20"></div>
+          <div class="field"><label>Entry Price</label><input id="copyEntryPrice" type="number" min="0.00000001" step="any" placeholder="Enter or use live price"></div>
+          <button id="openCopyOrderBtn" class="btn success full" type="button">Open Order</button>
+        </div>
+        <div class="copy-admin-box">
+          <h3>Strategy Status</h3>
+          <div class="note" style="line-height:1.8">Used Allocation is the sum of currently open master orders for the selected strategy. Remaining Allocation is 100% minus that amount. Active Followers counts active, unexpired subscriptions.</div>
+          <div class="trade-warning">Closing an order requires an exit price; the server calculates the order and follower P/L.</div>
+        </div>
+      </div>
+
+      <div class="copy-admin-box" style="margin-top:14px">
+        <h3><span id="copyOrdersStrategyTitle">Selected Strategy</span> Orders</h3>
+        <div id="copyOrdersList" class="copy-admin-orders"><div class="empty">Open Copy Trading to load orders.</div></div>
+      </div>
+
+      <div class="copy-admin-box copy-customer-panel">
+        <div class="toolbar">
+          <div>
+            <h3 style="margin:0">Customer Copy Plans</h3>
+            <div class="note">View active and ended subscriptions for the selected strategy, copied positions, settlement records, and perform an emergency close on an active plan.</div>
+          </div>
+          <div id="copyCustomerCount" class="sub">0 plans</div>
+        </div>
+        <div class="copy-customer-tools">
+          <div class="field">
+            <label>Search Customer UID</label>
+            <input id="copyCustomerSearch" type="text" placeholder="DEMO-489022 or 489022" autocomplete="off">
+          </div>
+          <button id="copyCustomerSearchBtn" class="btn primary" type="button">Search</button>
+          <button id="copyCustomerClearBtn" class="btn secondary" type="button">Show All</button>
+        </div>
+        <div id="copyCustomerPlans" class="copy-plan-list"><div class="empty">Open Copy Trading to load customer plans.</div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="imageModal" class="modal">
+  <button id="closeModal" class="close" type="button">×</button>
+  <img id="modalImage" alt="Receipt">
+</div>
+
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+
+let session=null;
+let currentFilter='pending';
+let currentTradeFilter='pending';
+let currentWithdrawFilter='pending';
+let currentMainTab='deposits';
+let currentTradingDataView='seconds';
+let tradingDataCache={};
+let tradingDataExpanded={};
+let receiptObjectUrls=[];
+let customerListCache=[];
+let copyOrdersShowAll=false;
+let copyPlansShowAll=false;
+const copyPlanDetailsOpen=new Set();
+
+function authHeaders(extra={}){
+  return {
+    apikey:SUPABASE_KEY,
+    Authorization:'Bearer '+session.access_token,
+    ...extra
+  };
+}
+
+function setMsg(id,text,ok=false){
+  const el=document.getElementById(id);
+  if(!text){
+    el.className='msg';
+    el.textContent='';
+    return;
+  }
+  el.textContent=text;
+  el.className='msg show '+(ok?'ok':'err');
+}
+
+function saveSession(data){
+  session={
+    access_token:data.access_token,
+    refresh_token:data.refresh_token,
+    expires_at:Date.now()+(Number(data.expires_in||3600)*1000),
+    user:data.user
+  };
+  sessionStorage.setItem('adminSession',JSON.stringify(session));
+}
+
+function loadSavedSession(){
+  try{
+    const x=JSON.parse(sessionStorage.getItem('adminSession')||'null');
+    if(x?.access_token && x?.refresh_token){
+      session=x;
+      return true;
+    }
+  }catch(_){}
+  return false;
+}
+
+async function refreshSession(){
+  if(!session?.refresh_token) return false;
+  try{
+    const r=await fetch(
+      SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',
+      {
+        method:'POST',
+        headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({refresh_token:session.refresh_token})
+      }
+    );
+    if(!r.ok) return false;
+    saveSession(await r.json());
+    return true;
+  }catch(_){
+    return false;
+  }
+}
+
+async function ensureSession(){
+  if(!session) return false;
+  if(session.expires_at && Date.now()>session.expires_at-60000){
+    return await refreshSession();
+  }
+  return true;
+}
+
+async function verifyAdmin(){
+  if(!await ensureSession()) return false;
+  const uid=session?.user?.id;
+  if(!uid) return false;
+
+  let r=await fetch(
+    SUPABASE_URL+'/rest/v1/admin_users?select=user_id&user_id=eq.'+encodeURIComponent(uid),
+    {headers:authHeaders()}
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+'/rest/v1/admin_users?select=user_id&user_id=eq.'+encodeURIComponent(uid),
+      {headers:authHeaders()}
+    );
+  }
+
+  if(!r.ok) return false;
+  const rows=await r.json();
+  return Array.isArray(rows)&&rows.length>0;
+}
+
+async function login(email,password){
+  const r=await fetch(
+    SUPABASE_URL+'/auth/v1/token?grant_type=password',
+    {
+      method:'POST',
+      headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    }
+  );
+
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+    throw new Error(data?.msg||data?.error_description||data?.message||'Login failed');
+  }
+
+  saveSession(data);
+
+  if(!await verifyAdmin()){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    throw new Error('This account is not authorized as an administrator.');
+  }
+}
+
+function showAdmin(){
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('resetView').classList.add('hidden');
+  document.getElementById('adminView').classList.remove('hidden');
+  document.getElementById('adminEmail').textContent=session?.user?.email||'Authenticated admin';
+}
+
+function showLogin(){
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('resetView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+}
+
+function showReset(){
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('resetView').classList.remove('hidden');
+}
+
+function getRecoverySessionFromUrl(){
+  const hash=new URLSearchParams(location.hash.replace(/^#/,'') || '');
+  const query=new URLSearchParams(location.search);
+  const type=hash.get('type') || query.get('type');
+  const accessToken=hash.get('access_token');
+  const refreshToken=hash.get('refresh_token');
+  const errorDescription=hash.get('error_description') || query.get('error_description');
+  return {type,accessToken,refreshToken,errorDescription};
+}
+
+async function updatePasswordWithRecoveryToken(accessToken,newPassword){
+  const r=await fetch(
+    SUPABASE_URL+'/auth/v1/user',
+    {
+      method:'PUT',
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:'Bearer '+accessToken,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({password:newPassword})
+    }
+  );
+
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+    throw new Error(data?.msg||data?.error_description||data?.message||'Could not update password.');
+  }
+  return data;
+}
+
+function money(v,d=2){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+
+function esc(v){
+  return String(v??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function normalizeAdminUid(value){
+  const raw=String(value||'').trim().toUpperCase();
+  if(!raw) return '';
+  const numberPart=raw.replace(/^DEMO-/,'').replace(/\D/g,'');
+  return numberPart ? 'DEMO-'+numberPart : '';
+}
+
+function displayAdminUidNumber(value){
+  return String(value||'').trim().replace(/^DEMO-/i,'');
+}
+
+function statusClass(s){
+  return ['approved','rejected'].includes(s)?s:'pending';
+}
+
+function resultClass(result,status){
+  if(status==='pending') return 'pending';
+  if(result==='WIN') return 'win';
+  if(result==='LOSS') return 'loss';
+  return 'draw';
+}
+
+function formatRemaining(expiresAt){
+  const ms=new Date(expiresAt).getTime()-Date.now();
+  if(!Number.isFinite(ms)) return '—';
+  if(ms<=0) return 'Expired';
+  const sec=Math.ceil(ms/1000);
+  if(sec<60) return sec+'s';
+  return Math.floor(sec/60)+'m '+(sec%60)+'s';
+}
+
+async function getReceiptBlobUrl(path){
+  if(!path || !await ensureSession()) return null;
+  const clean=String(path).replace(/^\/+/,'');
+  const url=SUPABASE_URL+'/storage/v1/object/authenticated/deposit-receipts/'+clean.split('/').map(encodeURIComponent).join('/');
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+  if(!r.ok) return null;
+
+  const blob=await r.blob();
+  const obj=URL.createObjectURL(blob);
+  receiptObjectUrls.push(obj);
+  return obj;
+}
+
+function clearReceiptUrls(){
+  receiptObjectUrls.forEach(x=>URL.revokeObjectURL(x));
+  receiptObjectUrls=[];
+}
+
+async function loadDeposits(){
+  setMsg('adminMsg','');
+  clearReceiptUrls();
+
+  if(!await ensureSession()){ logout(); return; }
+
+  const filterPart=currentFilter==='all'?'':'&status=eq.'+encodeURIComponent(currentFilter);
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/deposit_requests?select=id,uid,amount,status,created_at,reviewed_at,payment_method,reference,receipt_url,myr_amount,exchange_rate'+
+    filterPart+'&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Could not load deposit requests: '+await r.text());
+    return;
+  }
+
+  const rows=await r.json();
+  document.getElementById('countText').textContent=(rows?.length||0)+' request'+((rows?.length||0)===1?'':'s');
+  const list=document.getElementById('depositList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML='<div class="empty">No '+esc(currentFilter==='all'?'':currentFilter+' ')+'deposit requests.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const method=x.payment_method||'—';
+    const isMyr=method==='MYR_BANK';
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${money(x.amount)} USDT</div>
+            <div class="sub">Request #${x.id} · ${esc(x.uid||'—')} · ${esc(new Date(x.created_at).toLocaleString())}</div>
+          </div>
+          <div class="status ${statusClass(x.status)}">${esc(String(x.status||'pending').toUpperCase())}</div>
+        </div>
+
+        <div class="grid">
+          <div class="item"><div class="k">Payment Method</div><div class="v">${esc(method)}</div></div>
+          <div class="item"><div class="k">Reference / TXID</div><div class="v">${esc(x.reference||'—')}</div></div>
+          <div class="item"><div class="k">MYR Amount</div><div class="v">${isMyr && x.myr_amount!=null?'RM '+money(x.myr_amount):'—'}</div></div>
+          <div class="item"><div class="k">Exchange Rate</div><div class="v">${isMyr && x.exchange_rate!=null?'1 USDT = RM '+money(x.exchange_rate,6):'—'}</div></div>
+        </div>
+
+        <div class="receipt-area">
+          <div class="receipt" id="receipt-${x.id}">
+            <div class="receipt-placeholder">${x.receipt_url?'Loading receipt...':'No receipt uploaded'}</div>
+          </div>
+
+          <div class="actions">
+            <div style="flex:1;min-width:180px">
+              <div class="note">${x.reviewed_at?'Reviewed: '+esc(new Date(x.reviewed_at).toLocaleString()):'Not reviewed yet.'}</div>
+            </div>
+            ${
+              x.status==='pending'
+              ? `
+                <button class="btn success" type="button" onclick="reviewDeposit(${x.id},'approved')">Approve</button>
+                <button class="btn danger" type="button" onclick="reviewDeposit(${x.id},'rejected')">Reject</button>
+              `
+              : `<button class="btn secondary" type="button" onclick="reviewDeposit(${x.id},'pending')">Set Pending</button>`
+            }
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  for(const x of rows){
+    if(!x.receipt_url) continue;
+    const holder=document.getElementById('receipt-'+x.id);
+    const blobUrl=await getReceiptBlobUrl(x.receipt_url);
+    if(!holder) continue;
+    holder.innerHTML=blobUrl
+      ? `<img src="${blobUrl}" alt="Deposit receipt" onclick="openReceipt('${blobUrl}')">`
+      : '<div class="receipt-placeholder">Receipt exists but could not be opened.</div>';
+  }
+}
+
+async function createCustomerNotification(uid,type,title,message,sourceType,sourceId){
+  if(!uid || !await ensureSession()) return false;
+
+  const payload={
+    uid:String(uid),
+    type:String(type),
+    title:String(title),
+    message:String(message),
+    source_type:sourceType ? String(sourceType) : null,
+    source_id:sourceId==null ? null : String(sourceId)
+  };
+
+  async function sendNotification(){
+    return fetch(
+      SUPABASE_URL+'/rest/v1/notifications',
+      {
+        method:'POST',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  let r=await sendNotification();
+
+  if(r.status===401 && await refreshSession()){
+    r=await sendNotification();
+  }
+
+  const text=await r.text();
+
+  if(!r.ok){
+    console.error(
+      'Notification insert failed:',
+      r.status,
+      text,
+      payload
+    );
+
+    alert(
+      'Notification failed ('+
+      r.status+
+      '):\n\n'+
+      text
+    );
+
+    return false;
+  }
+
+  console.log('Notification created:',text);
+  return true;
+}
+
+async function reviewDeposit(id,status){
+  if(!['pending','approved','rejected'].includes(status)) return;
+  if(!await ensureSession()){ logout(); return; }
+
+  const action=status==='approved'?'approve':status==='rejected'?'reject':'set back to pending';
+  if(!confirm('Are you sure you want to '+action+' request #'+id+'?')) return;
+
+  // APPROVE: server-side atomic deposit approval + balance + ledger.
+  if(status==='approved'){
+    setMsg('adminMsg','Approving deposit #'+id+'...');
+
+    async function sendApproval(){
+      return fetch(
+        SUPABASE_URL+'/functions/v1/approve-deposit',
+        {
+          method:'POST',
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:'Bearer '+session.access_token,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({deposit_id:Number(id)})
+        }
+      );
+    }
+
+    let r=await sendApproval();
+    if(r.status===401 && await refreshSession()){
+      r=await sendApproval();
+    }
+
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok || !data?.success){
+      if(data?.already_processed){
+        setMsg('adminMsg','Deposit #'+id+' was already processed. Current status: '+String(data?.status||'unknown')+'.');
+      }else{
+        setMsg('adminMsg','Approval failed: '+String(data?.reason||data?.error||'Deposit approval failed.'));
+      }
+      await loadDeposits();
+      return;
+    }
+
+    const uid=String(data.uid||'');
+    const amount=Number(data.amount);
+    const balanceBefore=Number(data.balance_before);
+    const balanceAfter=Number(data.balance_after);
+
+    // Notification is separate; failure does not roll back the approved deposit.
+    if(uid){
+      await createCustomerNotification(
+        uid,
+        'deposit',
+        'Deposit Approved',
+        'Your deposit #'+id+' for '+money(amount)+' USDT has been approved.',
+        'deposit',
+        id+'-approved'
+      );
+    }
+
+    setMsg(
+      'adminMsg',
+      'Deposit #'+id+' approved. '+money(amount)+' USDT credited. Balance: '+money(balanceBefore)+' → '+money(balanceAfter)+' USDT.',
+      true
+    );
+    await loadDeposits();
+    return;
+  }
+
+  // REJECT / SET PENDING: keep existing status-only behavior.
+  const payload={status,reviewed_at:status==='pending'?null:new Date().toISOString()};
+
+  async function updateDepositStatus(){
+    return fetch(
+      SUPABASE_URL+'/rest/v1/deposit_requests?id=eq.'+encodeURIComponent(id),
+      {
+        method:'PATCH',
+        headers:authHeaders({'Content-Type':'application/json',Prefer:'return=representation'}),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  let r=await updateDepositStatus();
+  if(r.status===401 && await refreshSession()){
+    r=await updateDepositStatus();
+  }
+
+  if(!r.ok){
+    setMsg('adminMsg','Update failed: '+await r.text());
+    return;
+  }
+
+  const changed=await r.json();
+  const row=Array.isArray(changed)?changed[0]:null;
+
+  if(row && status==='rejected'){
+    await createCustomerNotification(
+      row.uid,
+      'deposit',
+      'Deposit Rejected',
+      'Your deposit #'+id+' for '+money(row.amount)+' USDT has been rejected.',
+      'deposit',
+      id+'-rejected'
+    );
+  }
+
+  setMsg('adminMsg','Request #'+id+' updated to '+status+'.',true);
+  await loadDeposits();
+}
+
+async function loadTrades(){
+  setMsg('tradeMsg','');
+  if(!await ensureSession()){ logout(); return; }
+
+  let filterPart='';
+  if(currentTradeFilter==='pending') filterPart='&status=eq.pending';
+  else if(['WIN','LOSS','DRAW'].includes(currentTradeFilter)) filterPart='&result=eq.'+encodeURIComponent(currentTradeFilter);
+
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/trade_orders?select=id,uid,symbol,side,amount,entry_price,duration_seconds,payout_rate,status,result,profit_loss,created_at,expires_at,settled_at'+
+    filterPart+'&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg('tradeMsg','Could not load trading orders: '+await r.text());
+    return;
+  }
+
+  const rows=await r.json();
+  document.getElementById('tradeCountText').textContent=(rows?.length||0)+' order'+((rows?.length||0)===1?'':'s');
+  const list=document.getElementById('tradeList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML='<div class="empty">No trading orders found.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const pct=(Number(x.payout_rate||0.8)*100);
+    const resultLabel=x.status==='settled'?(x.result||'DRAW'):'PENDING';
+    const pl=x.profit_loss==null?'—':(Number(x.profit_loss)>0?'+':'')+money(x.profit_loss)+' USDT';
+
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${esc(x.symbol)} / USDT · <span class="${x.side==='BUY'?'trade-side-buy':'trade-side-sell'}">${esc(x.side)}</span></div>
+            <div class="sub">Order #${x.id} · ${esc(x.uid)} · ${esc(new Date(x.created_at).toLocaleString())}</div>
+          </div>
+          <div class="status ${resultClass(x.result,x.status)}">${esc(resultLabel)}</div>
+        </div>
+
+        <div class="grid">
+          <div class="item"><div class="k">Amount</div><div class="v">${money(x.amount)} USDT</div></div>
+          <div class="item"><div class="k">Entry Price</div><div class="v">${money(x.entry_price,8)}</div></div>
+          <div class="item"><div class="k">Duration</div><div class="v">${Number(x.duration_seconds)||0}s</div></div>
+          <div class="item"><div class="k">Time Left</div><div class="v">${esc(formatRemaining(x.expires_at))}</div></div>
+          <div class="item"><div class="k">Expires At</div><div class="v">${esc(new Date(x.expires_at).toLocaleString())}</div></div>
+          <div class="item"><div class="k">Payout Rate</div><div class="v">${money(pct,2)}%</div></div>
+          <div class="item"><div class="k">P/L</div><div class="v">${esc(pl)}</div></div>
+          <div class="item"><div class="k">Settled At</div><div class="v">${x.settled_at?esc(new Date(x.settled_at).toLocaleString()):'—'}</div></div>
+        </div>
+
+        <div class="actions">
+          ${
+            x.status==='pending'
+            ? `
+              <div class="payout-box" style="margin-right:auto">
+                <span class="note">WIN payout</span>
+                <input id="payout-${x.id}" class="payout-input" type="number" min="0" max="1000" step="1" value="${pct.toFixed(0)}">
+                <span class="note">%</span>
+              </div>
+              <button class="btn success" type="button" onclick="settleTrade(${x.id},'WIN',${Number(x.amount)})">WIN</button>
+              <button class="btn danger" type="button" onclick="settleTrade(${x.id},'LOSS',${Number(x.amount)})">LOSS</button>
+              <button class="btn drawbtn" type="button" onclick="settleTrade(${x.id},'DRAW',${Number(x.amount)})">DRAW</button>
+            `
+            : `
+              <button class="btn secondary" type="button" onclick="resetTrade(${x.id})">Set Pending</button>
+            `
+          }
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function settleTrade(id,result,amount){
+  if(!['WIN','LOSS','DRAW'].includes(result)) return;
+  if(!await ensureSession()){ logout(); return; }
+
+  let payoutRate=0.80;
+  const input=document.getElementById('payout-'+id);
+  if(result==='WIN'){
+    const pct=Number(input?.value);
+    if(!Number.isFinite(pct) || pct<0 || pct>1000){
+      setMsg('tradeMsg','Enter a valid WIN payout percentage from 0 to 1000.');
+      return;
+    }
+    payoutRate=pct/100;
+  }
+
+  if(!confirm('Set trade #'+id+' to '+result+' and settle its balance atomically?')) return;
+
+  const call=()=>fetch(SUPABASE_URL+'/rest/v1/rpc/admin_settle_seconds_trade_atomic',{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:JSON.stringify({p_order_id:Number(id),p_result:result,p_win_payout_rate:payoutRate})
+  });
+
+  let r=await call();
+  if(r.status===401 && await refreshSession()) r=await call();
+  if(!r.ok){
+    setMsg('tradeMsg','Trade settlement failed: '+await r.text());
+    return;
+  }
+
+  setMsg('tradeMsg','Trade #'+id+' settled as '+result+' with server-owned balance accounting.',true);
+  await loadTrades();
+}
+
+async function resetTrade(id){
+  setMsg('tradeMsg','Set Pending is disabled after server-owned financial settlement. Create a new trade instead.');
+}
+
+
+
+
+
+async function adminGet(path){
+  if(!await ensureSession()) throw new Error('Session expired.');
+  let r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:authHeaders()});
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:authHeaders()});
+  }
+  if(!r.ok) throw new Error(await r.text());
+  return await r.json();
+}
+
+function tdTime(v){
+  if(!v) return '—';
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?'—':d.toLocaleString();
+}
+function tdSigned(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return (n>0?'+':'')+money(n)+' USDT';
+}
+function tdStatus(v){
+  const s=String(v||'—').toUpperCase();
+  const cls=['WIN','FILLED','OPEN'].includes(s)?'approved':
+    ['LOSS','CANCELLED','LIQUIDATION'].includes(s)?'rejected':
+    s==='DRAW'?'draw':'pending';
+  return '<span class="status '+cls+'">'+esc(s)+'</span>';
+}
+
+function tdNum(v,d=2){
+  const n=Number(v);
+  return Number.isFinite(n)?money(n,d):'—';
+}
+function tdPnl(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '<span>—</span>';
+  return '<span class="'+(n>=0?'td-pos':'td-neg')+'">'+(n>0?'+':'')+money(n)+' USDT</span>';
+}
+function tdTable(key,title,rows,columns){
+  const expanded=!!tradingDataExpanded[key];
+  const visibleRows=expanded?rows.slice(0,100):rows.slice(0,5);
+  const body=!rows.length
+    ? '<div class="td-empty">No records.</div>'
+    : '<div class="td-table-wrap"><table class="td-table"><thead><tr>'+ 
+      columns.map(c=>'<th>'+esc(c[0])+'</th>').join('')+
+      '</tr></thead><tbody>'+ 
+      visibleRows.map(x=>'<tr>'+columns.map(c=>'<td>'+c[1](x)+'</td>').join('')+'</tr>').join('')+
+      '</tbody></table></div>';
+  const toggle=rows.length>5
+    ? '<div class="td-section-foot"><button class="td-section-toggle" type="button" onclick="toggleTradingDataSection(\''+key+'\')">'+(expanded?'Show less':'View all')+'</button></div>'
+    : '';
+  return '<div class="td-section"><div class="td-section-head"><div class="td-section-title">'+esc(title)+'</div><div class="td-section-count">'+rows.length+' record'+(rows.length===1?'':'s')+'</div></div>'+body+toggle+'</div>';
+}
+function toggleTradingDataSection(key){
+  tradingDataExpanded[key]=!tradingDataExpanded[key];
+  renderTradingData();
+}
+
+function renderTradingData(){
+  const list=document.getElementById('tradingDataList');
+  const sum=document.getElementById('tradingDataSummary');
+  const seconds=tradingDataCache.seconds||[];
+  const cp=tradingDataCache.contract_positions||[];
+  const ch=tradingDataCache.contract_history||[];
+  const sh=tradingDataCache.spot_holdings||[];
+  const so=tradingDataCache.spot_orders||[];
+  const sph=tradingDataCache.spot_history||[];
+  const total=seconds.length+cp.length+ch.length+sh.length+so.length+sph.length;
+
+  sum.innerHTML=
+    '<div class="item"><div class="k">Customer UID</div><div class="v">'+esc(normalizeAdminUid(document.getElementById('tradingDataUid').value)||'—')+'</div></div>'+
+    '<div class="item"><div class="k">Open Contracts</div><div class="v">'+cp.filter(x=>String(x.status||'open').toLowerCase()==='open').length+'</div></div>'+
+    '<div class="item"><div class="k">Spot Holdings</div><div class="v">'+sh.filter(x=>Number(x.quantity)>0).length+'</div></div>'+
+    '<div class="item"><div class="k">Total Records</div><div class="v">'+total+'</div></div>';
+
+  list.innerHTML=
+    tdTable('seconds','秒合约 / Seconds Trading',seconds,[
+      ['ID',x=>esc(x.id)],['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Direction',x=>esc(x.side||'—')],
+      ['Amount',x=>tdNum(x.amount)+' USDT'],['Result',x=>tdStatus(x.status==='settled'?(x.result||'DRAW'):(x.status||'pending'))],
+      ['P/L',x=>tdPnl(x.profit_loss)],['Time',x=>esc(tdTime(x.created_at))]
+    ])+
+    tdTable('contract_positions','Contract Positions',cp,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Mode',x=>esc(x.margin_mode||'—')],
+      ['Leverage',x=>esc((Number(x.leverage)||1)+'x')],['Qty',x=>tdNum(x.qty,8)],['Entry',x=>tdNum(x.entry_price,8)],
+      ['Margin',x=>tdNum(x.margin)+' USDT'],['Status',x=>tdStatus(x.status||'open')]
+    ])+
+    tdTable('contract_history','Contract History',ch,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Leverage',x=>esc((Number(x.leverage)||1)+'x')],
+      ['Entry',x=>tdNum(x.entry_price,8)],['Exit',x=>tdNum(x.exit_price,8)],['P/L',x=>tdPnl(x.profit_loss)],
+      ['ROE',x=>Number.isFinite(Number(x.roe))?esc(money(x.roe)+'%'):'—'],['Reason',x=>esc(x.close_reason||'—')],['Time',x=>esc(tdTime(x.closed_at||x.created_at))]
+    ])+
+    tdTable('spot_holdings','Spot Holdings',sh,[
+      ['Coin',x=>esc(x.symbol||'—')],['Quantity',x=>tdNum(x.quantity,8)],['Avg Price',x=>tdNum(x.avg_price,8)],
+      ['Total Cost',x=>tdNum(x.total_cost)+' USDT'],['Updated',x=>esc(tdTime(x.updated_at))]
+    ])+
+    tdTable('spot_orders','Spot Orders',so,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Type',x=>esc(x.order_type||'—')],
+      ['Value',x=>tdNum(x.order_value)+' USDT'],['Qty',x=>tdNum(x.quantity,8)],['Limit',x=>x.limit_price==null?'—':tdNum(x.limit_price,8)],
+      ['Filled',x=>x.filled_price==null?'—':tdNum(x.filled_price,8)],['Status',x=>tdStatus(x.status)],['Time',x=>esc(tdTime(x.created_at))]
+    ])+
+    tdTable('spot_history','Spot History',sph,[
+      ['Pair',x=>esc((x.symbol||'—')+'/USDT')],['Side',x=>esc(x.side||'—')],['Type',x=>esc(x.order_type||'—')],
+      ['Price',x=>tdNum(x.price,8)],['Qty',x=>tdNum(x.quantity,8)],['Value',x=>tdNum(x.order_value)+' USDT'],
+      ['Realized P/L',x=>tdPnl(x.realized_pnl)],['Time',x=>esc(tdTime(x.filled_at||x.created_at))]
+    ]);
+}
+async function fetchAdminMarketPrices(symbols){
+  const unique=[...new Set((symbols||[]).map(x=>String(x||'').toUpperCase()).filter(Boolean))];
+  const out={};
+  await Promise.all(unique.map(async symbol=>{
+    try{
+      const pair=symbol.endsWith('USDT')?symbol:symbol+'USDT';
+      const r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol='+encodeURIComponent(pair));
+      if(!r.ok) return;
+      const data=await r.json();
+      const price=Number(data?.price);
+      if(Number.isFinite(price)&&price>0) out[symbol]=price;
+    }catch(_){}
+  }));
+  return out;
+}
+function newestSpotHoldings(rows){
+  const map=new Map();
+  for(const row of (rows||[])){
+    const symbol=String(row.symbol||'').toUpperCase();
+    if(!symbol || map.has(symbol)) continue;
+    map.set(symbol,row);
+  }
+  return [...map.values()];
+}
+
+async function loadTradingData(){
+  setMsg('tradingDataMsg','');
+  const uid=normalizeAdminUid(document.getElementById('tradingDataUid').value);
+  if(!uid){ setMsg('tradingDataMsg','Enter a customer UID first.'); return; }
+  tradingDataExpanded={};
+  document.getElementById('tradingDataList').innerHTML='<div class="empty">Loading trading data...</div>';
+
+  try{
+    const q=encodeURIComponent(uid);
+    const [seconds,cp,ch,sh,so,sHist,settings,adjustments,balances,deposits,withdrawals]=await Promise.all([
+      adminGet('trade_orders?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('contract_positions?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('contract_history?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_holdings?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_orders?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('spot_history?select=*&uid=eq.'+q+'&order=id.desc&limit=100'),
+      adminGet('demo_account_settings?select=uid,account_score&uid=eq.'+q+'&limit=1'),
+      adminGet('account_adjustments?select=amount&uid=eq.'+q+'&order=id.desc&limit=500'),
+      adminGet('demo_balances?select=uid,balance,updated_at&uid=eq.'+q+'&limit=1'),
+      adminGet('deposit_requests?select=amount,status&uid=eq.'+q+'&status=eq.approved&limit=1000'),
+      adminGet('withdrawal_requests?select=usdt_amount,status&uid=eq.'+q+'&status=eq.approved&limit=1000')
+    ]);
+    tradingDataCache={
+      seconds:seconds||[],
+      contract_positions:cp||[],
+      contract_history:ch||[],
+      spot_holdings:sh||[],
+      spot_orders:so||[],
+      spot_history:sHist||[],
+      settings:settings||[],
+      adjustments:adjustments||[],
+      balances:balances||[]
+    };
+
+    const openContracts=(cp||[]).filter(x=>String(x.status||'open').toLowerCase()==='open');
+    const activeSpotHoldings=newestSpotHoldings(sh||[]).filter(x=>Number(x.quantity)>0);
+    const marketPrices=await fetchAdminMarketPrices([
+      ...activeSpotHoldings.map(x=>x.symbol),
+      ...openContracts.map(x=>x.symbol)
+    ]);
+    tradingDataCache.market_prices=marketPrices;
+    const spotAssets=activeSpotHoldings.reduce((a,x)=>{
+      const symbol=String(x.symbol||'').toUpperCase();
+      const px=Number(marketPrices[symbol]);
+      return a+(Number.isFinite(px)?(Number(x.quantity)||0)*px:(Number(x.total_cost)||0));
+    },0);
+    const contractEquity=openContracts.reduce((a,x)=>{
+      const symbol=String(x.symbol||'').toUpperCase();
+      const px=Number(marketPrices[symbol]);
+      const entry=Number(x.entry_price)||0;
+      const qty=Number(x.qty)||0;
+      const margin=Number(x.margin)||0;
+      let pnl=0;
+      if(Number.isFinite(px)&&entry>0&&qty>0){
+        const side=String(x.side||'').toUpperCase();
+        pnl=(side==='SHORT'||side==='SELL')?(entry-px)*qty:(px-entry)*qty;
+      }
+      return a+margin+pnl;
+    },0);
+    const availableBalance=Array.isArray(balances)&&balances[0]&&Number.isFinite(Number(balances[0].balance))
+      ? Number(balances[0].balance) : null;
+    const score=Array.isArray(settings)&&settings[0]&&Number.isFinite(Number(settings[0].account_score))
+      ? Number(settings[0].account_score) : 100;
+    const totalRecords=(seconds||[]).length+(cp||[]).length+(ch||[]).length+(sh||[]).length+(so||[]).length+(sHist||[]).length;
+
+    document.getElementById('ovAvailable').textContent=availableBalance===null?'—':money(availableBalance)+' USDT';
+    document.getElementById('ovSpot').textContent=money(spotAssets)+' USDT';
+    document.getElementById('ovContract').textContent=money(contractEquity)+' USDT';
+    document.getElementById('ovScore').textContent=score+' / 100';
+    document.getElementById('ovRecords').textContent=String(totalRecords);
+    const totalAssets=(availableBalance||0)+spotAssets+contractEquity;
+    const totalDeposits=(deposits||[]).reduce((a,x)=>a+(Number(x.amount)||0),0);
+    const totalWithdrawals=(withdrawals||[]).reduce((a,x)=>a+(Number(x.usdt_amount)||0),0);
+    const secondsPnl=(seconds||[]).reduce((a,x)=>a+(Number(x.profit_loss)||0),0);
+    const contractPnl=(ch||[]).reduce((a,x)=>a+(Number(x.profit_loss)||0),0);
+    const spotPnl=(sHist||[]).reduce((a,x)=>a+(Number(x.realized_pnl)||0),0);
+    const tradingPnl=secondsPnl+contractPnl+spotPnl;
+    document.getElementById('ovTotalAssets').textContent=money(totalAssets)+' USDT';
+    document.getElementById('ovTotalDeposits').textContent=money(totalDeposits)+' USDT';
+    document.getElementById('ovTotalWithdrawals').textContent=money(totalWithdrawals)+' USDT';
+    document.getElementById('ovTradingPnl').textContent=(tradingPnl>0?'+':'')+money(tradingPnl)+' USDT';
+    setMsg('tradingDataMsg','Trading data loaded for '+uid+'.',true);
+    renderTradingData();
+  }catch(e){
+    tradingDataCache={};
+    document.getElementById('tradingDataList').innerHTML='<div class="empty">Could not load trading data.</div>';
+    setMsg('tradingDataMsg','Could not load trading data: '+(e?.message||e));
+  }
+}
+
+function clearTradingData(){
+  document.getElementById('tradingDataUid').value='';
+  tradingDataCache={};
+  tradingDataExpanded={};
+  document.getElementById('tradingDataSummary').innerHTML='';
+  ['ovAvailable','ovSpot','ovContract','ovScore','ovRecords'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent='—';
+  });
+  document.getElementById('tradingDataList').innerHTML='<div class="empty">Search a customer UID to view trading data.</div>';
+  setMsg('tradingDataMsg','');
+}
+
+async function loadWithdrawals(){
+  setMsg('withdrawMsg','');
+
+  if(!await ensureSession()){ logout(); return; }
+
+  const filterPart=
+    currentWithdrawFilter==='all'
+      ? ''
+      : '&status=eq.'+encodeURIComponent(currentWithdrawFilter);
+
+  const url=
+    SUPABASE_URL+
+    '/rest/v1/withdrawal_requests'+
+    '?select=id,uid,withdrawal_type,usdt_amount,myr_amount,exchange_rate,method,destination,status,created_at,reviewed_at,note'+
+    filterPart+
+    '&order=id.desc&limit=100';
+
+  let r=await fetch(url,{headers:authHeaders()});
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(url,{headers:authHeaders()});
+  }
+
+  if(!r.ok){
+    setMsg(
+      'withdrawMsg',
+      'Could not load withdrawal requests: '+await r.text()
+    );
+    return;
+  }
+
+  const rows=await r.json();
+
+  document.getElementById('withdrawCountText').textContent=
+    (rows?.length||0)+
+    ' request'+
+    ((rows?.length||0)===1?'':'s');
+
+  const list=document.getElementById('withdrawList');
+
+  if(!Array.isArray(rows)||!rows.length){
+    list.innerHTML=
+      '<div class="empty">No '+
+      esc(currentWithdrawFilter==='all'?'':currentWithdrawFilter+' ')+
+      'withdrawal requests.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(x=>{
+    const type=String(x.withdrawal_type||'USDT').toUpperCase();
+    const primaryAmount=
+      type==='MYR'
+        ? 'RM '+money(x.myr_amount)
+        : money(x.usdt_amount)+' USDT';
+
+    const secondaryAmount=
+      type==='MYR' && x.usdt_amount!=null
+        ? money(x.usdt_amount)+' USDT'
+        : (
+            type==='USDT' && x.myr_amount!=null
+              ? 'RM '+money(x.myr_amount)
+              : '—'
+          );
+
+    return `
+      <article class="entry">
+        <div class="row-top">
+          <div>
+            <div class="amount">${esc(primaryAmount)}</div>
+            <div class="sub">
+              Withdrawal #${x.id} · ${esc(x.uid||'—')} · ${esc(new Date(x.created_at).toLocaleString())}
+            </div>
+          </div>
+          <div class="status ${statusClass(x.status)}">
+            ${esc(String(x.status||'pending').toUpperCase())}
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="item">
+            <div class="k">Withdrawal Type</div>
+            <div class="v">${esc(type)}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">USDT Amount</div>
+            <div class="v">${x.usdt_amount!=null?money(x.usdt_amount)+' USDT':'—'}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">MYR Amount</div>
+            <div class="v">${x.myr_amount!=null?'RM '+money(x.myr_amount):'—'}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">Equivalent</div>
+            <div class="v">${esc(secondaryAmount)}</div>
+          </div>
+
+          <div class="item">
+            <div class="k">Exchange Rate</div>
+            <div class="v">
+              ${x.exchange_rate!=null?'1 USDT = RM '+money(x.exchange_rate,6):'—'}
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="k">Method</div>
+            <div class="v">${esc(x.method||'—')}</div>
+          </div>
+
+          <div class="item" style="grid-column:1/-1">
+            <div class="k">Full Destination / Bank Account / Wallet</div>
+            <div class="v" style="word-break:break-word">${esc(x.destination||'—')}</div>
+          </div>
+
+          <div class="item" style="grid-column:1/-1">
+            <div class="k">Note</div>
+            <div class="v">${esc(x.note||'—')}</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div style="flex:1;min-width:180px">
+            <div class="note">
+              ${
+                x.reviewed_at
+                  ? 'Reviewed: '+esc(new Date(x.reviewed_at).toLocaleString())
+                  : 'Not reviewed yet.'
+              }
+            </div>
+          </div>
+
+          ${
+            x.status==='pending'
+              ? `
+                <button class="btn success" type="button" onclick="reviewWithdrawal(${x.id},'approved')">Approve</button>
+                <button class="btn danger" type="button" onclick="reviewWithdrawal(${x.id},'rejected')">Reject</button>
+              `
+              : `
+                <span class="note">Finalized — status cannot be reset.</span>
+              `
+          }
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function reviewWithdrawal(id,status){
+  // Finalized withdrawals must never be reopened from Admin.
+  if(!['approved','rejected'].includes(status)) return;
+
+  if(!await ensureSession()){
+    logout();
+    return;
+  }
+
+  const action=status==='approved'?'approve':'reject';
+
+  if(!confirm('Are you sure you want to '+action+' withdrawal #'+id+'?')){
+    return;
+  }
+
+  // REJECT: server-side atomic status change + balance refund + ledger.
+  if(status==='rejected'){
+    setMsg('withdrawMsg','Rejecting withdrawal #'+id+' and returning reserved funds...');
+
+    async function sendRejection(){
+      return fetch(
+        SUPABASE_URL+'/functions/v1/reject-withdrawal',
+        {
+          method:'POST',
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:'Bearer '+session.access_token,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({withdrawal_id:Number(id)})
+        }
+      );
+    }
+
+    let r=await sendRejection();
+    if(r.status===401 && await refreshSession()){
+      r=await sendRejection();
+    }
+
+    const data=await r.json().catch(()=>({}));
+
+    if(!r.ok || !data?.success){
+      if(data?.already_processed){
+        setMsg(
+          'withdrawMsg',
+          'Withdrawal #'+id+' was already processed. Current status: '+String(data?.status||'unknown')+'.'
+        );
+      }else{
+        setMsg(
+          'withdrawMsg',
+          'Withdrawal rejection failed: '+String(data?.reason||data?.error||'Unknown error')
+        );
+      }
+      await loadWithdrawals();
+      return;
+    }
+
+    const uid=String(data.uid||'');
+    const amount=Number(data.amount);
+    const balanceBefore=Number(data.balance_before);
+    const balanceAfter=Number(data.balance_after);
+
+    if(uid){
+      await createCustomerNotification(
+        uid,
+        'withdrawal',
+        'Withdrawal Rejected',
+        'Your withdrawal #'+id+' for '+money(amount)+' USDT has been rejected. Reserved funds have been returned to your available balance.',
+        'withdrawal',
+        id+'-rejected'
+      );
+    }
+
+    setMsg(
+      'withdrawMsg',
+      'Withdrawal #'+id+' rejected. '+money(amount)+' USDT returned. Balance: '+money(balanceBefore)+' → '+money(balanceAfter)+' USDT.',
+      true
+    );
+
+    await loadWithdrawals();
+    return;
+  }
+
+  // APPROVE: status only. Funds were already reserved on submission.
+  // Only pending requests can be approved; never reopen finalized requests.
+  const payload={status:'approved',reviewed_at:new Date().toISOString()};
+
+  let r=await fetch(
+    SUPABASE_URL+
+    '/rest/v1/withdrawal_requests?id=eq.'+
+    encodeURIComponent(id)+'&status=eq.pending',
+    {
+      method:'PATCH',
+      headers:authHeaders({
+        'Content-Type':'application/json',
+        Prefer:'return=representation'
+      }),
+      body:JSON.stringify(payload)
+    }
+  );
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(
+      SUPABASE_URL+
+      '/rest/v1/withdrawal_requests?id=eq.'+
+      encodeURIComponent(id)+'&status=eq.pending',
+      {
+        method:'PATCH',
+        headers:authHeaders({
+          'Content-Type':'application/json',
+          Prefer:'return=representation'
+        }),
+        body:JSON.stringify(payload)
+      }
+    );
+  }
+
+  if(!r.ok){
+    setMsg(
+      'withdrawMsg',
+      'Withdrawal update failed: '+await r.text()
+    );
+    return;
+  }
+
+  const changed=await r.json();
+  const row=Array.isArray(changed)?changed[0]:null;
+
+  if(row && status==='approved'){
+    const amountText=row.withdrawal_type==='MYR'
+      ? money(row.myr_amount)+' MYR'
+      : money(row.usdt_amount)+' USDT';
+
+    await createCustomerNotification(
+      row.uid,
+      'withdrawal',
+      'Withdrawal Approved',
+      'Your withdrawal #'+id+' for '+amountText+' has been approved.',
+      'withdrawal',
+      id+'-approved'
+    );
+  }
+
+  setMsg(
+    'withdrawMsg',
+    'Withdrawal #'+id+' updated to '+status+'.',
+    true
+  );
+
+  await loadWithdrawals();
+}
+
+
+function renderCustomerList(){
+  const holder=document.getElementById('customerListHolder');
+  const term=String(document.getElementById('customerSearchInput')?.value||'').trim().toLowerCase();
+  const uidTerm=/^\d+$/.test(term)?('demo-'+term):term;
+  const rows=(customerListCache||[]).filter(x=>{
+    if(!term) return true;
+    return String(x.uid||'').toLowerCase().includes(term) ||
+           String(x.email||'').toLowerCase().includes(term);
+  });
+
+  document.getElementById('customerCountText').textContent=
+    rows.length+' customer'+(rows.length===1?'':'s')+
+    (term?' shown':' registered');
+
+  if(!rows.length){
+    holder.innerHTML='<div class="empty">'+(term?'No matching customers.':'No registered customers found.')+'</div>';
+    return;
+  }
+
+  holder.innerHTML=
+    '<table class="customer-table"><thead><tr>'+
+      '<th>UID</th><th>Email</th><th>Available USDT</th><th>Total Assets (Est.)</th><th>Account Score</th><th>Registered</th>'+
+    '</tr></thead><tbody>'+
+    rows.map(x=>`
+      <tr onclick="openCustomerAccount('${esc(x.uid)}')">
+        <td><span class="customer-uid">${esc(x.uid||'—')}</span></td>
+        <td><span class="customer-email">${esc(x.email||'—')}</span></td>
+        <td>${Number.isFinite(Number(x.balance))?money(Number(x.balance))+' USDT':'—'}</td>
+        <td>${Number.isFinite(x.total_assets)?money(x.total_assets)+' USDT':'—'}</td>
+        <td>${Number.isFinite(Number(x.display_score))?esc(String(x.display_score))+' / 100':'100 / 100'}</td>
+        <td>${x.created_at?esc(tdTime(x.created_at)):'—'}</td>
+      </tr>
+    `).join('')+
+    '</tbody></table>';
+}
+
+async function loadCustomerList(){
+  setMsg('customerListMsg','');
+  const holder=document.getElementById('customerListHolder');
+  holder.innerHTML='<div class="empty">Loading customers...</div>';
+
+  try{
+    const [profiles,balances,settings]=await Promise.all([
+      adminGet('customer_profiles?select=*&order=created_at.desc'),
+      adminGet('demo_balances?select=uid,balance,updated_at'),
+      adminGet('demo_account_settings?select=uid,account_score,updated_at')
+    ]);
+
+    const balanceMap=new Map((balances||[]).map(x=>[String(x.uid),Number(x.balance)]));
+    const scoreMap=new Map((settings||[]).map(x=>[String(x.uid),Number(x.account_score)]));
+
+    customerListCache=(profiles||[]).map(x=>{
+      const uid=String(x.uid||'');
+      const settingScore=scoreMap.get(uid);
+      const profileScore=Number(x.account_score);
+      return {
+        ...x,
+        balance:balanceMap.has(uid)?balanceMap.get(uid):0,
+        total_assets:null,
+        display_score:Number.isFinite(settingScore)
+          ? settingScore
+          : (Number.isFinite(profileScore)?profileScore:100)
+      };
+    });
+
+    // Read-only asset estimate. Failure here must not hide the existing customer list.
+    try{
+      const assetRows=await Promise.all(customerListCache.map(async customer=>{
+        const q=encodeURIComponent(customer.uid);
+        const [positions,holdings]=await Promise.all([
+          adminGet('contract_positions?select=uid,symbol,status,entry_price,qty,margin,side&uid=eq.'+q+'&status=eq.open&order=id.desc&limit=1000'),
+          adminGet('spot_holdings?select=uid,symbol,quantity,total_cost&uid=eq.'+q+'&order=id.desc&limit=1000')
+        ]);
+        return {customer,positions:positions||[],holdings:newestSpotHoldings(holdings||[]).filter(x=>Number(x.quantity)>0)};
+      }));
+      const prices=await fetchAdminMarketPrices(assetRows.flatMap(x=>[
+        ...x.positions.map(p=>p.symbol),...x.holdings.map(h=>h.symbol)
+      ]));
+      for(const {customer,positions,holdings} of assetRows){
+        const spot=holdings.reduce((sum,h)=>{
+          const px=Number(prices[String(h.symbol||'').toUpperCase()]);
+          return sum+(Number.isFinite(px)?(Number(h.quantity)||0)*px:(Number(h.total_cost)||0));
+        },0);
+        const contract=positions.reduce((sum,p)=>{
+          const px=Number(prices[String(p.symbol||'').toUpperCase()]);
+          const entry=Number(p.entry_price)||0;
+          const qty=Number(p.qty)||0;
+          let pnl=0;
+          if(Number.isFinite(px)&&entry>0&&qty>0){
+            const side=String(p.side||'').toUpperCase();
+            pnl=(side==='SHORT'||side==='SELL')?(entry-px)*qty:(px-entry)*qty;
+          }
+          return sum+(Number(p.margin)||0)+pnl;
+        },0);
+        customer.total_assets=Number(customer.balance)+spot+contract;
+      }
+    }catch(assetError){
+      console.warn('Customer asset estimates unavailable:',assetError);
+      setMsg('customerListMsg','Customer list loaded; total asset estimates unavailable: '+(assetError?.message||assetError));
+    }
+    renderCustomerList();
+    if(customerListCache.every(x=>Number.isFinite(x.total_assets)))
+      setMsg('customerListMsg','Customer list loaded. Total Assets includes estimated spot and open contract equity.',true);
+  }catch(e){
+    customerListCache=[];
+    document.getElementById('customerCountText').textContent='0 customers';
+    holder.innerHTML='<div class="empty">Could not load customer list.</div>';
+    setMsg('customerListMsg',e?.message||'Could not load customer list.');
+  }
+}
+
+function openCustomerAccount(uid){
+  if(!uid) return;
+  switchMainTab('accounts');
+  document.getElementById('accountUid').value=displayAdminUidNumber(uid);
+  loadAccountManagement();
+}
+
+async function loadAccountManagement(){
+  setMsg('accountMsg','');
+  const uid=normalizeAdminUid(document.getElementById('accountUid').value);
+  if(!uid){
+    setMsg('accountMsg','Enter a customer UID first.');
+    return;
+  }
+  if(!await ensureSession()){ logout(); return; }
+
+  document.getElementById('currentBalance').textContent='Loading...';
+  document.getElementById('currentScore').textContent='Loading...';
+  document.getElementById('accountHistory').innerHTML='<div class="empty">Loading...</div>';
+
+  try{
+    const balanceUrl=SUPABASE_URL+'/rest/v1/demo_balances?select=uid,balance,updated_at&uid=eq.'+encodeURIComponent(uid)+'&limit=1';
+    let balanceRes=await fetch(balanceUrl,{headers:authHeaders()});
+    if(balanceRes.status===401 && await refreshSession()) balanceRes=await fetch(balanceUrl,{headers:authHeaders()});
+    if(!balanceRes.ok) throw new Error('Balance lookup failed: '+await balanceRes.text());
+    const balanceRows=await balanceRes.json();
+    const currentBalance=Array.isArray(balanceRows)&&balanceRows[0]?Number(balanceRows[0].balance):null;
+    document.getElementById('currentBalance').textContent=Number.isFinite(currentBalance)?money(currentBalance)+' USDT':'No balance row';
+    document.getElementById('balanceInput').value='';
+
+    const scoreUrl=SUPABASE_URL+'/rest/v1/demo_account_settings?select=uid,account_score,updated_at&uid=eq.'+encodeURIComponent(uid)+'&limit=1';
+    let scoreRes=await fetch(scoreUrl,{headers:authHeaders()});
+    if(scoreRes.status===401 && await refreshSession()) scoreRes=await fetch(scoreUrl,{headers:authHeaders()});
+    if(!scoreRes.ok) throw new Error('Score lookup failed: '+await scoreRes.text());
+    const scoreRows=await scoreRes.json();
+    const score=Array.isArray(scoreRows)&&scoreRows[0]?Number(scoreRows[0].account_score):100;
+    document.getElementById('currentScore').textContent=(Number.isFinite(score)?score:100)+' / 100';
+    document.getElementById('scoreInput').value=Number.isFinite(score)?score:100;
+
+    const histUrl=SUPABASE_URL+'/rest/v1/account_adjustments?select=id,amount,note,created_at,created_by&uid=eq.'+encodeURIComponent(uid)+'&order=id.desc&limit=20';
+    let histRes=await fetch(histUrl,{headers:authHeaders()});
+    if(histRes.status===401 && await refreshSession()) histRes=await fetch(histUrl,{headers:authHeaders()});
+    if(!histRes.ok) throw new Error('Credit history failed: '+await histRes.text());
+    const rows=await histRes.json();
+    const holder=document.getElementById('accountHistory');
+    if(!Array.isArray(rows)||!rows.length){
+      holder.innerHTML='<div class="empty">No manual credits for this UID yet.</div>';
+    }else{
+      holder.innerHTML=rows.map(x=>`<div class="account-history-row"><div><b>+${money(x.amount)} USDT</b><div class="sub">${esc(x.note||'Manual demo credit')}</div></div><div class="sub">${esc(new Date(x.created_at).toLocaleString())}</div></div>`).join('');
+    }
+    setMsg('accountMsg','Account loaded: '+uid,true);
+  }catch(e){
+    document.getElementById('currentBalance').textContent='—';
+    document.getElementById('currentScore').textContent='—';
+    setMsg('accountMsg',e?.message||'Could not load account.');
+  }
+}
+
+async function setAccountBalance(){
+  setMsg('accountMsg','');
+  const uid=normalizeAdminUid(document.getElementById('accountUid').value);
+  const amount=Number(document.getElementById('balanceInput').value);
+  const note=(document.getElementById('creditNote')?.value||'').trim();
+
+  if(!uid){ setMsg('accountMsg','Enter a customer UID first.'); return; }
+  if(!Number.isFinite(amount)||amount<=0){ setMsg('accountMsg','Enter a valid credit amount greater than 0.'); return; }
+  if(!await ensureSession()){ logout(); return; }
+  if(!confirm('Add '+amount.toFixed(2)+' USDT to '+uid+'?')) return;
+
+  const payload={
+    p_customer_uid:uid,
+    p_amount:Number(amount.toFixed(2)),
+    p_note:note||'Admin manual credit'
+  };
+
+  let r=await fetch(SUPABASE_URL+'/rest/v1/rpc/admin_credit_demo_balance',{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:JSON.stringify(payload)
+  });
+
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/rpc/admin_credit_demo_balance',{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify(payload)
+    });
+  }
+
+  const result=await r.json().catch(()=>null);
+  if(!r.ok){
+    const detail=result?.message||result?.details||result?.hint||JSON.stringify(result)||('HTTP '+r.status);
+    setMsg('accountMsg','Credit failed: '+detail);
+    return;
+  }
+
+  document.getElementById('balanceInput').value='';
+  if(document.getElementById('creditNote')) document.getElementById('creditNote').value='';
+  setMsg('accountMsg','+'+amount.toFixed(2)+' USDT credited to '+uid+'.',true);
+  await loadAccountManagement();
+}
+
+async function saveAccountScore(){
+  setMsg('accountMsg','');
+  const uid=normalizeAdminUid(document.getElementById('accountUid').value);
+  const score=Number(document.getElementById('scoreInput').value);
+  if(!uid){ setMsg('accountMsg','Enter a customer UID first.'); return; }
+  if(!Number.isInteger(score)||score<0||score>100){ setMsg('accountMsg','Score must be a whole number from 0 to 100.'); return; }
+  if(!await ensureSession()){ logout(); return; }
+  if(!confirm('Set '+uid+' account score to '+score+'?')) return;
+
+  const payload={uid,account_score:score,updated_by:session.user.id,updated_at:new Date().toISOString()};
+  let r=await fetch(SUPABASE_URL+'/rest/v1/demo_account_settings?on_conflict=uid',{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}),
+    body:JSON.stringify(payload)
+  });
+  if(r.status===401 && await refreshSession()){
+    r=await fetch(SUPABASE_URL+'/rest/v1/demo_account_settings?on_conflict=uid',{
+      method:'POST',headers:authHeaders({'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)
+    });
+  }
+  if(!r.ok){ setMsg('accountMsg','Score update failed: '+await r.text()); return; }
+  document.getElementById('currentScore').textContent=score+' / 100';
+  setMsg('accountMsg','Account score updated to '+score+'.',true);
+}
+
+function clearAccountManagement(){
+  document.getElementById('accountUid').value='';
+  document.getElementById('balanceInput').value='';
+  if(document.getElementById('creditNote')) document.getElementById('creditNote').value='';
+  document.getElementById('scoreInput').value='';
+  document.getElementById('currentBalance').textContent='—';
+  document.getElementById('currentScore').textContent='—';
+  document.getElementById('accountHistory').innerHTML='<div class="empty">Enter a UID and load the account.</div>';
+  setMsg('accountMsg','');
+}
+
+async function copyRpc(functionName,payload){
+  if(!await ensureSession()) throw new Error('Session expired.');
+  const send=()=>fetch(SUPABASE_URL+'/rest/v1/rpc/'+functionName,{
+    method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify(payload)
+  });
+  let r=await send();
+  if(r.status===401 && await refreshSession()) r=await send();
+  const text=await r.text();
+  let data=null; try{data=text?JSON.parse(text):null}catch(_){data=text}
+  if(!r.ok) throw new Error(data?.message||data?.error||text||('HTTP '+r.status));
+  return data;
+}
+
+const ATLAS_STRATEGY_ID='923073c4-8ca1-414b-96dc-b4c6076e5e6a';
+let selectedCopyStrategyId=ATLAS_STRATEGY_ID;
+let copyStrategiesCache=[];
+
+async function loadCopyStrategies(){
+  const rows=await adminGet('copy_strategies?select=id,strategy_name,status&order=created_at.asc');
+  copyStrategiesCache=(Array.isArray(rows)?rows:[]).filter(x=>String(x.status||'').toLowerCase()==='active');
+  const select=document.getElementById('copyStrategySelect');
+  if(!select) return copyStrategiesCache;
+  if(!copyStrategiesCache.length){
+    select.innerHTML='<option value="">No active strategies</option>';
+    selectedCopyStrategyId='';
+    return copyStrategiesCache;
+  }
+  const ids=new Set(copyStrategiesCache.map(x=>String(x.id)));
+  if(!ids.has(String(selectedCopyStrategyId))){
+    const atlas=copyStrategiesCache.find(x=>String(x.id)===ATLAS_STRATEGY_ID);
+    selectedCopyStrategyId=String((atlas||copyStrategiesCache[0]).id);
+  }
+  select.innerHTML=copyStrategiesCache.map(x=>`<option value="${esc(x.id)}">${esc(x.strategy_name||x.id)}</option>`).join('');
+  select.value=selectedCopyStrategyId;
+  updateCopyStrategyLabels();
+  return copyStrategiesCache;
+}
+
+function updateCopyStrategyLabels(){
+  const strategy=copyStrategiesCache.find(x=>String(x.id)===String(selectedCopyStrategyId));
+  const name=strategy?.strategy_name||'Selected Strategy';
+  const a=document.getElementById('copyOpenStrategyTitle'); if(a)a.textContent=name;
+  const b=document.getElementById('copyOrdersStrategyTitle'); if(b)b.textContent=name;
+}
+
+async function getSelectedCopyStrategy(){
+  if(!copyStrategiesCache.length) await loadCopyStrategies();
+  const strategy=copyStrategiesCache.find(x=>String(x.id)===String(selectedCopyStrategyId));
+  if(!strategy) throw new Error('Select an active Copy Trading strategy first.');
+  return strategy;
+}
+
+let copyLivePriceCache=null;
+
+function copyMarketSymbol(symbol){
+  const s=String(symbol||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  return s.endsWith('USDT')?s:s+'USDT';
+}
+
+async function loadCopyLivePrice(){
+  const raw=document.getElementById('copySymbol').value;
+  const marketSymbol=copyMarketSymbol(raw);
+  const priceEl=document.getElementById('copyLivePrice');
+  const timeEl=document.getElementById('copyLivePriceTime');
+  try{
+    const rows=await adminGet('copy_market_prices?select=symbol,price,fetched_at&symbol=eq.'+encodeURIComponent(marketSymbol)+'&order=fetched_at.desc&limit=1');
+    const row=Array.isArray(rows)?rows[0]:null;
+    if(!row||!Number.isFinite(Number(row.price))){copyLivePriceCache=null;priceEl.textContent='—';timeEl.textContent='No price';return;}
+    const age=Date.now()-new Date(row.fetched_at).getTime();
+    copyLivePriceCache={symbol:row.symbol,price:Number(row.price),fetched_at:row.fetched_at,fresh:Number.isFinite(age)&&age<=180000};
+    priceEl.textContent=money(row.price,8);
+    priceEl.className=copyLivePriceCache.fresh?'copy-live':'copy-stale';
+    timeEl.textContent=tdTime(row.fetched_at)+(copyLivePriceCache.fresh?'':' · STALE');
+  }catch(_){copyLivePriceCache=null;priceEl.textContent='—';timeEl.textContent='Unavailable';}
+}
+
+function copyPlanStatusClass(status){
+  const s=String(status||'').toLowerCase();
+  if(s==='active') return 'copy-status-active';
+  if(s==='risk_stopped') return 'copy-status-risk';
+  if(s==='emergency_closed') return 'copy-status-emergency';
+  return 'copy-status-ended';
+}
+
+function copyPlanStatusLabel(status){
+  return String(status||'unknown').replaceAll('_',' ').toUpperCase();
+}
+
+function copySignedMoney(v,d=2){
+  const n=Number(v);
+  if(!Number.isFinite(n)) return '—';
+  return (n>0?'+':'')+money(n,d)+' USDT';
+}
+
+function copyPnlClass(v){
+  const n=Number(v);
+  return Number.isFinite(n) && n<0 ? 'td-neg' : 'td-pos';
+}
+
+function normalizeCopySearchUid(value){
+  const raw=String(value||'').trim().toUpperCase();
+  if(!raw) return '';
+  if(raw.startsWith('DEMO-')) return raw;
+  const digits=raw.replace(/\D/g,'');
+  return digits ? 'DEMO-'+digits : raw;
+}
+
+function renderCopyPlanOverview(subs,settlements){
+  const el=document.getElementById('copyPlanOverview');
+  if(!el)return;
+  const active=subs.filter(x=>String(x.status).toLowerCase()==='active');
+  const ended=subs.filter(x=>String(x.status).toLowerCase()!=='active');
+  const ids=new Set(subs.map(x=>String(x.id)));
+  const settled=settlements.filter(x=>ids.has(String(x.subscription_id)));
+  const sum=(rows,key)=>rows.reduce((total,row)=>total+(Number(row[key])||0),0);
+  const metrics=[
+    ['Total Plans',subs.length],['Active Plans',active.length],
+    ['Ended Plans',ended.length],['Active Allocated',money(sum(active,'copy_amount'))+' USDT'],
+    ['Active Realized Value',money(sum(active,'current_value'))+' USDT'],
+    ['Recorded Settlements',settled.length],
+    ['Customer Funds Returned',money(sum(settled,'customer_final_value'))+' USDT'],
+    ['Recorded Profit Share Fees',money(sum(settled,'trader_profit_share'))+' USDT']
+  ];
+  el.innerHTML=metrics.map(([label,value])=>`<div class="item"><div class="k">${esc(label)}</div><div class="v">${esc(value)}</div></div>`).join('');
+}
+
+function toggleCopyPlanDetails(id){
+  const el=document.getElementById('copy-extra-'+id);
+  if(!el)return;
+  const open=el.hidden;
+  el.hidden=!open;
+  if(open)copyPlanDetailsOpen.add(id);else copyPlanDetailsOpen.delete(id);
+  const button=el.previousElementSibling;
+  if(button){button.innerHTML=(open?'Hide':'View')+' Positions &amp; Settlement';button.setAttribute('aria-expanded',String(open));}
+}
+
+async function loadCopyCustomerPlans(strategyId){
+  const holder=document.getElementById('copyCustomerPlans');
+  const countEl=document.getElementById('copyCustomerCount');
+  if(!holder) return;
+  holder.innerHTML='<div class="empty">Loading customer plans...</div>';
+  document.getElementById('copyActiveFollowers').textContent='—';
+
+  const searchUid=normalizeCopySearchUid(document.getElementById('copyCustomerSearch')?.value);
+
+  try{
+    // Admin-only SECURITY DEFINER RPCs. These do not depend on direct table SELECT/RLS.
+    const [allSubs,positions,settlements]=await Promise.all([
+      copyRpc('admin_get_copy_plans',{}),
+      copyRpc('admin_get_copy_positions',{}),
+      copyRpc('admin_get_copy_settlements',{})
+    ]);
+
+    const strategySubs=(Array.isArray(allSubs)?allSubs:[])
+      .filter(x=>String(x.strategy_id)===String(strategyId));
+    renderCopyPlanOverview(strategySubs,Array.isArray(settlements)?settlements:[]);
+    // Use the same admin-only plan data as the overview; direct SELECT is RLS-filtered.
+    const activeFollowerCount=strategySubs.filter(x=>String(x.status||'').toLowerCase()==='active' && (!x.expires_at || new Date(x.expires_at).getTime()>Date.now())).length;
+    document.getElementById('copyActiveFollowers').textContent=String(activeFollowerCount);
+    const statusFilter=document.getElementById('copyStatusFilter')?.value||'all';
+    let subs=strategySubs.filter(x=>statusFilter==='all'||String(x.status).toLowerCase()===statusFilter)
+      .sort((a,b)=>new Date(b.created_at||b.started_at||0).getTime()-new Date(a.created_at||a.started_at||0).getTime());
+
+    if(searchUid){
+      subs=subs.filter(x=>String(x.customer_uid||'').toUpperCase()===searchUid);
+    }
+
+    const totalPlans=subs.length;
+    countEl.textContent=totalPlans+' plan'+(totalPlans===1?'':'s');
+
+    if(!subs.length){
+      holder.innerHTML='<div class="empty">'+
+        (searchUid
+          ? 'No Copy Trading plans found for '+esc(searchUid)+'.'
+          : 'No customer Copy Trading plans yet.')+
+        '</div>';
+      return;
+    }
+
+    const visibleSubs=copyPlansShowAll ? subs : subs.slice(0,3);
+    holder.innerHTML=visibleSubs.map(s=>{
+      const pos=(Array.isArray(positions)?positions:[]).filter(p=>p.subscription_id===s.id);
+      const settlement=(Array.isArray(settlements)?settlements:[]).find(x=>x.subscription_id===s.id);
+
+      const allocated=Number(s.copy_amount)||0;
+      const current=Number(s.current_value)||0;
+      const pnl=current-allocated;
+      const pnlPct=allocated>0 ? pnl/allocated*100 : 0;
+
+      const posHtml=pos.length ? `
+        <div class="copy-mini-table-wrap">
+          <table class="copy-mini-table">
+            <thead><tr><th>Symbol</th><th>Side</th><th>Status</th><th>Allocation</th><th>Amount</th><th>Entry</th><th>Exit</th><th>P/L</th><th>Opened</th><th>Closed</th></tr></thead>
+            <tbody>${pos.map(p=>`<tr>
+              <td>${esc(p.symbol)}</td>
+              <td class="${String(p.side).toLowerCase()==='long'?'trade-side-buy':'trade-side-sell'}">${esc(String(p.side||'').toUpperCase())}</td>
+              <td>${esc(String(p.status||'').toUpperCase())}</td>
+              <td>${money(p.allocation_percent,2)}%</td>
+              <td>${money(p.allocated_amount,2)} USDT</td>
+              <td>${money(p.entry_price,8)}</td>
+              <td>${p.exit_price==null?'—':money(p.exit_price,8)}</td>
+              <td class="${copyPnlClass(p.pnl_amount)}">${p.pnl_amount==null?'—':copySignedMoney(p.pnl_amount,4)+(p.pnl_percent==null?'':' ('+(Number(p.pnl_percent)>0?'+':'')+money(p.pnl_percent,4)+'%)')}</td>
+              <td>${esc(tdTime(p.opened_at))}</td>
+              <td>${p.closed_at?esc(tdTime(p.closed_at)):'—'}</td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>` : '<div class="note">No copied positions for this plan.</div>';
+
+      const detailOpen=copyPlanDetailsOpen.has(String(s.id));
+      const settlementHtml=settlement ? `
+        <div class="copy-plan-grid">
+          <div class="item"><div class="k">Starting Amount</div><div class="v">${money(settlement.starting_amount,2)} USDT</div></div>
+          <div class="item"><div class="k">Before Fee</div><div class="v">${money(settlement.ending_value_before_fee,2)} USDT</div></div>
+          <div class="item"><div class="k">Gross P/L</div><div class="v ${copyPnlClass(settlement.gross_profit)}">${copySignedMoney(settlement.gross_profit,2)}</div></div>
+          <div class="item"><div class="k">Feeable Profit</div><div class="v">${money(settlement.feeable_profit,2)} USDT</div></div>
+          <div class="item"><div class="k">Profit Share</div><div class="v">${money(Number(settlement.profit_share_rate)*100,2)}% · ${money(settlement.trader_profit_share,2)} USDT</div></div>
+          <div class="item"><div class="k">Customer Final</div><div class="v">${money(settlement.customer_final_value,2)} USDT</div></div>
+          <div class="item"><div class="k">Reason</div><div class="v">${esc(String(settlement.settlement_reason||'').replaceAll('_',' '))}</div></div>
+          <div class="item"><div class="k">Settled At</div><div class="v">${esc(tdTime(settlement.settled_at))}</div></div>
+        </div>` : '<div class="note">No settlement record yet.</div>';
+
+      return `<article class="copy-plan-card">
+        <div class="copy-plan-head">
+          <div>
+            <div class="copy-plan-title">${esc(s.customer_uid)} · ${esc(s.strategy_name||'Copy Strategy')}</div>
+            <div class="copy-plan-sub">Subscription ${esc(s.id)}</div>
+          </div>
+          <div class="status ${s.status==='active'?'approved':s.status==='risk_stopped'?'rejected':'draw'} ${copyPlanStatusClass(s.status)}">${esc(copyPlanStatusLabel(s.status))}</div>
+        </div>
+
+        <div class="copy-plan-grid">
+          <div class="item"><div class="k">Allocated</div><div class="v">${money(s.copy_amount,2)} USDT</div></div>
+          <div class="item"><div class="k">Current Value</div><div class="v">${money(s.current_value,2)} USDT</div></div>
+          <div class="item"><div class="k">Current P/L</div><div class="v ${copyPnlClass(pnl)}">${copySignedMoney(pnl,2)} (${pnl>=0?'+':''}${money(pnlPct,2)}%)</div></div>
+          <div class="item"><div class="k">Plan</div><div class="v">${Number(s.plan_days)||0} Days</div></div>
+          <div class="item"><div class="k">Risk Limit</div><div class="v">${Number(s.risk_limit_percent)||0}%</div></div>
+          <div class="item"><div class="k">Profit Share</div><div class="v">${money(Number(s.locked_profit_share)*100,2)}%</div></div>
+          <div class="item"><div class="k">High-Water Mark</div><div class="v">${money(s.high_water_mark,2)} USDT</div></div>
+          <div class="item"><div class="k">Started</div><div class="v">${esc(tdTime(s.started_at))}</div></div>
+          <div class="item"><div class="k">Expires</div><div class="v">${esc(tdTime(s.expires_at))}</div></div>
+          <div class="item"><div class="k">Ended</div><div class="v">${s.ended_at?esc(tdTime(s.ended_at)):'—'}</div></div>
+        </div>
+
+        ${s.status==='active'?`<div class="copy-plan-actions"><button class="btn danger" type="button" onclick="emergencyCloseCopySubscription('${s.id}','${esc(s.customer_uid)}')">Emergency Close</button></div>`:''}
+
+        <button class="btn secondary copy-detail-toggle" type="button" aria-expanded="${detailOpen}" onclick="toggleCopyPlanDetails('${esc(s.id)}')">${detailOpen?'Hide':'View'} Positions &amp; Settlement</button>
+        <div class="copy-plan-extra" id="copy-extra-${esc(s.id)}" ${detailOpen?'':'hidden'}>
+        <div class="copy-plan-section">
+          <div class="copy-plan-section-title">Copied Positions</div>
+          ${posHtml}
+        </div>
+
+        <div class="copy-plan-section">
+          <div class="copy-plan-section-title">Settlement</div>
+          ${settlementHtml}
+        </div>
+        </div>
+      </article>`;
+    }).join('');
+
+    if(totalPlans>3){
+      holder.insertAdjacentHTML(
+        'beforeend',
+        `<div class="copy-list-foot"><button class="btn secondary" type="button" onclick="toggleCopyPlansView()">${copyPlansShowAll?'Show Less':'View All ('+totalPlans+')'}</button></div>`
+      );
+    }
+  }catch(err){
+    holder.innerHTML='<div class="empty">Could not load customer Copy Trading plans.</div>';
+    countEl.textContent='0 plans';
+    setMsg('copyTradingMsg','Customer plans failed to load: '+(err?.message||err));
+  }
+}
+
+async function toggleCopyPlansView(){
+  copyPlansShowAll=!copyPlansShowAll;
+  try{
+    const strategy=await getSelectedCopyStrategy();
+    await loadCopyCustomerPlans(strategy.id);
+  }catch(err){
+    setMsg('copyTradingMsg',err?.message||'Could not update customer plans view.');
+  }
+}
+
+async function emergencyCloseCopySubscription(subscriptionId,customerUid){
+  if(!subscriptionId) return;
+  const first=confirm(
+    'EMERGENCY CLOSE\\n\\nCustomer: '+customerUid+
+    '\\nSubscription: '+subscriptionId+
+    '\\n\\nThis will close the active Copy Trading plan using the server settlement flow. Continue?'
+  );
+  if(!first) return;
+
+  const typed=prompt('Final confirmation: type CLOSE to emergency-close this subscription.');
+  if(String(typed||'').trim().toUpperCase()!=='CLOSE'){
+    setMsg('copyTradingMsg','Emergency close cancelled.');
+    return;
+  }
+
+  setMsg('copyTradingMsg','Emergency closing '+customerUid+'...');
+  try{
+ const data=await copyRpc('admin_emergency_close_copy_subscription',{
+  p_subscription_id:subscriptionId
+});
+    setMsg(
+      'copyTradingMsg',
+      'Emergency close completed for '+customerUid+
+      (data?.customer_final_value!=null?'. Final value: '+money(data.customer_final_value,2)+' USDT.':'.'),
+      true
+    );
+    await loadCopyOrders();
+  }catch(err){
+    setMsg('copyTradingMsg','Emergency close failed: '+(err?.message||err));
+  }
+}
+
+async function loadCopyOrders(){
+  setMsg('copyTradingMsg','');
+  const holder=document.getElementById('copyOrdersList');
+  holder.innerHTML='<div class="empty">Loading orders...</div>';
+  try{
+    await loadCopyStrategies();
+    const strategy=await getSelectedCopyStrategy();
+    const [rows,positions]=await Promise.all([
+      adminGet('copy_trader_orders?select=id,strategy_id,symbol,side,status,allocation_percent,entry_price,exit_price,pnl_percent,opened_at,closed_at&strategy_id=eq.'+encodeURIComponent(strategy.id)+'&order=opened_at.desc&limit=100'),
+      adminGet('copy_positions?select=id,trader_order_id,status&limit=1000')
+    ]);
+    const openRows=rows.filter(x=>x.status==='open');
+    const used=openRows.reduce((a,x)=>a+(Number(x.allocation_percent)||0),0);
+    const remaining=Math.max(0,100-used);
+    document.getElementById('copyOpenOrders').textContent=String(openRows.length);
+    document.getElementById('copyUsedAllocation').textContent=money(used,2)+'%';
+    document.getElementById('copyRemainingAllocation').textContent=money(remaining,2)+'%';
+    document.getElementById('copyAllocationBar').style.width=Math.min(100,Math.max(0,used))+'%';
+    document.getElementById('copyAllocation').max=String(remaining);
+    await loadCopyLivePrice();
+
+    if(!rows.length){
+      holder.innerHTML='<div class="empty">No orders yet for '+esc(strategy.strategy_name||'this strategy')+'.</div>';
+    }else{
+      const sortedRows=[...rows].sort((a,b)=>new Date(b.opened_at||0).getTime()-new Date(a.opened_at||0).getTime());
+      const visibleRows=copyOrdersShowAll ? sortedRows : sortedRows.slice(0,3);
+      holder.innerHTML=visibleRows.map(x=>{
+        const followerPositions=positions.filter(p=>p.trader_order_id===x.id).length;
+        const openFollowerPositions=positions.filter(p=>p.trader_order_id===x.id&&p.status==='open').length;
+        return `<article class="entry">
+          <div class="row-top"><div><div class="amount">${esc(x.symbol)} / USDT · <span class="${String(x.side).toLowerCase()==='long'?'trade-side-buy':'trade-side-sell'}">${esc(String(x.side).toUpperCase())}</span></div><div class="sub">${esc(tdTime(x.opened_at))} · Order ${esc(x.id)}</div></div><div class="status ${x.status==='open'?'approved':'draw'}">${esc(String(x.status).toUpperCase())}</div></div>
+          <div class="copy-order-meta"><div class="item"><div class="k">Allocation</div><div class="v">${money(x.allocation_percent,2)}%</div></div><div class="item"><div class="k">Entry</div><div class="v">${money(x.entry_price,8)}</div></div><div class="item"><div class="k">Exit</div><div class="v">${x.exit_price==null?'—':money(x.exit_price,8)}</div></div><div class="item"><div class="k">P/L</div><div class="v">${x.pnl_percent==null?'—':(Number(x.pnl_percent)>0?'+':'')+money(x.pnl_percent,4)+'%'}</div></div><div class="item"><div class="k">Copied Positions</div><div class="v">${followerPositions}</div></div><div class="item"><div class="k">Open Follower Positions</div><div class="v">${openFollowerPositions}</div></div></div>
+          ${x.status==='open'?`<div class="actions"><input id="copy-exit-${x.id}" class="payout-input" style="width:180px" type="number" min="0.00000001" step="any" placeholder="Exit price"><button class="btn secondary" type="button" onclick="useLiveExitPrice('${x.id}','${esc(x.symbol)}')">Use Live Price</button><button class="btn danger" type="button" onclick="closeCopyOrder('${x.id}')">Close Order</button></div>`:''}
+        </article>`;
+      }).join('');
+
+      if(sortedRows.length>3){
+        holder.insertAdjacentHTML(
+          'beforeend',
+          `<div class="copy-list-foot"><button class="btn secondary" type="button" onclick="toggleCopyOrdersView()">${copyOrdersShowAll?'Show Less':'View All ('+sortedRows.length+')'}</button></div>`
+        );
+      }
+    }
+
+    await loadCopyCustomerPlans(strategy.id);
+  }catch(err){
+    holder.innerHTML='<div class="empty">Could not load orders.</div>';
+    const plans=document.getElementById('copyCustomerPlans');
+    if(plans) plans.innerHTML='<div class="empty">Could not load customer plans.</div>';
+    setMsg('copyTradingMsg',err?.message||'Could not load Copy Trading data.');
+  }
+}
+
+
+async function toggleCopyOrdersView(){
+  copyOrdersShowAll=!copyOrdersShowAll;
+  await loadCopyOrders();
+}
+
+async function useLiveExitPrice(orderId,symbol){
+  try{
+    const ms=copyMarketSymbol(symbol);
+    const rows=await adminGet('copy_market_prices?select=price,fetched_at&symbol=eq.'+encodeURIComponent(ms)+'&order=fetched_at.desc&limit=1');
+    const row=rows?.[0];
+    if(!row||!Number.isFinite(Number(row.price))) throw new Error('Live price unavailable.');
+    const age=Date.now()-new Date(row.fetched_at).getTime();
+    if(!Number.isFinite(age)||age>180000) throw new Error('Live price is stale. Refresh market prices first.');
+    document.getElementById('copy-exit-'+orderId).value=Number(row.price);
+  }catch(err){setMsg('copyTradingMsg',err?.message||'Could not load live exit price.');}
+}
+
+async function openCopyOrder(){
+  const btn=document.getElementById('openCopyOrderBtn'); setMsg('copyTradingMsg','');
+  const symbol=document.getElementById('copySymbol').value.trim().toUpperCase();
+  const side=document.getElementById('copySide').value;
+  const allocation=Number(document.getElementById('copyAllocation').value);
+  const entry=Number(document.getElementById('copyEntryPrice').value);
+  const remainingText=document.getElementById('copyRemainingAllocation').textContent;
+  const remaining=Number.parseFloat(remainingText);
+  if(!symbol||!Number.isFinite(allocation)||allocation<=0||allocation>100||!Number.isFinite(entry)||entry<=0){setMsg('copyTradingMsg','Enter a valid symbol, allocation, and entry price.');return;}
+  if(Number.isFinite(remaining)&&allocation>remaining+1e-9){setMsg('copyTradingMsg','Requested allocation exceeds the remaining '+money(remaining,2)+'%.');return;}
+  if(!confirm(`Open ${side.toUpperCase()} ${symbol}/USDT at ${entry} with ${allocation}% allocation?`)) return;
+  btn.disabled=true;btn.textContent='Opening...';
+  try{
+    const strategy=await getSelectedCopyStrategy();
+    const data=await copyRpc('open_copy_trader_order',{p_strategy_id:strategy.id,p_symbol:symbol,p_side:side,p_allocation_percent:allocation,p_entry_price:entry});
+    setMsg('copyTradingMsg','Order opened. '+money(data?.total_open_allocation??allocation,2)+'% total allocation, '+money(data?.remaining_allocation??0,2)+'% remaining. Follower positions created: '+String(data?.follower_positions_created??0)+'.',true);
+    document.getElementById('copyEntryPrice').value=''; await loadCopyOrders();
+  }catch(err){setMsg('copyTradingMsg','Open order failed: '+(err?.message||err));}
+  finally{btn.disabled=false;btn.textContent='Open Order';}
+}
+
+async function closeCopyOrder(orderId){
+  const input=document.getElementById('copy-exit-'+orderId); const exitPrice=Number(input?.value);
+  if(!Number.isFinite(exitPrice)||exitPrice<=0){setMsg('copyTradingMsg','Enter a valid exit price first.');return;}
+  if(!confirm('Close this Copy Trading order at '+exitPrice+'?')) return;
+  setMsg('copyTradingMsg','Closing order...');
+  try{
+    const data=await copyRpc('close_copy_trader_order',{p_order_id:orderId,p_exit_price:exitPrice});
+    setMsg('copyTradingMsg','Order closed. P/L: '+money(data?.pnl_percent,4)+'%. Follower positions closed: '+String(data?.follower_positions_closed??0)+'.',true); await loadCopyOrders();
+  }catch(err){setMsg('copyTradingMsg','Close order failed: '+(err?.message||err));}
+}
+
+function openReceipt(url){
+  document.getElementById('modalImage').src=url;
+  document.getElementById('imageModal').classList.add('show');
+}
+
+function closeReceipt(){
+  document.getElementById('imageModal').classList.remove('show');
+  document.getElementById('modalImage').removeAttribute('src');
+}
+
+function switchMainTab(tab){
+  currentMainTab=tab;
+
+  const dep=tab==='deposits';
+  const trades=tab==='trades';
+  const withdrawals=tab==='withdrawals';
+  const tradingData=tab==='tradingData';
+  const customers=tab==='customers';
+  const accounts=tab==='accounts';
+  const copyTrading=tab==='copyTrading';
+
+  document.getElementById('depositSection').classList.toggle('hidden',!dep);
+  document.getElementById('tradeSection').classList.toggle('hidden',!trades);
+  document.getElementById('withdrawSection').classList.toggle('hidden',!withdrawals);
+  document.getElementById('tradingDataSection').classList.toggle('hidden',!tradingData);
+  document.getElementById('customerListSection').classList.toggle('hidden',!customers);
+  document.getElementById('accountSection').classList.toggle('hidden',!accounts);
+  document.getElementById('copyTradingSection').classList.toggle('hidden',!copyTrading);
+
+  document.getElementById('depositTabBtn').classList.toggle('active',dep);
+  document.getElementById('tradeTabBtn').classList.toggle('active',trades);
+  document.getElementById('withdrawTabBtn').classList.toggle('active',withdrawals);
+  document.getElementById('tradingDataTabBtn').classList.toggle('active',tradingData);
+  document.getElementById('customerListTabBtn').classList.toggle('active',customers);
+  document.getElementById('accountTabBtn').classList.toggle('active',accounts);
+  document.getElementById('copyTradingTabBtn').classList.toggle('active',copyTrading);
+
+  if(dep) loadDeposits();
+  else if(trades) loadTrades();
+  else if(withdrawals) loadWithdrawals();
+  else if(customers) loadCustomerList();
+  else if(copyTrading) loadCopyOrders();
+}
+
+async function refreshCurrent(){
+  if(currentMainTab==='deposits') await loadDeposits();
+  else if(currentMainTab==='trades') await loadTrades();
+  else if(currentMainTab==='withdrawals') await loadWithdrawals();
+  else if(currentMainTab==='tradingData' && document.getElementById('tradingDataUid').value.trim()) await loadTradingData();
+  else if(currentMainTab==='customers') await loadCustomerList();
+  else if(currentMainTab==='accounts' && document.getElementById('accountUid').value.trim()) await loadAccountManagement();
+  else if(currentMainTab==='copyTrading') await loadCopyOrders();
+}
+
+async function logout(){
+  try{
+    if(session?.access_token){
+      await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:authHeaders()});
+    }
+  }catch(_){}
+  session=null;
+  sessionStorage.removeItem('adminSession');
+  clearReceiptUrls();
+  showLogin();
+}
+
+document.getElementById('resetForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  setMsg('resetMsg','');
+
+  const recovery=getRecoverySessionFromUrl();
+  const password=document.getElementById('newPassword').value;
+  const confirmPassword=document.getElementById('confirmPassword').value;
+  const btn=document.getElementById('resetBtn');
+
+  if(!recovery.accessToken || recovery.type!=='recovery'){
+    setMsg('resetMsg','This password reset link is missing or has expired. Request a new reset email from Supabase.');
+    return;
+  }
+  if(password.length<8){
+    setMsg('resetMsg','Password must be at least 8 characters.');
+    return;
+  }
+  if(password!==confirmPassword){
+    setMsg('resetMsg','The two passwords do not match.');
+    return;
+  }
+
+  btn.disabled=true;
+  btn.textContent='Saving...';
+
+  try{
+    await updatePasswordWithRecoveryToken(recovery.accessToken,password);
+    document.getElementById('newPassword').value='';
+    document.getElementById('confirmPassword').value='';
+    history.replaceState({},document.title,location.pathname);
+    showLogin();
+    setMsg('loginMsg','Password updated successfully. Log in with your new password.',true);
+  }catch(err){
+    setMsg('resetMsg',err?.message||'Could not update password.');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save New Password';
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  setMsg('loginMsg','');
+
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;
+  btn.textContent='Logging in...';
+
+  try{
+    await login(
+      document.getElementById('email').value.trim(),
+      document.getElementById('password').value
+    );
+    document.getElementById('password').value='';
+    showAdmin();
+    switchMainTab('deposits');
+  }catch(err){
+    setMsg('loginMsg',err?.message||'Login failed');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Login';
+  }
+});
+
+document.getElementById('logoutBtn').onclick=logout;
+document.getElementById('refreshBtn').onclick=refreshCurrent;
+document.getElementById('depositTabBtn').onclick=()=>switchMainTab('deposits');
+document.getElementById('tradeTabBtn').onclick=()=>switchMainTab('trades');
+document.getElementById('tradingDataTabBtn').onclick=()=>switchMainTab('tradingData');
+document.getElementById('loadTradingDataBtn').onclick=loadTradingData;
+document.getElementById('clearTradingDataBtn').onclick=clearTradingData;
+document.getElementById('tradingDataUid').addEventListener('keydown',e=>{if(e.key==='Enter') loadTradingData();});
+document.getElementById('withdrawTabBtn').onclick=()=>switchMainTab('withdrawals');
+document.getElementById('customerListTabBtn').onclick=()=>switchMainTab('customers');
+document.getElementById('reloadCustomersBtn').onclick=loadCustomerList;
+document.getElementById('customerSearchInput').addEventListener('input',renderCustomerList);
+document.getElementById('accountTabBtn').onclick=()=>switchMainTab('accounts');
+document.getElementById('copyTradingTabBtn').onclick=()=>switchMainTab('copyTrading');
+const copyStatusFilterEl=document.getElementById('copyStatusFilter');
+if(copyStatusFilterEl){
+  copyStatusFilterEl.onchange=()=>{
+    copyPlansShowAll=false;
+    loadCopyCustomerPlans(selectedCopyStrategyId);
+  };
+}
+const copyStrategySelectEl=document.getElementById('copyStrategySelect');
+if(copyStrategySelectEl){
+  copyStrategySelectEl.onchange=async()=>{
+    selectedCopyStrategyId=copyStrategySelectEl.value;
+    copyOrdersShowAll=false;
+    copyPlansShowAll=false;
+    copyPlanDetailsOpen.clear();
+    updateCopyStrategyLabels();
+    await loadCopyOrders();
+  };
+}
+document.getElementById('reloadCopyOrdersBtn').onclick=loadCopyOrders;
+document.getElementById('copyCustomerSearchBtn').onclick=async()=>{
+  copyPlansShowAll=false;
+  try{
+    const strategy=await getSelectedCopyStrategy();
+    await loadCopyCustomerPlans(strategy.id);
+  }catch(err){setMsg('copyTradingMsg',err?.message||'Could not search customer plans.');}
+};
+document.getElementById('copyCustomerClearBtn').onclick=async()=>{
+  copyPlansShowAll=false;
+  document.getElementById('copyCustomerSearch').value='';
+  try{
+    const strategy=await getSelectedCopyStrategy();
+    await loadCopyCustomerPlans(strategy.id);
+  }catch(err){setMsg('copyTradingMsg',err?.message||'Could not load customer plans.');}
+};
+document.getElementById('copyCustomerSearch').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();document.getElementById('copyCustomerSearchBtn').click();}
+});
+document.getElementById('openCopyOrderBtn').onclick=openCopyOrder;
+document.getElementById('useCopyLivePriceBtn').onclick=()=>{if(copyLivePriceCache?.fresh) document.getElementById('copyEntryPrice').value=copyLivePriceCache.price; else setMsg('copyTradingMsg','Fresh live price is not available yet.');};
+document.getElementById('copySymbol').addEventListener('change',loadCopyLivePrice);
+document.getElementById('lookupAccountBtn').onclick=loadAccountManagement;
+document.getElementById('saveBalanceBtn').onclick=setAccountBalance;
+document.getElementById('saveScoreBtn').onclick=saveAccountScore;
+document.getElementById('clearAccountBtn').onclick=clearAccountManagement;
+document.getElementById('accountUid').addEventListener('keydown',e=>{if(e.key==='Enter')loadAccountManagement();});
+
+document.querySelectorAll('.deposit-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.deposit-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter=btn.dataset.filter;
+    loadDeposits();
+  });
+});
+
+document.querySelectorAll('.trade-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.trade-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentTradeFilter=btn.dataset.tradeFilter;
+    loadTrades();
+  });
+});
+
+document.querySelectorAll('.withdraw-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.withdraw-filter').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    currentWithdrawFilter=btn.dataset.withdrawFilter;
+    loadWithdrawals();
+  });
+});
+
+document.getElementById('closeModal').onclick=closeReceipt;
+document.getElementById('imageModal').addEventListener('click',e=>{
+  if(e.target.id==='imageModal') closeReceipt();
+});
+
+(async()=>{
+  const recovery=getRecoverySessionFromUrl();
+
+  if(recovery.errorDescription){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showLogin();
+    setMsg('loginMsg',decodeURIComponent(recovery.errorDescription));
+    return;
+  }
+
+  if(recovery.type==='recovery' && recovery.accessToken){
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showReset();
+    return;
+  }
+
+  if(loadSavedSession() && await verifyAdmin()){
+    showAdmin();
+    switchMainTab('deposits');
+  }else{
+    session=null;
+    sessionStorage.removeItem('adminSession');
+    showLogin();
+  }
+})();
+</script>
+
+<script>
+/* Nexora Admin V2 mobile shell only; existing admin/Supabase logic is untouched. */
+(()=>{
+  const openBtn=document.getElementById('mobileAdminMenuBtn');
+  const closeBtn=document.getElementById('mobileAdminCloseBtn');
+  const overlay=document.getElementById('adminSidebarOverlay');
+  const sidebar=document.getElementById('adminSidebar');
+  const open=()=>document.body.classList.add('admin-menu-open');
+  const close=()=>document.body.classList.remove('admin-menu-open');
+
+  openBtn?.addEventListener('click',open);
+  closeBtn?.addEventListener('click',close);
+  overlay?.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  sidebar?.querySelectorAll('.main-tab').forEach(btn=>btn.addEventListener('click',()=>{
+    if(matchMedia('(max-width:899px)').matches) close();
+  }));
+
+  document.getElementById('mobileRefreshBtn')?.addEventListener('click',()=>{
+    document.getElementById('refreshBtn')?.click(); close();
+  });
+  document.getElementById('mobileLogoutBtn')?.addEventListener('click',()=>{
+    document.getElementById('logoutBtn')?.click(); close();
+  });
+})();
+</script>
+
+
+<script>
+/* Nexora Admin V3 dashboard: read-only summary over existing authenticated platform data. */
+(()=>{
+  const $=id=>document.getElementById(id);
+  const sectionIds=['dashboardSection','depositSection','withdrawSection','tradeSection','tradingDataSection','customerListSection','accountSection','copyTradingSection'];
+  const tabIds=['dashboardTabBtn','depositTabBtn','withdrawTabBtn','tradeTabBtn','tradingDataTabBtn','customerListTabBtn','accountTabBtn','copyTradingTabBtn'];
+
+  function openDashboard(){
+    sectionIds.forEach(id=>$(id)?.classList.toggle('hidden',id!=='dashboardSection'));
+    tabIds.forEach(id=>$(id)?.classList.toggle('active',id==='dashboardTabBtn'));
+    loadDashboard();
+  }
+
+  async function countRows(table,filter=''){
+    if(typeof ensureSession!=='function'||!await ensureSession()) return null;
+    let url=SUPABASE_URL+'/rest/v1/'+table+'?select=id'+filter;
+    let r=await fetch(url,{headers:authHeaders({'Prefer':'count=exact','Range':'0-0'})});
+    if(r.status===401 && await refreshSession()) r=await fetch(url,{headers:authHeaders({'Prefer':'count=exact','Range':'0-0'})});
+    if(!r.ok) return null;
+    const range=r.headers.get('content-range')||'';
+    const m=range.match(/\/(\d+|\*)$/);
+    if(m&&m[1]!=='*') return Number(m[1]);
+    const rows=await r.json().catch(()=>[]);
+    return Array.isArray(rows)?rows.length:null;
+  }
+
+  async function loadDashboard(){
+    if(!$('dashboardSection')||$('dashboardSection').classList.contains('hidden')) return;
+    setMsg?.('dashboardMsg','');
+    try{
+      const [customers,pDep,pWit,pOrd,allDep,allWit,allOrd,copyPlans]=await Promise.all([
+        countRows('customer_profiles'),
+        countRows('deposit_requests','&status=eq.pending'),
+        countRows('withdraw_requests','&status=eq.pending'),
+        countRows('trade_orders','&status=eq.pending'),
+        countRows('deposit_requests'),
+        countRows('withdraw_requests'),
+        countRows('trade_orders'),
+        countRows('copy_subscriptions')
+      ]);
+      const put=(id,v)=>{const el=$(id);if(el)el.textContent=v==null?'—':Number(v).toLocaleString()};
+      put('dashCustomers',customers);put('dashDeposits',pDep);put('dashWithdrawals',pWit);put('dashOrders',pOrd);
+      put('dashDepositAll',allDep);put('dashWithdrawalAll',allWit);put('dashOrderAll',allOrd);put('dashCopyPlans',copyPlans);
+      if($('dashUpdated')) $('dashUpdated').textContent='Updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    }catch(e){ if(typeof setMsg==='function') setMsg('dashboardMsg','Could not load dashboard overview: '+(e?.message||e)); }
+  }
+
+  $('dashboardTabBtn')?.addEventListener('click',openDashboard);
+  $('dashboardRefreshBtn')?.addEventListener('click',loadDashboard);
+
+  const map={
+    deposits:'depositTabBtn',withdrawals:'withdrawTabBtn',trades:'tradeTabBtn',
+    activity:'tradingDataTabBtn',customers:'customerListTabBtn',accounts:'accountTabBtn',copy:'copyTradingTabBtn'
+  };
+  document.querySelectorAll('[data-open-tab]').forEach(el=>el.addEventListener('click',()=>{
+    $(map[el.dataset.openTab])?.click();
+  }));
+
+  // Existing admin login/showAdmin remains authoritative. After successful login,
+  // move presentation to Dashboard without changing authentication or backend logic.
+  const originalShowAdmin=window.showAdmin;
+  if(typeof originalShowAdmin==='function'){
+    window.showAdmin=function(){
+      originalShowAdmin.apply(this,arguments);
+      setTimeout(openDashboard,0);
+    };
+  }
+})();
+</script>
+
+
+<script>
+/* V3.1: Dashboard is exclusive — it disappears whenever any management page opens. */
+(()=>{
+  const dashboard=document.getElementById('dashboardSection');
+  const dashboardBtn=document.getElementById('dashboardTabBtn');
+  const managementIds=[
+    'depositTabBtn','withdrawTabBtn','tradeTabBtn','tradingDataTabBtn',
+    'customerListTabBtn','accountTabBtn','copyTradingTabBtn'
+  ];
+  managementIds.forEach(id=>{
+    document.getElementById(id)?.addEventListener('click',()=>{
+      dashboard?.classList.add('hidden');
+      dashboardBtn?.classList.remove('active');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

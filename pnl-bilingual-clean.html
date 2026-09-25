@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>P&L Calendar</title>
+<style>
+:root{--bg:#090d12;--card:#111820;--line:#202a35;--text:#eef3f8;--muted:#7f8b99;--green:#20c997;--red:#ff5b68}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;padding-bottom:82px}
+.wrap{max-width:760px;margin:auto;padding:16px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.back{color:#aeb9c5;text-decoration:none;font-size:28px;width:36px}.title{font-weight:800;font-size:17px}.badge{font-size:10px;color:#8b98a7;border:1px solid #293440;padding:5px 8px;border-radius:8px}
+.summary{background:linear-gradient(145deg,#121a23,#0e141b);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:13px}
+.summary small{color:var(--muted)}#totalPnl{font-size:28px;font-weight:850;margin-top:7px}.positive{color:var(--green)!important}.negative{color:var(--red)!important}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:15px}.stat{background:#0b1117;border:1px solid #1e2934;border-radius:10px;padding:10px}.stat span{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.stat b{font-size:12px}
+.cal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}.monthbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.monthbar button{width:36px;height:34px;border:1px solid #293541;border-radius:9px;background:#151e27;color:#cbd4de;font-size:19px;cursor:pointer}.month{font-size:15px;font-weight:800}
+.week,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.week div{text-align:center;color:#687585;font-size:10px;padding:5px 0}
+.day{min-height:82px;border:1px solid #202a34;border-radius:9px;background:#0c1218;padding:7px;overflow:hidden}.day.empty{opacity:.2}.day.today{border-color:#526171}.num{font-size:11px;font-weight:800;color:#aeb8c3}.net{font-size:11px;font-weight:800;margin-top:8px}.mini{font-size:8px;color:#657281;margin-top:4px;line-height:1.35}
+.loading,.error{text-align:center;color:var(--muted);font-size:12px;padding:16px}.error{color:#ff7b85}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:62px;background:rgba(10,14,19,.96);border-top:1px solid #202832;display:flex;z-index:50}.bottom-nav a{flex:1;display:grid;place-items:center;text-decoration:none;color:#788594;font-size:11px}.bottom-nav a.active{color:#fff;font-weight:800}
+@media(max-width:520px){.wrap{padding:12px}.day{min-height:72px;padding:5px}.mini{font-size:7px}.net{font-size:9px}.stats{gap:5px}.stat{padding:8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><a class="back" href="assets.html" aria-label="Back">‹</a><div class="title" id="pageTitle">P&L Calendar</div><div></div></div>
+ <section class="summary">
+  <small>Monthly Total P&L</small><div id="totalPnl">0.00 USDT</div>
+  <div class="stats"><div class="stat"><span>Profit</span><b id="profit">0.00</b></div><div class="stat"><span>Loss</span><b id="loss">0.00</b></div><div class="stat"><span>Settled Trades</span><b id="trades">0</b></div></div>
+ </section>
+ <section class="cal">
+  <div class="monthbar"><button id="prev">‹</button><div id="month" class="month"></div><button id="next">›</button></div>
+  <div class="week"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+  <div id="grid" class="grid"></div><div id="status" class="loading">Loading P&L...</div>
+ </section>
+</div>
+<nav class="bottom-nav"><a href="index.html">Markets</a><a href="trading.html?symbol=BTC">Trading</a><a href="assets.html">Assets</a><a href="profile.html">Profile</a></nav>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const PNL_LANG=localStorage.getItem("nexoraLanguage")==="zh"?"zh":"en";
+const PT={
+ en:{title:"P&L Calendar",monthly:"Monthly Total P&L",profit:"Profit",loss:"Loss",trades:"Settled Trades",
+     week:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],loading:"Loading P&L...",markets:"Markets",trading:"Trading",
+     assets:"Assets",profile:"Profile",back:"Back",trade:"trade",tradesWord:"trades",
+     signin:"Please sign in to view your P&L.",verify:"Unable to verify your customer account.",
+     load:"Unable to load trade history: "},
+ zh:{title:"盈亏日历",monthly:"本月总盈亏",profit:"盈利",loss:"亏损",trades:"已结算交易",
+     week:["日","一","二","三","四","五","六"],loading:"正在加载盈亏...",markets:"市场",trading:"交易",
+     assets:"资产",profile:"我的",back:"返回",trade:"笔交易",tradesWord:"笔交易",
+     signin:"请先登录以查看盈亏。",verify:"无法验证客户账户。",
+     load:"无法加载交易记录："}
+};
+const T=PT[PNL_LANG];
+document.documentElement.lang=PNL_LANG==="zh"?"zh-CN":"en";
+document.title=T.title+" - Nexora Capital";
+function applyPnlLanguage(){
+ document.getElementById("pageTitle").textContent=T.title;
+ document.querySelector(".summary small").textContent=T.monthly;
+ const stat=document.querySelectorAll(".stat span");
+ if(stat[0])stat[0].textContent=T.profit;if(stat[1])stat[1].textContent=T.loss;if(stat[2])stat[2].textContent=T.trades;
+ document.querySelectorAll(".week div").forEach((el,i)=>el.textContent=T.week[i]);
+ const nav=document.querySelectorAll(".bottom-nav a");
+ [T.markets,T.trading,T.assets,T.profile].forEach((v,i)=>{if(nav[i])nav[i].textContent=v});
+ const back=document.querySelector(".back");if(back)back.setAttribute("aria-label",T.back);
+ const st=document.getElementById("status");if(st)st.textContent=T.loading;
+}
+applyPnlLanguage();
+</script>
+<script>
+const SUPABASE_URL='https://cyvquivolvkxzcseyhvk.supabase.co';
+const SUPABASE_KEY='sb_publishable_dy2_qtfTrOjeD-kPKohHiQ_zKHxZEHU';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let view=new Date(); view=new Date(view.getFullYear(),view.getMonth(),1);
+
+async function currentCustomerUid(){
+ const {data:{session},error:authError}=await sb.auth.getSession();
+ if(authError||!session) throw new Error(T.signin);
+ const {data,error}=await sb.from('customer_profiles').select('uid').eq('auth_user_id',session.user.id).single();
+ if(error||!data?.uid) throw new Error(T.verify);
+ return data.uid;
+}
+function fmt(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function localKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function pnlOf(x){
+ const p=Number(x.profit_loss);
+ if(Number.isFinite(p)) return p;
+ if(x.result==='WIN') return Number(x.amount||0)*Number(x.payout_rate||.8);
+ if(x.result==='LOSS') return -Number(x.amount||0);
+ return 0;
+}
+async function load(){
+ const y=view.getFullYear(),m=view.getMonth();
+ document.getElementById('month').textContent=view.toLocaleString(PNL_LANG==='zh'?'zh-CN':'en-US',{month:'long',year:'numeric'});
+ document.getElementById('status').className='loading'; document.getElementById('status').style.display='block'; document.getElementById('status').textContent=T.loading;
+ try{
+  const start=new Date(y,m,1); const end=new Date(y,m+1,1);
+  const customerUid=await currentCustomerUid();
+  const {data,error}=await sb.from('trade_orders')
+   .select('id,amount,payout_rate,result,profit_loss,status,settled_at')
+   .eq('uid',customerUid).eq('status','settled')
+   .gte('settled_at',start.toISOString()).lt('settled_at',end.toISOString())
+   .order('settled_at',{ascending:true});
+  if(error) throw new Error(T.load+error.message);
+  render(data||[]);
+  document.getElementById('status').style.display='none';
+ }catch(e){document.getElementById('status').className='error';document.getElementById('status').textContent=e.message}
+}
+function render(rows){
+ const y=view.getFullYear(),m=view.getMonth(),days=new Date(y,m+1,0).getDate(),first=new Date(y,m,1).getDay();
+ const map={}; let profit=0,loss=0,total=0;
+ rows.forEach(x=>{if(!x.settled_at)return;let d=new Date(x.settled_at),k=localKey(d),p=pnlOf(x);if(!map[k])map[k]={profit:0,loss:0,net:0,count:0};map[k].count++;map[k].net+=p;total+=p;if(p>0){map[k].profit+=p;profit+=p}else if(p<0){map[k].loss+=Math.abs(p);loss+=Math.abs(p)}});
+ const grid=document.getElementById('grid');grid.innerHTML='';
+ for(let i=0;i<first;i++){let e=document.createElement('div');e.className='day empty';grid.appendChild(e)}
+ const today=localKey(new Date());
+ for(let n=1;n<=days;n++){
+  const d=new Date(y,m,n),k=localKey(d),x=map[k]||{profit:0,loss:0,net:0,count:0},el=document.createElement('div');
+  el.className='day'+(k===today?' today':'');
+  const cls=x.net>0?'positive':x.net<0?'negative':'';
+  el.innerHTML='<div class="num">'+n+'</div><div class="net '+cls+'">'+(x.count?(x.net>=0?'+':'')+fmt(x.net):'—')+'</div>'+
+   (x.count?'<div class="mini">P +'+fmt(x.profit)+'<br>L -'+fmt(x.loss)+'<br>'+(PNL_LANG==='zh'?x.count+T.trade:x.count+' '+(x.count>1?T.tradesWord:T.trade))+'</div>':'');
+  grid.appendChild(el);
+ }
+ const t=document.getElementById('totalPnl');t.textContent=(total>0?'+':'')+fmt(total)+' USDT';t.className=total>0?'positive':total<0?'negative':'';
+ document.getElementById('profit').textContent='+'+fmt(profit)+' USDT';document.getElementById('profit').className='positive';
+ document.getElementById('loss').textContent='-'+fmt(loss)+' USDT';document.getElementById('loss').className='negative';
+ document.getElementById('trades').textContent=rows.length;
+}
+document.getElementById('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);load()};
+document.getElementById('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);load()};
+load();
+</script>
+<script src="floating-widget.js?v=20"></script>
+</body></html>
